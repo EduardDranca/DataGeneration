@@ -1,0 +1,48 @@
+{
+    "banks": {
+        "count": 3,
+        "tags": ["bank"],
+        "item": {
+            "id": {"gen": "uuid"},
+            "name": {"gen": "choice", "options": ["First National Bank", "City Trust Bank", "Global Finance Corp"]},
+            "routingNumber": {"gen": "finance.routingNumber"},
+            "swiftCode": {"gen": "finance.bic"}
+        }
+    },
+    "accounts": {
+        "count": 12,
+        "item": {
+            "id": {"gen": "uuid"},
+            "accountNumber": {"gen": "finance.iban"},
+            "bankId": {"ref": "banks[*].id"},
+            "ownerName": {"gen": "name.fullName"},
+            "accountType": {"gen": "choice", "options": ["checking", "savings", "business", "investment"]},
+            "balance": {"gen": "float", "decimals": 2, "min": 100.00, "max": 50000.00},
+            "openDate": {"gen": "date"},
+            "isActive": {"gen": "choice", "options": [true, false], "weights": [90, 10]}
+        }
+    },
+    "merchants": {
+        "count": 8,
+        "item": {
+            "id": {"gen": "uuid"},
+            "name": {"gen": "company.name"},
+            "category": {"gen": "choice", "options": ["grocery", "restaurant", "gas_station", "retail", "online", "entertainment"]},
+            "merchantId": {"gen": "finance.creditCardNumber"}
+        }
+    },
+    "transactions": {
+        "count": 50,
+        "item": {
+            "id": {"gen": "uuid"},
+            "accountId": {"ref": "accounts[*].id"},
+            "merchantId": {"ref": "merchants[*].id"},
+            "amount": {"gen": "float", "decimals": 2, "min": 5.00, "max": 2000.00},
+            "transactionType": {"gen": "choice", "options": ["debit", "credit", "transfer", "fee"]},
+            "description": {"gen": "lorem.sentence"},
+            "transactionDate": {"gen": "date"},
+            "status": {"gen": "choice", "options": ["completed", "pending", "failed", "cancelled"]},
+            "referenceNumber": {"gen": "string", "regex": "[A-Z]{3}[0-9]{10}"}
+        }
+    }
+}

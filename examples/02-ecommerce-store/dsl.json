@@ -1,0 +1,47 @@
+{
+    "categories": {
+        "count": 3,
+        "tags": ["category"],
+        "item": {
+            "id": {"gen": "uuid"},
+            "name": {"gen": "choice", "options": ["Electronics", "Clothing", "Books"]},
+            "description": {"gen": "lorem.sentence"}
+        }
+    },
+    "products": {
+        "count": 8,
+        "item": {
+            "id": {"gen": "uuid"},
+            "name": {"gen": "choice", "options": ["Laptop Pro", "Wireless Headphones", "Smart Watch", "Gaming Mouse", "T-Shirt", "Jeans", "Sneakers", "Programming Book"]},
+            "price": {"gen": "float", "decimals": 2, "min": 9.99, "max": 999.99},
+            "categoryId": {"ref": "categories[*].id"},
+            "inStock": {"gen": "choice", "options": [true, false]},
+            "stockQuantity": {"gen": "number", "min": 0, "max": 100}
+        }
+    },
+    "customers": {
+        "count": 5,
+        "item": {
+            "id": {"gen": "uuid"},
+            "firstName": {"gen": "name.firstName"},
+            "lastName": {"gen": "name.lastName"},
+            "email": {"gen": "internet.emailAddress"},
+            "address": {
+                "street": {"gen": "address.streetAddress"},
+                "city": {"gen": "address.city"},
+                "zipCode": {"gen": "address.zipCode"}
+            }
+        }
+    },
+    "orders": {
+        "count": 10,
+        "item": {
+            "id": {"gen": "uuid"},
+            "customerId": {"ref": "customers[*].id"},
+            "productId": {"ref": "products[*].id"},
+            "quantity": {"gen": "number", "min": 1, "max": 5},
+            "orderDate": {"gen": "date"},
+            "status": {"gen": "choice", "options": ["pending", "shipped", "delivered", "cancelled"]}
+        }
+    }
+}

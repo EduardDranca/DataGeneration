@@ -1,0 +1,125 @@
+{
+    "departments": {
+        "count": 4,
+        "tags": [
+            "department"
+        ],
+        "item": {
+            "id": {
+                "gen": "uuid"
+            },
+            "name": {
+                "gen": "choice",
+                "options": [
+                    "Engineering",
+                    "Marketing",
+                    "Sales",
+                    "HR"
+                ]
+            },
+            "budget": {
+                "gen": "number",
+                "min": 50000,
+                "max": 500000
+            },
+            "location": {
+                "gen": "address.city"
+            }
+        }
+    },
+    "employees": {
+        "count": 15,
+        "item": {
+            "id": {
+                "gen": "uuid"
+            },
+            "firstName": {
+                "gen": "name.firstName"
+            },
+            "lastName": {
+                "gen": "name.lastName"
+            },
+            "email": {
+                "gen": "internet.emailAddress"
+            },
+            "departmentId": {
+                "ref": "departments[*].id"
+            },
+            "position": {
+                "gen": "company.profession"
+            },
+            "salary": {
+                "gen": "number",
+                "min": 40000,
+                "max": 150000
+            },
+            "hireDate": {
+                "gen": "date"
+            },
+            "isManager": {
+                "gen": "choice",
+                "options": [
+                    true,
+                    false
+                ],
+                "weights": [
+                    20,
+                    80
+                ]
+            },
+            "skills": {
+                "array": {
+                    "size": 4,
+                    "item": {
+                        "gen": "choice",
+                        "options": [
+                            "Java",
+                            "Python",
+                            "JavaScript",
+                            "SQL",
+                            "Docker",
+                            "AWS",
+                            "React",
+                            "Spring"
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "projects": {
+        "count": 6,
+        "item": {
+            "id": {
+                "gen": "uuid"
+            },
+            "name": {
+                "gen": "company.buzzword"
+            },
+            "description": {
+                "gen": "lorem.paragraph"
+            },
+            "departmentId": {
+                "ref": "departments[*].id"
+            },
+            "leadEmployeeId": {
+                "ref": "employees[*].id"
+            },
+            "startDate": {
+                "gen": "date"
+            },
+            "endDate": {
+                "gen": "date"
+            },
+            "status": {
+                "gen": "choice",
+                "options": [
+                    "planning",
+                    "in-progress",
+                    "completed",
+                    "on-hold"
+                ]
+            }
+        }
+    }
+}

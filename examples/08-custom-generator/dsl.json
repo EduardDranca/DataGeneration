@@ -1,0 +1,33 @@
+{
+    "departments": {
+        "count": 3,
+        "tags": ["department"],
+        "item": {
+            "id": {"gen": "uuid"},
+            "name": {"gen": "choice", "options": ["Engineering", "Marketing", "Sales"]},
+            "budget": {"gen": "number", "min": 100000, "max": 500000}
+        }
+    },
+    "job_levels": {
+        "count": 4,
+        "tags": ["level"],
+        "item": {
+            "id": {"gen": "uuid"},
+            "...": {"gen": "jobLevelInfo"}
+        }
+    },
+    "employees": {
+        "count": 12,
+        "item": {
+            "id": {"gen": "uuid"},
+            "employee_id": {"gen": "employeeId", "prefix": "EMP"},
+            "first_name": {"gen": "name.firstName"},
+            "last_name": {"gen": "name.lastName"},
+            "email": {"gen": "internet.emailAddress"},
+            "department_id": {"ref": "departments[*].id"},
+            "job_level_id": {"ref": "job_levels[*].id"},
+            "hire_date": {"gen": "date"},
+            "is_active": {"gen": "choice", "options": [true, false], "weights": [90, 10]}
+        }
+    }
+}

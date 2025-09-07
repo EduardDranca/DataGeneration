@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: 17
+        distribution: 'temurin'
+
+    - name: Cache Maven dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Run tests and generate coverage
+      run: mvn clean test
+
+    - name: Generate test report
+      uses: dorny/test-reporter@v2
+      with:
+        name: Maven Tests (Java 17)
+        path: target/surefire-reports/*.xml
+        reporter: java-junit
+
+    - name: SonarQube Analysis
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          # PR Analysis
+          mvn sonar:sonar \
+            -Dsonar.projectKey=EduardDranca_DataGeneration \
+            -Dsonar.organization=eduarddranca \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.pullrequest.key=${{ github.event.number }} \
+            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+            -Dsonar.pullrequest.base=${{ github.base_ref }} \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+        elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          # Main branch analysis
+          mvn sonar:sonar \
+            -Dsonar.projectKey=EduardDranca_DataGeneration \
+            -Dsonar.organization=eduarddranca \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+        else
+          # Branch analysis
+          mvn sonar:sonar \
+            -Dsonar.projectKey=EduardDranca_DataGeneration \
+            -Dsonar.organization=eduarddranca \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.branch.name=${{ github.ref_name }} \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  build:
+    name: Build and verify
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Cache Maven dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Build project
+      run: mvn clean compile
+
+    - name: Package
+      run: mvn package -DskipTests
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: jar-artifacts
+        path: target/*.jar

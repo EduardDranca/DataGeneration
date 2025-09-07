@@ -1,0 +1,13 @@
+{
+    "users": {
+        "count": 5,
+        "item": {
+            "id": {"gen": "uuid"},
+            "firstName": {"gen": "name.firstName"},
+            "lastName": {"gen": "name.lastName"},
+            "email": {"gen": "internet.emailAddress"},
+            "age": {"gen": "number", "min": 18, "max": 65},
+            "isActive": {"gen": "choice", "options": [true, false]}
+        }
+    }
+}
