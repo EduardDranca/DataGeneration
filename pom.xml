@@ -57,7 +57,7 @@
         <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
 
         <!-- Dependency versions -->
-        <jackson.version>2.17.1</jackson.version>
+        <jackson.version>2.20.0</jackson.version>
         <datafaker.version>2.4.4</datafaker.version>
         <junit.version>5.10.2</junit.version>
         <mockito.version>5.8.0</mockito.version>
