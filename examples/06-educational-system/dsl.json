@@ -1,0 +1,58 @@
+{
+    "schools": {
+        "count": 2,
+        "tags": ["school"],
+        "item": {
+            "id": {"gen": "uuid"},
+            "name": {"gen": "choice", "options": ["State University", "Tech Institute", "Community College", "Liberal Arts College"]},
+            "address": {
+                "street": {"gen": "address.streetAddress"},
+                "city": {"gen": "address.city"},
+                "state": {"gen": "address.state"},
+                "zipCode": {"gen": "address.zipCode"}
+            },
+            "establishedYear": {"gen": "number", "min": 1850, "max": 2000},
+            "studentCapacity": {"gen": "number", "min": 1000, "max": 50000}
+        }
+    },
+    "courses": {
+        "count": 10,
+        "item": {
+            "id": {"gen": "uuid"},
+            "courseCode": {"gen": "string", "regex": "[A-Z]{2,4}[0-9]{3}"},
+            "title": {"gen": "choice", "options": ["Introduction to Programming", "Data Structures", "Calculus I", "Physics Lab", "World History", "Creative Writing", "Organic Chemistry"]},
+            "description": {"gen": "lorem.paragraph"},
+            "credits": {"gen": "number", "min": 1, "max": 6},
+            "department": {"gen": "choice", "options": ["Computer Science", "Mathematics", "Physics", "Chemistry", "Biology", "English", "History"]},
+            "difficulty": {"gen": "choice", "options": ["beginner", "intermediate", "advanced"]},
+            "maxStudents": {"gen": "number", "min": 20, "max": 200}
+        }
+    },
+    "students": {
+        "count": 25,
+        "item": {
+            "id": {"gen": "uuid"},
+            "studentId": {"gen": "string", "regex": "[0-9]{8}"},
+            "firstName": {"gen": "name.firstName"},
+            "lastName": {"gen": "name.lastName"},
+            "email": {"gen": "internet.emailAddress"},
+            "schoolId": {"ref": "schools[*].id"},
+            "major": {"gen": "choice", "options": ["Computer Science", "Engineering", "Business", "Liberal Arts", "Sciences"]},
+            "year": {"gen": "choice", "options": ["freshman", "sophomore", "junior", "senior"]},
+            "gpa": {"gen": "float", "decimals": 2, "min": 2.0, "max": 4.0},
+            "enrollmentDate": {"gen": "date"}
+        }
+    },
+    "enrollments": {
+        "count": 60,
+        "item": {
+            "id": {"gen": "uuid"},
+            "studentId": {"ref": "students[*].id"},
+            "courseId": {"ref": "courses[*].id"},
+            "semester": {"gen": "choice", "options": ["Fall 2023", "Spring 2024", "Summer 2024", "Fall 2024"]},
+            "grade": {"gen": "choice", "options": ["A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D", "F"], "weights": [10, 8, 12, 15, 10, 12, 15, 8, 5, 5]},
+            "enrollmentDate": {"gen": "date"},
+            "status": {"gen": "choice", "options": ["enrolled", "completed", "dropped", "withdrawn"]}
+        }
+    }
+}

@@ -1,0 +1,55 @@
+{
+    "users": {
+        "count": 8,
+        "tags": ["user"],
+        "item": {
+            "id": {"gen": "uuid"},
+            "username": {"gen": "internet.userName"},
+            "email": {"gen": "internet.emailAddress"},
+            "displayName": {"gen": "name.fullName"},
+            "bio": {"gen": "lorem.sentence"},
+            "followerCount": {"gen": "number", "min": 0, "max": 10000},
+            "isVerified": {"gen": "choice", "options": [true, false], "weights": [10, 90]},
+            "joinDate": {"gen": "date"},
+            "profilePicture": {"gen": "internet.avatar"}
+        }
+    },
+    "posts": {
+        "count": 20,
+        "item": {
+            "id": {"gen": "uuid"},
+            "authorId": {"ref": "users[*].id"},
+            "content": {"gen": "lorem.paragraph"},
+            "hashtags": {
+                "array": {
+                    "size": 3,
+                    "item": {"gen": "choice", "options": ["#tech", "#life", "#travel", "#food", "#fitness", "#art", "#music"]}
+                }
+            },
+            "likeCount": {"gen": "number", "min": 0, "max": 500},
+            "shareCount": {"gen": "number", "min": 0, "max": 100},
+            "createdAt": {"gen": "date"},
+            "isPublic": {"gen": "choice", "options": [true, false], "weights": [80, 20]}
+        }
+    },
+    "comments": {
+        "count": 35,
+        "item": {
+            "id": {"gen": "uuid"},
+            "postId": {"ref": "posts[*].id"},
+            "authorId": {"ref": "users[*].id"},
+            "content": {"gen": "lorem.sentence"},
+            "likeCount": {"gen": "number", "min": 0, "max": 50},
+            "createdAt": {"gen": "date.past"}
+        }
+    },
+    "follows": {
+        "count": 25,
+        "item": {
+            "id": {"gen": "uuid"},
+            "followerId": {"ref": "users[*].id"},
+            "followingId": {"ref": "users[*].id"},
+            "followDate": {"gen": "date"}
+        }
+    }
+}
