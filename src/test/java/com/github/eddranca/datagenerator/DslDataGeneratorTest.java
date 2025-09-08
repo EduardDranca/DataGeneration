@@ -282,7 +282,7 @@ class DslDataGeneratorTest {
 
             String firstCountryCode = countries.get(0).get("isoCode").asText();
             assertThat(companies).allSatisfy(comp ->
-                assertThat(comp.get("countryCode"))
+                assertThat(comp.get("countryCode").asText())
                     .as("Company countryCode should not match the filtered first country isoCode")
                     .isNotEqualTo(firstCountryCode)
             );
@@ -1515,6 +1515,7 @@ class DslDataGeneratorTest {
             List<JsonNode> companies = collections.get("companies");
             assertThat(companies)
                 .as("All companies should have non-null countryCode references")
+                .isNotEmpty()
                 .allSatisfy(company ->
                     assertThat(company.get("countryCode")).isNotNull()
                 );

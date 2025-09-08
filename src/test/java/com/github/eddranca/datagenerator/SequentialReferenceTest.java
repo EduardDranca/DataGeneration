@@ -204,6 +204,7 @@ class SequentialReferenceTest {
 
         assertThat(actualRandomIds)
             .as("Random references should all be valid user IDs")
+            .isNotEmpty()
             .allSatisfy(randomId -> assertThat(validUserIdsList).contains(randomId));
     }
 

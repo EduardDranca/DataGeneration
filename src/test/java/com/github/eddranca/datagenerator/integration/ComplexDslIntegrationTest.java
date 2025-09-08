@@ -100,6 +100,7 @@ class ComplexDslIntegrationTest {
         // Verify filtering works - cities should not have the first country's name
         List<JsonNode> cities = collections.get("cities");
         assertThat(cities)
+            .isNotEmpty()
             .allSatisfy(city ->
                 assertThat(city.get("countryName").asText()).isNotEqualTo(firstCountryName)
             );
@@ -108,6 +109,7 @@ class ComplexDslIntegrationTest {
         List<JsonNode> users = collections.get("users");
         String lastCountryName = collections.get("countries").get(4).get("name").asText();
         assertThat(users)
+            .isNotEmpty()
             .allSatisfy(user ->
                 assertThat(user.get("homeCountry").asText()).isEqualTo(lastCountryName)
             );
@@ -191,6 +193,7 @@ class ComplexDslIntegrationTest {
         // Verify data integrity - all references should be resolved
         List<JsonNode> users = collections.get("users");
         assertThat(users)
+            .isNotEmpty()
             .allSatisfy(user -> {
                 assertThat(user.get("company")).isNotNull();
                 assertThat(user.get("city")).isNotNull();
@@ -266,6 +269,7 @@ class ComplexDslIntegrationTest {
         // Products should not have the high priority category (filtered out)
         List<JsonNode> products = collections.get("products");
         assertThat(products)
+            .isNotEmpty()
             .allSatisfy(product ->
                 assertThat(product.get("category").asText()).isNotEqualTo(highPriorityCategoryName)
             );
@@ -273,6 +277,7 @@ class ComplexDslIntegrationTest {
         // Reviews should all reference the low priority category
         List<JsonNode> reviews = collections.get("reviews");
         assertThat(reviews)
+            .isNotEmpty()
             .allSatisfy(review ->
                 assertThat(review.get("productCategory").asText()).isEqualTo(lowPriorityCategoryName)
             );
@@ -280,6 +285,7 @@ class ComplexDslIntegrationTest {
         // Verify all orders have valid UUIDs and references
         List<JsonNode> orders = collections.get("orders");
         assertThat(orders)
+            .isNotEmpty()
             .allSatisfy(order -> {
                 assertThat(order.get("id"))
                     .isNotNull()
@@ -355,6 +361,7 @@ class ComplexDslIntegrationTest {
         // Verify dynamic tag references work correctly
         List<JsonNode> permissions = collections.get("permissions");
         assertThat(permissions)
+            .isNotEmpty()
             .allSatisfy(permission -> {
                 String userRole = permission.get("userRole").asText();
                 assertThat(userRole)
