@@ -426,7 +426,6 @@ class ComplexDslIntegrationTest {
 
     @Test
     void testCsvGeneratorUsersIntegration() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
         String csvPath = "src/test/resources/test-users.csv";
 
         JsonNode dslNode = mapper.readTree(String.format("""
@@ -471,7 +470,6 @@ class ComplexDslIntegrationTest {
 
     @Test
     void testCsvGeneratorPickFieldIntegration() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
         String csvPath = "src/test/resources/test-users.csv";
 
         // TODO: This should work with just "item": { "gen": "csv", ... } but currently requires the nested 'user' object

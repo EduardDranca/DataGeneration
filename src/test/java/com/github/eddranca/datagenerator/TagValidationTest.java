@@ -11,10 +11,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TagValidationTest {
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     void testValidTagSharing() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -48,7 +48,6 @@ class TagValidationTest {
 
     @Test
     void testInvalidTagSharing() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -82,7 +81,6 @@ class TagValidationTest {
 
     @Test
     void testValidTagSharingWithCustomNames() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "user_data": {
@@ -117,7 +115,6 @@ class TagValidationTest {
 
     @Test
     void testInvalidTagSharingWithCustomNames() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "user_data": {
@@ -153,7 +150,6 @@ class TagValidationTest {
 
     @Test
     void testMultipleTagsValidation() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -187,7 +183,6 @@ class TagValidationTest {
 
     @Test
     void testSingleCollectionMultipleTags() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {

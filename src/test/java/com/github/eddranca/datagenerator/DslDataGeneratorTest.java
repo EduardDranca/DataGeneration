@@ -87,10 +87,7 @@ class DslDataGeneratorTest {
 
         @Test
         void testSeedConsistencyWithCustomGenerators() throws IOException {
-            Generator customGenerator = (options) -> {
-                ObjectMapper mapper = new ObjectMapper();
-                return mapper.valueToTree("CUSTOM_FIXED_VALUE");
-            };
+            Generator customGenerator = (options) -> mapper.valueToTree("CUSTOM_FIXED_VALUE");
 
             JsonNode dslNode = mapper.readTree("""
                     {
@@ -150,7 +147,6 @@ class DslDataGeneratorTest {
 
         @Test
         void testSeedConsistencyWithFluentAPI() throws Exception {
-            ObjectMapper mapper = new ObjectMapper();
             JsonNode dslNode = mapper.readTree("""
                     {
                         "users": {
@@ -716,7 +712,6 @@ class DslDataGeneratorTest {
 
         @Test
         void testSpreadOperatorSqlGeneration() throws Exception {
-            ObjectMapper mapper = new ObjectMapper();
             JsonNode dslNode = mapper.readTree("""
                     {
                         "companies": {
@@ -1540,9 +1535,7 @@ class DslDataGeneratorTest {
             when(mockFaker.name()).thenReturn(mockName);
             when(mockFaker.random()).thenReturn(mockRandom);
 
-            // Create DSL JsonNode that only uses firstName and lastName (not fullName,
-            // title, prefix, suffix)
-            ObjectMapper mapper = new ObjectMapper();
+            // Create DSL JsonNode that only uses firstName and lastName (not fullName, title, prefix, suffix)
             JsonNode dslNode = mapper.readTree("""
                     {
                         "users": {
@@ -1594,9 +1587,7 @@ class DslDataGeneratorTest {
             Faker mockFaker = mock(Faker.class);
             when(mockFaker.address()).thenReturn(mockAddress);
 
-            // Create DSL JsonNode that only uses streetAddress and city (not state,
-            // zipCode, country)
-            ObjectMapper mapper = new ObjectMapper();
+            // Create DSL JsonNode that only uses streetAddress and city (not state, zipCode, country)
             JsonNode dslNode = mapper.readTree("""
                     {
                         "locations": {
@@ -1645,9 +1636,7 @@ class DslDataGeneratorTest {
             Faker mockFaker = mock(Faker.class);
             when(mockFaker.company()).thenReturn(mockCompany);
 
-            // Create DSL JsonNode that only uses company name (not industry, profession,
-            // buzzword)
-            ObjectMapper mapper = new ObjectMapper();
+            // Create DSL JsonNode that only uses company name (not industry, profession, buzzword)
             JsonNode dslNode = mapper.readTree("""
                     {
                         "businesses": {
@@ -1694,9 +1683,7 @@ class DslDataGeneratorTest {
             Faker mockFaker = mock(Faker.class);
             when(mockFaker.internet()).thenReturn(mockInternet);
 
-            // Create DSL JsonNode that only uses emailAddress (not domainName, url,
-            // password)
-            ObjectMapper mapper = new ObjectMapper();
+            // Create DSL JsonNode that only uses emailAddress (not domainName, url, password)
             JsonNode dslNode = mapper.readTree("""
                     {
                         "contacts": {

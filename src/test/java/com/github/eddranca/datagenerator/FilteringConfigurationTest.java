@@ -12,10 +12,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FilteringConfigurationTest {
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     void testDefaultFilteringBehaviorReturnsNull() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "items": {
@@ -50,7 +50,6 @@ class FilteringConfigurationTest {
 
     @Test
     void testThrowExceptionFilteringBehaviorForGenerators() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "items": {
@@ -78,7 +77,6 @@ class FilteringConfigurationTest {
 
     @Test
     void testThrowExceptionFilteringBehaviorForReferences() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "reference_data": {
@@ -111,7 +109,6 @@ class FilteringConfigurationTest {
 
     @Test
     void testCustomMaxFilteringRetries() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "items": {
@@ -174,7 +171,6 @@ class FilteringConfigurationTest {
 
     @Test
     void testSuccessfulFilteringWithCustomRetries() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "items": {

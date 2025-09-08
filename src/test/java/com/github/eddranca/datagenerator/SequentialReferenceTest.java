@@ -69,7 +69,6 @@ class SequentialReferenceTest {
 
     @Test
     void testSequentialReferenceWithFiltering() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -137,7 +136,6 @@ class SequentialReferenceTest {
 
     @Test
     void testRandomVsSequentialReference() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -207,7 +205,6 @@ class SequentialReferenceTest {
 
     @Test
     void testSequentialReferenceWithTaggedCollections() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "staff_admins": {

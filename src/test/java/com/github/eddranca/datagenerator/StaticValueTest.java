@@ -14,10 +14,10 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class StaticValueTest {
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     void testBasicStaticValues() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "products": {
@@ -69,7 +69,6 @@ class StaticValueTest {
 
     @Test
     void testComplexStaticValues() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "orders": {
@@ -136,7 +135,6 @@ class StaticValueTest {
 
     @Test
     void testMixedStaticAndDynamicFields() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
