@@ -3,7 +3,6 @@ package com.github.eddranca.datagenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
 import com.github.eddranca.datagenerator.visitor.DataGenerationVisitor;
 import com.github.eddranca.datagenerator.visitor.GenerationContext;
@@ -96,12 +95,8 @@ public class StreamingGeneration {
             CollectionNode collection = entry.getValue();
 
             // Skip the target collection - we'll stream that
-            if (collectionName.equals(targetCollectionName)) {
-                continue;
-            }
-
-            // Check if this collection is already generated
-            if (context.getCollection(collection.getCollectionName()) != null) {
+            if (collectionName.equals(targetCollectionName)
+                || context.getCollection(collection.getCollectionName()) != null) {
                 continue;
             }
 
@@ -126,10 +121,7 @@ public class StreamingGeneration {
 
         return Stream.generate(() -> collection.getItem().accept(visitor))
                 .limit(collection.getCount())
-                .peek(item -> {
-                    // Register item for references as it's generated
-                    registerItemForReferences(collection, item);
-                });
+                .peek(item -> registerItemForReferences(collection, item));
     }
 
     /**

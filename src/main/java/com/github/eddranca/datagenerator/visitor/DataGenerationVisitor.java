@@ -295,7 +295,8 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
         }
 
         for (String spec : specs) {
-            String targetField, sourceField;
+            String targetField;
+            String sourceField;
             if (spec.contains(":")) {
                 String[] parts = spec.split(":", 2);
                 targetField = parts[0];

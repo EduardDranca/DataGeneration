@@ -56,8 +56,9 @@ class StringGeneratorTest {
         assertThat(result.isTextual()).isTrue();
 
         String value = result.asText();
-        assertThat(value).hasSize(100);
-        assertThat(value).matches("[a-zA-Z0-9]+");
+        assertThat(value)
+            .hasSize(100)
+            .matches("[a-zA-Z0-9]+");
     }
 
     @Test

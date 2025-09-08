@@ -1,6 +1,10 @@
 package com.github.eddranca.datagenerator.builder;
 
 public class KeyWords {
+    private KeyWords() {
+        // Prevent instantiation
+    }
+
     public static final String REFERENCE = "ref";
     public static final String GENERATOR = "gen";
     public static final String ELLIPSIS = "...";

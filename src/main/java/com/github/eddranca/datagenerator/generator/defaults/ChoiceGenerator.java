@@ -6,9 +6,7 @@ import com.github.eddranca.datagenerator.generator.Generator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.function.Supplier;
 
 /**
  * Generator that handles choice field logic by selecting from pre-generated options.
@@ -74,12 +72,6 @@ public class ChoiceGenerator implements Generator {
     public JsonNode generateAtPath(JsonNode options, String path) {
         // Choice generators don't support path extraction
         return generate(options);
-    }
-
-    @Override
-    public Map<String, Supplier<JsonNode>> getFieldSuppliers(JsonNode options) {
-        // Choice generators don't support field suppliers
-        return null;
     }
 
     private List<Double> getWeights(JsonNode options, int optionsCount) {

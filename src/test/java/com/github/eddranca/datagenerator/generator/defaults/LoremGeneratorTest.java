@@ -52,10 +52,9 @@ class LoremGeneratorTest {
 
         assertThat(result.isTextual()).isTrue();
         String text = result.asText();
-        assertThat(text).isNotEmpty();
-
-        // Just verify we get some text - faker might return different formats
-        assertThat(text).hasSizeGreaterThan(0);
+        assertThat(text)
+            .isNotEmpty()
+            .hasSizeGreaterThan(0);
     }
 
     @Test
@@ -65,10 +64,9 @@ class LoremGeneratorTest {
 
         assertThat(result.isTextual()).isTrue();
         String text = result.asText();
-        assertThat(text).isNotEmpty();
-
-        // Just verify we get some text - sentence format may vary
-        assertThat(text).hasSizeGreaterThan(5);
+        assertThat(text)
+            .isNotEmpty()
+            .hasSizeGreaterThan(5);
     }
 
     @Test
@@ -78,10 +76,9 @@ class LoremGeneratorTest {
 
         assertThat(result.isTextual()).isTrue();
         String text = result.asText();
-        assertThat(text).isNotEmpty();
-
-        // Just verify we get some text - paragraph format may vary
-        assertThat(text).hasSizeGreaterThan(10);
+        assertThat(text)
+            .isNotEmpty()
+            .hasSizeGreaterThan(10);
     }
 
     @Test
@@ -102,8 +99,9 @@ class LoremGeneratorTest {
     void testFieldSuppliers() {
         Map<String, Supplier<JsonNode>> suppliers = generator.getFieldSuppliers(null);
 
-        assertThat(suppliers).isNotNull();
-        assertThat(suppliers).containsKeys("word", "words", "sentence", "sentences", "paragraph", "paragraphs");
+        assertThat(suppliers)
+            .isNotNull()
+            .containsKeys("word", "words", "sentence", "sentences", "paragraph", "paragraphs");
 
         // Test that suppliers actually work
         JsonNode wordResult = suppliers.get("word").get();

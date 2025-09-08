@@ -153,8 +153,7 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitFilter(FilterNode node) {
-        if (node.getFilterExpression() instanceof ReferenceFieldNode) {
-            ReferenceFieldNode refNode = (ReferenceFieldNode) node.getFilterExpression();
+        if (node.getFilterExpression() instanceof ReferenceFieldNode refNode) {
             refNode.accept(this);
         }
         return null;
@@ -194,8 +193,7 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
             String remainingPath = pathParts[1];
 
             // Only object fields can have sub-fields
-            if (field instanceof ObjectFieldNode) {
-                ObjectFieldNode objectField = (ObjectFieldNode) field;
+            if (field instanceof ObjectFieldNode objectField) {
                 return validateFieldPath(remainingPath, objectField.getFields());
             }
             // Non-object fields cannot have sub-fields

@@ -44,10 +44,9 @@ class StreamingGenerationTest {
             .toList();
 
         // Should have 10 SQL INSERT statements for products
-        assertThat(productSql).hasSize(10);
-
         assertThat(productSql)
             .as("All SQL statements should be valid product inserts")
+            .hasSize(10)
             .allSatisfy(sql -> {
                 assertThat(sql).startsWith("INSERT INTO products");
                 assertThat(sql).contains("category_id", "price");
@@ -140,11 +139,9 @@ class StreamingGenerationTest {
         List<String> orderSql = streaming.streamSqlInserts("orders")
             .toList();
 
-        // Should have 4 order statements
-        assertThat(orderSql).hasSize(4);
-
         assertThat(orderSql)
             .as("All order SQL statements should be valid")
+            .hasSize(4)
             .allSatisfy(sql -> {
                 assertThat(sql).startsWith("INSERT INTO orders");
                 assertThat(sql).contains("user_id", "amount");

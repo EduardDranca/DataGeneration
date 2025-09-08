@@ -87,7 +87,7 @@ class DslDataGeneratorTest {
 
         @Test
         void testSeedConsistencyWithCustomGenerators() throws IOException {
-            Generator customGenerator = (options) -> mapper.valueToTree("CUSTOM_FIXED_VALUE");
+            Generator customGenerator = options -> mapper.valueToTree("CUSTOM_FIXED_VALUE");
 
             JsonNode dslNode = mapper.readTree("""
                     {
@@ -330,10 +330,7 @@ class DslDataGeneratorTest {
                     assertThat(filteredLocationName)
                         .as("Filtered location should be one of: Tokyo, Paris, Berlin")
                         .isIn("Tokyo", "Paris", "Berlin");
-                });
-
-            // Verify that continentBasedLocation excludes "Asia" continent using allSatisfy
-            assertThat(events)
+                })
                 .allSatisfy(event -> {
                     String continentBasedLocation = event.get("continentBasedLocation").asText();
                     assertThat(continentBasedLocation)
@@ -365,16 +362,12 @@ class DslDataGeneratorTest {
             List<String> expectedLocationNames = List.of("New York", "London", "Tokyo", "Paris", "Berlin");
             assertThat(allLocationNames)
                 .as("All location names should be from expected values")
+                .isNotEmpty()
                 .allSatisfy(locationName ->
                     assertThat(expectedLocationNames)
                         .as("Location name should be one of the expected values: " + locationName)
                         .contains(locationName)
                 );
-
-            // Verify that we have at least some locations generated
-            assertThat(allLocationNames)
-                .as("Should have at least some locations generated")
-                .isNotEmpty();
         }
     }
 
@@ -406,10 +399,9 @@ class DslDataGeneratorTest {
             Map<String, List<JsonNode>> collections = generation.getCollections();
             List<JsonNode> users = collections.get("users");
 
-            assertThat(users).hasSize(2);
-
             assertThat(users)
                 .as("All users should have displayName matching name via self-reference")
+                .hasSize(2)
                 .allSatisfy(user ->
                     assertThat(user.get("displayName"))
                         .as("displayName should match name via self-reference")
@@ -506,11 +498,10 @@ class DslDataGeneratorTest {
             Map<String, List<JsonNode>> collections = generation.getCollections();
             List<JsonNode> countries = collections.get("countries");
 
-            assertThat(countries).hasSize(3);
-
             // Verify spread fields are present
             assertThat(countries)
                 .as("All countries should have required fields with non-null values")
+                .hasSize(3)
                 .allSatisfy(country -> {
                     assertThat(country.has("name")).isTrue();
                     assertThat(country.has("countryCode")).isTrue();
@@ -547,10 +538,9 @@ class DslDataGeneratorTest {
             Map<String, List<JsonNode>> collections = generation.getCollections();
             List<JsonNode> countries = collections.get("countries");
 
-            assertThat(countries).hasSize(2);
-
             assertThat(countries)
                 .as("All countries should have mapped fields with non-null values")
+                .hasSize(2)
                 .allSatisfy(country -> {
                     assertThat(country.has("name")).isTrue();
                     assertThat(country.has("isoCode")).isTrue();
@@ -639,10 +629,9 @@ class DslDataGeneratorTest {
             Map<String, List<JsonNode>> collections = generation.getCollections();
             List<JsonNode> users = collections.get("users");
 
-            assertThat(users).hasSize(2);
-
             assertThat(users)
                 .as("All users should have spread fields and regular fields with non-null values")
+                .hasSize(2)
                 .allSatisfy(user -> {
                     // From name spread and internet spread with mapping, plus regular fields
                     assertThat(user.has("firstName")).isTrue();
@@ -685,10 +674,9 @@ class DslDataGeneratorTest {
             Map<String, List<JsonNode>> collections = generation.getCollections();
             List<JsonNode> users = collections.get("users");
 
-            assertThat(users).hasSize(2);
-
             assertThat(users)
                 .as("All users should have all name generator fields plus regular fields with non-null values")
+                .hasSize(2)
                 .allSatisfy(user -> {
                     // These are the fields that the name generator provides plus regular field
                     assertThat(user.has("firstName")).isTrue();
@@ -1180,7 +1168,7 @@ class DslDataGeneratorTest {
                 .isNotNull();
             assertThat(sql.trim())
                 .as("SQL should not be empty")
-                .isNotEmpty();
+                .isNotBlank();
 
             // Parse each SQL statement using JSqlParser
             String[] statements = sql.split(";");
@@ -1301,7 +1289,7 @@ class DslDataGeneratorTest {
 
         @Test
         void testFluentApiWithCustomGenerator() throws Exception {
-            Generator customGenerator = (node) -> mapper.valueToTree("CUSTOM_VALUE_" + System.currentTimeMillis());
+            Generator customGenerator = node -> mapper.valueToTree("CUSTOM_VALUE_" + System.currentTimeMillis());
             JsonNode dslNode = mapper.readTree("""
                     {
                         "items": {

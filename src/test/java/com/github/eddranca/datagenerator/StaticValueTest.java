@@ -43,10 +43,9 @@ class StaticValueTest {
         Map<String, List<JsonNode>> collections = generation.getCollections();
         List<JsonNode> products = collections.get("products");
 
-        assertThat(products).hasSize(3);
-
         assertThat(products)
             .as("All products should have consistent static values")
+            .hasSize(3)
             .allSatisfy(product -> {
                 // Dynamic fields should be present and different
                 assertThat(product.get("id")).isNotNull();
@@ -55,7 +54,7 @@ class StaticValueTest {
                 // Static fields should be exactly as specified
                 assertThat(product.get("status").asText()).isEqualTo("active");
                 assertThat(product.get("version").asDouble()).isEqualTo(1.0);
-                assertThat(product.get("enabled").asBoolean()).isEqualTo(true);
+                assertThat(product.get("enabled").asBoolean()).isTrue();
                 assertThat(product.get("category").isNull()).isTrue();
 
                 // Array should be preserved
@@ -102,10 +101,9 @@ class StaticValueTest {
         Map<String, List<JsonNode>> collections = generation.getCollections();
         List<JsonNode> orders = collections.get("orders");
 
-        assertThat(orders).hasSize(2);
-
         assertThat(orders)
             .as("All orders should have consistent static nested objects")
+            .hasSize(2)
             .allSatisfy(order -> {
                 // Dynamic field
                 assertThat(order.get("id")).isNotNull();
@@ -128,7 +126,7 @@ class StaticValueTest {
                 // Another nested static object
                 ObjectNode constants = (ObjectNode) order.get("constants");
                 assertThat(constants.get("pi").asDouble()).isEqualTo(3.14159);
-                assertThat(constants.get("enabled").asBoolean()).isEqualTo(true);
+                assertThat(constants.get("enabled").asBoolean()).isTrue();
                 assertThat(constants.get("description").isNull()).isTrue();
             });
     }
@@ -163,10 +161,9 @@ class StaticValueTest {
         Map<String, List<JsonNode>> collections = generation.getCollections();
         List<JsonNode> users = collections.get("users");
 
-        assertThat(users).hasSize(3);
-
         assertThat(users)
             .as("All users should have consistent static fields with varying dynamic fields")
+            .hasSize(3)
             .allSatisfy(user -> {
                 // Dynamic fields should vary
                 assertThat(user.get("id")).isNotNull();
@@ -184,7 +181,7 @@ class StaticValueTest {
 
                 JsonNode settings = user.get("settings");
                 assertThat(settings.get("theme").asText()).isEqualTo("dark");
-                assertThat(settings.get("notifications").asBoolean()).isEqualTo(true);
+                assertThat(settings.get("notifications").asBoolean()).isTrue();
                 assertThat(settings.get("language").asText()).isEqualTo("en");
             });
     }

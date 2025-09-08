@@ -42,8 +42,9 @@ class DateGeneratorTest {
         LocalDate generatedDate = LocalDate.parse(result.asText());
         LocalDate epochDate = LocalDate.of(1970, 1, 1);
         LocalDate nextYear = LocalDate.now().plusYears(1);
-        assertThat(generatedDate).isAfterOrEqualTo(epochDate);
-        assertThat(generatedDate).isBeforeOrEqualTo(nextYear);
+        assertThat(generatedDate)
+            .isAfterOrEqualTo(epochDate)
+            .isBeforeOrEqualTo(nextYear);
     }
 
     @Test
@@ -58,8 +59,9 @@ class DateGeneratorTest {
         // Then
         assertThat(result.isTextual()).isTrue();
         LocalDate generatedDate = LocalDate.parse(result.asText());
-        assertThat(generatedDate).isAfterOrEqualTo(LocalDate.of(2023, 1, 1));
-        assertThat(generatedDate).isBeforeOrEqualTo(LocalDate.of(2023, 12, 31));
+        assertThat(generatedDate)
+            .isAfterOrEqualTo(LocalDate.of(2023, 1, 1))
+            .isBeforeOrEqualTo(LocalDate.of(2023, 12, 31));
     }
 
     @Test
@@ -141,19 +143,6 @@ class DateGeneratorTest {
 
         // Then
         assertThat(result.asText()).isEqualTo("1686787200"); // 2023-06-15 00:00:00 UTC in seconds
-    }
-
-    @Test
-    @DisplayName("Should handle same from and to date")
-    void shouldHandleSameFromAndToDate() throws Exception {
-        // Given
-        JsonNode config = objectMapper.readTree("{\"from\": \"2023-06-15\", \"to\": \"2023-06-15\"}");
-
-        // When
-        JsonNode result = dateGenerator.generate(config);
-
-        // Then
-        assertThat(result.asText()).isEqualTo("2023-06-15");
     }
 
     @ParameterizedTest

@@ -87,7 +87,7 @@ class ChoiceGeneratorTest {
 
     @Test
     void testGetFieldSuppliers() {
-        assertThat(generator.getFieldSuppliers(null)).isNull();
+        assertThat(generator.getFieldSuppliers(null)).isEmpty();
     }
 
     @Test

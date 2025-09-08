@@ -1,6 +1,7 @@
 package com.github.eddranca.datagenerator.generator;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Collections;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -87,13 +88,12 @@ public interface Generator {
      * This allows generators to provide field-specific suppliers that are only
      * evaluated when that specific field is requested, avoiding unnecessary computation.
      * <p>
-     * Default implementation returns null, indicating no lazy suppliers are available.
      * Generators should override this method to provide efficient field-specific generation.
      *
      * @param options the generation options
      * @return a map of field names to suppliers, or null if not supported
      */
     default Map<String, Supplier<JsonNode>> getFieldSuppliers(JsonNode options) {
-        return null;
+        return Collections.emptyMap();
     }
 }
