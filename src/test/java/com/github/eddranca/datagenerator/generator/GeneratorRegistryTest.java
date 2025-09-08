@@ -81,10 +81,7 @@ class GeneratorRegistryTest {
 
     @Test
     void testRegisterCustomGenerator() {
-        Generator customGenerator = (options) -> {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.valueToTree("CUSTOM_VALUE");
-        };
+        Generator customGenerator = (options) -> mapper.valueToTree("CUSTOM_VALUE");
 
         registry.register("custom", customGenerator);
 
@@ -98,10 +95,7 @@ class GeneratorRegistryTest {
 
     @Test
     void testOverrideExistingGenerator() {
-        Generator customUuidGenerator = (options) -> {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.valueToTree("CUSTOM_UUID");
-        };
+        Generator customUuidGenerator = (options) -> mapper.valueToTree("CUSTOM_UUID");
 
         // Override existing uuid generator
         registry.register("uuid", customUuidGenerator);

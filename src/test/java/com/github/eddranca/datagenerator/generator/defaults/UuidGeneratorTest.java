@@ -48,7 +48,6 @@ class UuidGeneratorTest {
     @Test
     void testGenerateWithDifferentOptions() throws Exception {
         // UUID generator should ignore options and always generate valid UUIDs
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode customOptions = mapper.readTree("{\"someOption\": \"someValue\"}");
 
         JsonNode result = generator.generate(customOptions);

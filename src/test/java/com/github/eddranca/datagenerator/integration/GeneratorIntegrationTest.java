@@ -13,29 +13,29 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests the interaction between boolean, lorem, phone, and other generators.
  */
 class GeneratorIntegrationTest {
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     void testMultipleGeneratorsInDsl() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
 
-    String dsl = """
-        {
-          "testData": {
-            "count": 3,
-            "item": {
-              "id": { "gen": "uuid" },
-              "isActive": { "gen": "boolean" },
-              "probability": { "gen": "boolean", "probability": 0.8 },
-              "description": { "gen": "lorem", "sentences": 2 },
-              "keywords": { "gen": "lorem", "words": 5 },
-              "content": { "gen": "lorem", "paragraphs": 1 },
-              "phone": { "gen": "phone" },
-              "cellPhone": { "gen": "phone", "format": "cell" },
-              "extension": { "gen": "phone", "format": "extension" }
+        String dsl = """
+            {
+              "testData": {
+                "count": 3,
+                "item": {
+                  "id": { "gen": "uuid" },
+                  "isActive": { "gen": "boolean" },
+                  "probability": { "gen": "boolean", "probability": 0.8 },
+                  "description": { "gen": "lorem", "sentences": 2 },
+                  "keywords": { "gen": "lorem", "words": 5 },
+                  "content": { "gen": "lorem", "paragraphs": 1 },
+                  "phone": { "gen": "phone" },
+                  "cellPhone": { "gen": "phone", "format": "cell" },
+                  "extension": { "gen": "phone", "format": "extension" }
+                }
+              }
             }
-          }
-        }
-        """;
+            """;
 
         JsonNode dslNode = mapper.readTree(dsl);
 
@@ -96,20 +96,18 @@ class GeneratorIntegrationTest {
 
     @Test
     void testBooleanProbabilityDistribution() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-
-    String dsl = """
-        {
-          "booleanTest": {
-            "count": 100,
-            "item": {
-              "alwaysTrue": { "gen": "boolean", "probability": 1.0 },
-              "alwaysFalse": { "gen": "boolean", "probability": 0.0 },
-              "mostlyTrue": { "gen": "boolean", "probability": 0.9 }
+        String dsl = """
+            {
+              "booleanTest": {
+                "count": 100,
+                "item": {
+                  "alwaysTrue": { "gen": "boolean", "probability": 1.0 },
+                  "alwaysFalse": { "gen": "boolean", "probability": 0.0 },
+                  "mostlyTrue": { "gen": "boolean", "probability": 0.9 }
+                }
+              }
             }
-          }
-        }
-        """;
+            """;
 
         JsonNode dslNode = mapper.readTree(dsl);
 
@@ -144,22 +142,20 @@ class GeneratorIntegrationTest {
 
     @Test
     void testLoremGeneratorVariations() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-
-    // Test simple lorem generation (this works)
-    String simpleDsl = """
-        {
-          "loremTest": {
-            "count": 2,
-            "item": {
-              "description": { "gen": "lorem", "sentences": 1 },
-              "keywords": { "gen": "lorem", "words": 3 },
-              "content": { "gen": "lorem", "paragraphs": 1 },
-              "id": { "gen": "uuid" }
+        // Test simple lorem generation (this works)
+        String simpleDsl = """
+            {
+              "loremTest": {
+                "count": 2,
+                "item": {
+                  "description": { "gen": "lorem", "sentences": 1 },
+                  "keywords": { "gen": "lorem", "words": 3 },
+                  "content": { "gen": "lorem", "paragraphs": 1 },
+                  "id": { "gen": "uuid" }
+                }
+              }
             }
-          }
-        }
-        """;
+            """;
 
         JsonNode dslNode = mapper.readTree(simpleDsl);
 
@@ -193,23 +189,21 @@ class GeneratorIntegrationTest {
 
     @Test
     void testPhoneGeneratorFormats() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-
-    String dsl = """
-        {
-          "contacts": {
-            "count": 5,
-            "item": {
-              "id": { "gen": "uuid" },
-              "name": { "gen": "name.fullName" },
-              "mainPhone": { "gen": "phone" },
-              "cellPhone": { "gen": "phone", "format": "cell" },
-              "workExtension": { "gen": "phone", "format": "extension" },
-              "isActive": { "gen": "boolean", "probability": 0.8 }
+        String dsl = """
+            {
+              "contacts": {
+                "count": 5,
+                "item": {
+                  "id": { "gen": "uuid" },
+                  "name": { "gen": "name.fullName" },
+                  "mainPhone": { "gen": "phone" },
+                  "cellPhone": { "gen": "phone", "format": "cell" },
+                  "workExtension": { "gen": "phone", "format": "extension" },
+                  "isActive": { "gen": "boolean", "probability": 0.8 }
+                }
+              }
             }
-          }
-        }
-        """;
+            """;
 
         JsonNode dslNode = mapper.readTree(dsl);
 

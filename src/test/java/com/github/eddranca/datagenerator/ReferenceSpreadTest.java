@@ -13,10 +13,10 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ReferenceSpreadTest {
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     void testBasicReferenceSpread() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree(
                 """
                         {
@@ -69,7 +69,6 @@ class ReferenceSpreadTest {
 
     @Test
     void testReferenceSpreadWithFieldRenaming() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -120,7 +119,6 @@ class ReferenceSpreadTest {
 
     @Test
     void testReferenceSpreadWithoutFieldsArray() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -167,7 +165,6 @@ class ReferenceSpreadTest {
 
     @Test
     void testReferenceSpreadWithSequential() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {

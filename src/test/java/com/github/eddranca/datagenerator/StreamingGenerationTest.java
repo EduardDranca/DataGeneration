@@ -6,15 +6,14 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class StreamingGenerationTest {
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     void testStreamingWithReferences() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "categories": {
@@ -57,7 +56,6 @@ class StreamingGenerationTest {
 
     @Test
     void testStreamingMultipleCollections() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -103,7 +101,6 @@ class StreamingGenerationTest {
 
     @Test
     void testStreamingWithMultiStepCollections() throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "admin_users": {
@@ -157,7 +154,6 @@ class StreamingGenerationTest {
     @Test
     void testStreamingMemoryEfficiency() throws IOException {
         // This test demonstrates that streaming doesn't load all data into memory
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode dslNode = mapper.readTree("""
                 {
                     "large_dataset": {
