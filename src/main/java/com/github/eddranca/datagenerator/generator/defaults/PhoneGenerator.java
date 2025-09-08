@@ -26,18 +26,13 @@ public class PhoneGenerator implements Generator {
         }
 
         String format = options.has("format") ? options.get("format").asText() : "default";
-        
-        switch (format.toLowerCase()) {
-            case "international":
-                return mapper.valueToTree(faker.phoneNumber().phoneNumber());
-            case "cell":
-            case "mobile":
-                return mapper.valueToTree(faker.phoneNumber().cellPhone());
-            case "extension":
-                return mapper.valueToTree(faker.phoneNumber().extension());
-            default:
-                return mapper.valueToTree(faker.phoneNumber().phoneNumber());
-        }
+
+        return switch (format.toLowerCase()) {
+            case "international" -> mapper.valueToTree(faker.phoneNumber().phoneNumber());
+            case "cell", "mobile" -> mapper.valueToTree(faker.phoneNumber().cellPhone());
+            case "extension" -> mapper.valueToTree(faker.phoneNumber().extension());
+            default -> mapper.valueToTree(faker.phoneNumber().phoneNumber());
+        };
     }
 
     @Override

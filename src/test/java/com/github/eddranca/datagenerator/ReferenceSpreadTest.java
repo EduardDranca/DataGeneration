@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,10 +50,10 @@ class ReferenceSpreadTest {
         List<JsonNode> orders = collections.get("orders");
 
         assertThat(users).hasSize(3);
-        assertThat(orders).hasSize(5);
 
         assertThat(orders)
             .as("All orders should have correct spread fields")
+            .hasSize(5)
             .allSatisfy(order -> {
                 assertThat(order.has("orderId")).as("Order should have orderId").isTrue();
                 assertThat(order.has("id")).as("Order should have spread id from user").isTrue();
@@ -100,10 +99,9 @@ class ReferenceSpreadTest {
         Map<String, List<JsonNode>> collections = generation.getCollections();
         List<JsonNode> orders = collections.get("orders");
 
-        assertThat(orders).hasSize(4);
-
         assertThat(orders)
             .as("All orders should have renamed spread fields")
+            .hasSize(4)
             .allSatisfy(order -> {
                 assertThat(order.has("orderId")).isTrue();
                 assertThat(order.has("userId")).isTrue();
@@ -148,10 +146,9 @@ class ReferenceSpreadTest {
         Map<String, List<JsonNode>> collections = generation.getCollections();
         List<JsonNode> orders = collections.get("orders");
 
-        assertThat(orders).hasSize(3);
-
         assertThat(orders)
             .as("All orders should have all user fields when no fields array is specified")
+            .hasSize(3)
             .allSatisfy(order -> {
                 assertThat(order.has("orderId")).isTrue();
                 assertThat(order.has("id")).isTrue();

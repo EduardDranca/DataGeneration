@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests demonstrating array generation combined with filtering capabilities.
  * This showcases advanced features that differentiate this library from simple faker tools.
  */
-public class ArrayFilteringTest {
+class ArrayFilteringTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 

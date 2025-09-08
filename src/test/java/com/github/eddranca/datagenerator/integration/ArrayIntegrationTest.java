@@ -63,42 +63,43 @@ class ArrayIntegrationTest {
         assertThat(result.has("users")).isTrue();
         JsonNode users = result.get("users");
         assertThat(users.isArray()).isTrue();
-        assertThat(users).hasSize(3);
 
         // Verify each user has required fields and proper array structures
-        assertThat(users).allSatisfy(user -> {
-            // Basic fields
-            assertThat(user.has("id")).isTrue();
-            assertThat(user.has("name")).isTrue();
-            assertThat(user.has("email")).isTrue();
-            assertThat(user.get("email").asText()).contains("@");
+        assertThat(users)
+            .hasSize(3)
+            .allSatisfy(user -> {
+                // Basic fields
+                assertThat(user.has("id")).isTrue();
+                assertThat(user.has("name")).isTrue();
+                assertThat(user.has("email")).isTrue();
+                assertThat(user.get("email").asText()).contains("@");
 
-            // Skills array
-            assertThat(user.has("skills")).isTrue();
-            JsonNode skills = user.get("skills");
-            assertThat(skills.isArray()).isTrue();
-            assertThat(skills).hasSizeBetween(2, 4);
+                // Skills array
+                assertThat(user.has("skills")).isTrue();
+                JsonNode skills = user.get("skills");
+                assertThat(skills.isArray()).isTrue();
+                assertThat(skills).hasSizeBetween(2, 4);
 
-            // Projects array
-            assertThat(user.has("projects")).isTrue();
-            JsonNode projects = user.get("projects");
-            assertThat(projects.isArray()).isTrue();
-            assertThat(projects).hasSize(2);
+                // Projects array
+                assertThat(user.has("projects")).isTrue();
+                JsonNode projects = user.get("projects");
+                assertThat(projects.isArray()).isTrue();
+                assertThat(projects).hasSize(2);
 
-            // Verify each project structure
-            assertThat(projects).allSatisfy(project -> {
-                assertThat(project.has("name")).isTrue();
-                assertThat(project.has("status")).isTrue();
-                assertThat(project.has("tags")).isTrue();
+                // Verify each project structure
+                assertThat(projects).allSatisfy(project -> {
+                    assertThat(project.has("name")).isTrue();
+                    assertThat(project.has("status")).isTrue();
+                    assertThat(project.has("tags")).isTrue();
 
-                assertThat(project.get("status").asText()).isIn("active", "completed", "on-hold");
+                    assertThat(project.get("status").asText()).isIn("active", "completed", "on-hold");
 
-                // Project tags array
-                JsonNode projectTags = project.get("tags");
-                assertThat(projectTags.isArray()).isTrue();
-                assertThat(projectTags).hasSizeBetween(1, 3);
+                    // Project tags array
+                    JsonNode projectTags = project.get("tags");
+                    assertThat(projectTags.isArray()).isTrue();
+                    assertThat(projectTags).hasSizeBetween(1, 3);
+                });
             });
-        });
     }
 
     @Test
@@ -143,20 +144,21 @@ class ArrayIntegrationTest {
 
         // Verify articles
         JsonNode articles = result.get("articles");
-        assertThat(articles).hasSize(2);
 
-        assertThat(articles).allSatisfy(article -> {
-            assertThat(article.has("categoryIds")).isTrue();
+        assertThat(articles)
+            .hasSize(2)
+            .allSatisfy(article -> {
+                assertThat(article.has("categoryIds")).isTrue();
 
-            JsonNode categoryIdsArray = article.get("categoryIds");
-            assertThat(categoryIdsArray.isArray()).isTrue();
-            assertThat(categoryIdsArray).hasSizeBetween(1, 2);
+                JsonNode categoryIdsArray = article.get("categoryIds");
+                assertThat(categoryIdsArray.isArray()).isTrue();
+                assertThat(categoryIdsArray).hasSizeBetween(1, 2);
 
-            // Verify each category ID exists in the categories collection
-            assertThat(categoryIdsArray).allSatisfy(categoryIdNode ->
-                assertThat(categoryIds).contains(categoryIdNode.asText())
-            );
-        });
+                // Verify each category ID exists in the categories collection
+                assertThat(categoryIdsArray).allSatisfy(categoryIdNode ->
+                    assertThat(categoryIds).contains(categoryIdNode.asText())
+                );
+            });
     }
 
     @Nested
@@ -196,21 +198,21 @@ class ArrayIntegrationTest {
             JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
             JsonNode usersArray = collectionsNode.get("users");
 
-            assertThat(usersArray).hasSize(2);
+            assertThat(usersArray)
+                .hasSize(2)
+                .allSatisfy(user -> {
+                    assertThat(user.has("name")).isTrue();
+                    assertThat(user.has("tags")).isTrue();
 
-            assertThat(usersArray).allSatisfy(user -> {
-                assertThat(user.has("name")).isTrue();
-                assertThat(user.has("tags")).isTrue();
+                    JsonNode tags = user.get("tags");
+                    assertThat(tags.isArray()).isTrue();
+                    assertThat(tags).hasSize(3);
 
-                JsonNode tags = user.get("tags");
-                assertThat(tags.isArray()).isTrue();
-                assertThat(tags).hasSize(3);
-
-                // Verify all tags are from the expected values
-                assertThat(tags).allSatisfy(tag ->
-                    assertThat(tag.asText()).isIn("tech", "business", "personal")
-                );
-            });
+                    // Verify all tags are from the expected values
+                    assertThat(tags).allSatisfy(tag ->
+                        assertThat(tag.asText()).isIn("tech", "business", "personal")
+                    );
+                });
         }
 
         @Test
@@ -247,12 +249,13 @@ class ArrayIntegrationTest {
 
             JsonNode greetings = message.get("repeated_greeting");
             assertThat(greetings.isArray()).isTrue();
-            assertThat(greetings).hasSize(4);
 
             // Verify all greetings are the expected literal value
-            assertThat(greetings).allSatisfy(greeting ->
-                assertThat(greeting.asText()).isEqualTo("Hello World")
-            );
+            assertThat(greetings)
+                .hasSize(4)
+                .allSatisfy(greeting ->
+                    assertThat(greeting.asText()).isEqualTo("Hello World")
+                );
         }
 
         @Test
@@ -293,14 +296,15 @@ class ArrayIntegrationTest {
 
             JsonNode employees = company.get("employees");
             assertThat(employees.isArray()).isTrue();
-            assertThat(employees).hasSize(3);
 
             // Verify each employee has the expected structure
-            assertThat(employees).allSatisfy(employee -> {
-                assertThat(employee.has("name")).isTrue();
-                assertThat(employee.has("department")).isTrue();
-                assertThat(employee.get("department").asText()).isIn("Engineering", "Marketing", "Sales");
-            });
+            assertThat(employees)
+                .hasSize(3)
+                .allSatisfy(employee -> {
+                    assertThat(employee.has("name")).isTrue();
+                    assertThat(employee.has("department")).isTrue();
+                    assertThat(employee.get("department").asText()).isIn("Engineering", "Marketing", "Sales");
+                });
         }
 
         @Test
@@ -379,23 +383,24 @@ class ArrayIntegrationTest {
 
             JsonNode tasks = project.get("tasks");
             assertThat(tasks.isArray()).isTrue();
-            assertThat(tasks).hasSize(3);
 
             // Verify each task has the expected structure
-            assertThat(tasks).allSatisfy(task -> {
-                assertThat(task.has("title")).isTrue();
-                assertThat(task.has("assignees")).isTrue();
+            assertThat(tasks)
+                .hasSize(3)
+                .allSatisfy(task -> {
+                    assertThat(task.has("title")).isTrue();
+                    assertThat(task.has("assignees")).isTrue();
 
-                JsonNode assignees = task.get("assignees");
-                assertThat(assignees.isArray()).isTrue();
-                assertThat(assignees).hasSize(2);
+                    JsonNode assignees = task.get("assignees");
+                    assertThat(assignees.isArray()).isTrue();
+                    assertThat(assignees).hasSize(2);
 
-                // Verify assignees are strings (names)
-                assertThat(assignees).allSatisfy(assignee -> {
-                    assertThat(assignee.isTextual()).isTrue();
-                    assertThat(assignee.asText()).isNotEmpty();
+                    // Verify assignees are strings (names)
+                    assertThat(assignees).allSatisfy(assignee -> {
+                        assertThat(assignee.isTextual()).isTrue();
+                        assertThat(assignee.asText()).isNotEmpty();
+                    });
                 });
-            });
         }
     }
 }

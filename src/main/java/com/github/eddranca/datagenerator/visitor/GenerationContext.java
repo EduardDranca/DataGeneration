@@ -2,7 +2,6 @@ package com.github.eddranca.datagenerator.visitor;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.eddranca.datagenerator.FilteringBehavior;
 import com.github.eddranca.datagenerator.FilteringException;
 import com.github.eddranca.datagenerator.exception.InvalidReferenceException;

@@ -429,13 +429,9 @@ public class DslTreeBuilder {
 
         String tagExpr = reference.substring(start, end);
 
-        if (!tagExpr.startsWith("this.")) {
-            // Static tag reference - check if tag is declared
-            if (!context.isTagDeclared(tagExpr)) {
-                addError("Reference field '" + fieldName + "' references undeclared tag: " + tagExpr);
-            }
+        if (!tagExpr.startsWith("this.") && !context.isTagDeclared(tagExpr)) {
+            addError("Reference field '" + fieldName + "' references undeclared tag: " + tagExpr);
         }
-        // Dynamic tag references (this.field) can't be validated at build time
     }
 
     private void validateCollectionReference(String fieldName, String reference) {

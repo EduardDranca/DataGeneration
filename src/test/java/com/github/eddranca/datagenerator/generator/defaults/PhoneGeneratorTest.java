@@ -116,8 +116,9 @@ class PhoneGeneratorTest {
     void testFieldSuppliers() {
         Map<String, Supplier<JsonNode>> suppliers = generator.getFieldSuppliers(null);
 
-        assertThat(suppliers).isNotNull();
-        assertThat(suppliers).containsKeys("phoneNumber", "cellPhone", "extension");
+        assertThat(suppliers)
+            .isNotNull()
+            .containsKeys("phoneNumber", "cellPhone", "extension");
 
         // Test that suppliers actually work
         JsonNode phoneResult = suppliers.get("phoneNumber").get();

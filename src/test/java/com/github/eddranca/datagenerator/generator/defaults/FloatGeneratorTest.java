@@ -75,10 +75,9 @@ class FloatGeneratorTest {
         assertThat(result.isNumber()).isTrue();
 
         double value = result.asDouble();
-        assertThat(value).isBetween(1.0, 10.0);
-
-        // Should be a whole number
-        assertThat(value).isEqualTo(Math.floor(value));
+        assertThat(value)
+            .isBetween(1.0, 10.0)
+            .isEqualTo(Math.floor(value));
     }
 
     @Test

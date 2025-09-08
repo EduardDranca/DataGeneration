@@ -143,7 +143,6 @@ public class DslDataGenerator {
      * Creates a streaming generation from a JSON string.
      */
     public StreamingGeneration createStreamingGeneration(String jsonString) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(jsonString);
         return createStreamingGeneration(jsonNode);
     }
@@ -152,7 +151,6 @@ public class DslDataGenerator {
      * Creates a streaming generation from a file.
      */
     public StreamingGeneration createStreamingGeneration(File file) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(file);
         return createStreamingGeneration(jsonNode);
     }

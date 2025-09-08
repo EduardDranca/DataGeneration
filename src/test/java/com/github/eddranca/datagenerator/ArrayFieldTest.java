@@ -44,18 +44,19 @@ class ArrayFieldTest {
         assertThat(result.has("users")).isTrue();
         JsonNode users = result.get("users");
         assertThat(users.isArray()).isTrue();
-        assertThat(users).hasSize(2);
 
-        assertThat(users).allSatisfy(user -> {
-            assertThat(user.has("tags")).isTrue();
-            JsonNode tags = user.get("tags");
-            assertThat(tags.isArray()).isTrue();
-            assertThat(tags).hasSize(3);
+        assertThat(users)
+            .hasSize(2)
+            .allSatisfy(user -> {
+                assertThat(user.has("tags")).isTrue();
+                JsonNode tags = user.get("tags");
+                assertThat(tags.isArray()).isTrue();
+                assertThat(tags).hasSize(3);
 
-            assertThat(tags).allSatisfy(tag ->
-                    assertThat(tag.asText()).isEqualTo("tag")
-            );
-        });
+                assertThat(tags).allSatisfy(tag ->
+                        assertThat(tag.asText()).isEqualTo("tag")
+                );
+            });
     }
 
     @Test
@@ -87,11 +88,12 @@ class ArrayFieldTest {
         assertThat(user.has("scores")).isTrue();
         JsonNode scores = user.get("scores");
         assertThat(scores.isArray()).isTrue();
-        assertThat(scores).hasSizeBetween(2, 5);
 
-        assertThat(scores).allSatisfy(score ->
+        assertThat(scores)
+            .hasSizeBetween(2, 5)
+            .allSatisfy(score ->
                 assertThat(score.asInt()).isEqualTo(100)
-        );
+            );
     }
 
     @Test
@@ -123,12 +125,13 @@ class ArrayFieldTest {
         JsonNode numbers = user.get("numbers");
 
         assertThat(numbers.isArray()).isTrue();
-        assertThat(numbers).hasSize(3);
 
-        assertThat(numbers).allSatisfy(number -> {
-            assertThat(number.isNumber()).isTrue();
-            assertThat(number.asInt()).isBetween(1, 10);
-        });
+        assertThat(numbers)
+            .hasSize(3)
+            .allSatisfy(number -> {
+                assertThat(number.isNumber()).isTrue();
+                assertThat(number.asInt()).isBetween(1, 10);
+            });
     }
 
     @Test
@@ -161,15 +164,16 @@ class ArrayFieldTest {
         JsonNode contacts = user.get("contacts");
 
         assertThat(contacts.isArray()).isTrue();
-        assertThat(contacts).hasSize(2);
 
-        assertThat(contacts).allSatisfy(contact -> {
-            assertThat(contact.isObject()).isTrue();
-            assertThat(contact.has("type")).isTrue();
-            assertThat(contact.has("value")).isTrue();
-            assertThat(contact.get("type").asText()).isEqualTo("email");
-            assertThat(contact.get("value").asText()).contains("@");
-        });
+        assertThat(contacts)
+            .hasSize(2)
+            .allSatisfy(contact -> {
+                assertThat(contact.isObject()).isTrue();
+                assertThat(contact.has("type")).isTrue();
+                assertThat(contact.has("value")).isTrue();
+                assertThat(contact.get("type").asText()).isEqualTo("email");
+                assertThat(contact.get("value").asText()).contains("@");
+            });
     }
 
     @Test
@@ -310,7 +314,7 @@ class ArrayFieldTest {
 
             assertThat(tagsField).isInstanceOf(ArrayFieldNode.class);
             ArrayFieldNode arrayNode = (ArrayFieldNode) tagsField;
-            assertThat(arrayNode.getSize()).isEqualTo(0);
+            assertThat(arrayNode.getSize()).isZero();
             assertThat(arrayNode.hasFixedSize()).isTrue();
         }
 
