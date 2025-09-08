@@ -42,7 +42,6 @@ class FilteringConfigurationTest {
 
         assertThat(items).hasSize(5);
 
-        // Default behavior should return null when all options are filtered - eliminate for loop
         assertThat(items)
             .extracting(item -> item.get("restrictedChoice"))
             .as("Should be null when all options are filtered (default behavior)")
@@ -143,7 +142,6 @@ class FilteringConfigurationTest {
 
         assertThat(items).hasSize(5);
 
-        // Should still work with lower retry count since we have valid options - eliminate for loop
         assertThat(items)
             .extracting(item -> item.get("number"))
             .as("All numbers should be non-null and equal to 2")

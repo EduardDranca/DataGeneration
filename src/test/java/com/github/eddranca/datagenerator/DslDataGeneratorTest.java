@@ -412,7 +412,6 @@ class DslDataGeneratorTest {
 
             assertThat(users).hasSize(2);
 
-            // Verify self-references work correctly - eliminate for loop
             assertThat(users)
                 .as("All users should have displayName matching name via self-reference")
                 .allSatisfy(user ->
@@ -514,7 +513,6 @@ class DslDataGeneratorTest {
             assertThat(countries).hasSize(3);
 
             // Verify spread fields are present
-            // Eliminate for loop with sophisticated AssertJ pattern
             assertThat(countries)
                 .as("All countries should have required fields with non-null values")
                 .allSatisfy(country -> {
@@ -555,7 +553,6 @@ class DslDataGeneratorTest {
 
             assertThat(countries).hasSize(2);
 
-            // Verify spread fields with mapping - eliminate for loop
             assertThat(countries)
                 .as("All countries should have mapped fields with non-null values")
                 .allSatisfy(country -> {
@@ -648,7 +645,6 @@ class DslDataGeneratorTest {
 
             assertThat(users).hasSize(2);
 
-            // Verify all spread fields and regular fields are present - eliminate for loop
             assertThat(users)
                 .as("All users should have spread fields and regular fields with non-null values")
                 .allSatisfy(user -> {
@@ -695,7 +691,6 @@ class DslDataGeneratorTest {
 
             assertThat(users).hasSize(2);
 
-            // Verify that all name generator fields are present - eliminate for loop
             assertThat(users)
                 .as("All users should have all name generator fields plus regular fields with non-null values")
                 .allSatisfy(user -> {
@@ -1511,7 +1506,6 @@ class DslDataGeneratorTest {
             assertThat(collections.get("countries")).hasSize(2);
             assertThat(collections.get("companies")).hasSize(5);
 
-            // Verify references work - eliminate for loop
             List<JsonNode> companies = collections.get("companies");
             assertThat(companies)
                 .as("All companies should have non-null countryCode references")

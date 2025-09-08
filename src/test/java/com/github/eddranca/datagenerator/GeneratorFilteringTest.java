@@ -68,13 +68,11 @@ class GeneratorFilteringTest {
         String firstName = referenceData.get(0).get("name").asText();
 
 
-        // Verify that filtered numbers don't contain the first reference ID - eliminate for loop
         assertThat(filteredItems)
             .extracting(item -> item.get("filteredNumber").intValue())
             .as("Filtered numbers should not equal first reference ID: %d", firstId)
             .doesNotContain(firstId);
 
-        // Verify that filtered choices don't contain the first reference name or "David" - eliminate for loop
         assertThat(filteredItems)
             .extracting(item -> item.get("filteredChoice").asText())
             .as("Filtered choices should not equal first reference name or 'David'")
@@ -147,14 +145,11 @@ class GeneratorFilteringTest {
 
         String excludedCategory = categories.get(0).get("name").asText();
 
-
-        // Verify category filtering - eliminate for loop
         assertThat(products)
             .extracting(product -> product.get("category").asText())
             .as("Product categories should not equal excluded category: %s", excludedCategory)
             .doesNotContain(excludedCategory);
 
-        // Verify price filtering (should not be exactly 50.0 or 75.0) - eliminate for loop
         assertThat(products)
             .extracting(product -> product.get("price").doubleValue())
             .as("Prices should not be exactly 50.0 or 75.0")
@@ -224,8 +219,6 @@ class GeneratorFilteringTest {
         String excludedFirstName = referenceNames.get(0).get("firstName").asText();
         String excludedLastName = referenceNames.get(0).get("lastName").asText();
 
-
-        // Verify filtering worked - eliminate for loop
         assertThat(users)
             .extracting(user -> user.get("firstName").asText())
             .as("User first names should not equal excluded first name: %s", excludedFirstName)
@@ -281,7 +274,6 @@ class GeneratorFilteringTest {
 
         assertThat(items).hasSize(5);
 
-        // When all options are filtered out, should get null values - eliminate for loop
         assertThat(items)
             .extracting(item -> item.get("restrictedChoice"))
             .as("Should be null when all options are filtered")
@@ -344,7 +336,6 @@ class GeneratorFilteringTest {
 
         assertThat(items).hasSize(3);
 
-        // Verify custom filtering logic was used - eliminate for loop
         assertThat(items)
             .extracting(item -> item.get("customValue").asText())
             .as("Custom generator should use native filtering logic")

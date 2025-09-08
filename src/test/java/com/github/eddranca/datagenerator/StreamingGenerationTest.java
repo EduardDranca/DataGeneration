@@ -47,7 +47,6 @@ class StreamingGenerationTest {
         // Should have 10 SQL INSERT statements for products
         assertThat(productSql).hasSize(10);
 
-        // Each statement should reference a valid category - eliminate for loop
         assertThat(productSql)
             .as("All SQL statements should be valid product inserts")
             .allSatisfy(sql -> {
@@ -147,7 +146,6 @@ class StreamingGenerationTest {
         // Should have 4 order statements
         assertThat(orderSql).hasSize(4);
 
-        // Each order should reference a valid user ID - eliminate for loop
         assertThat(orderSql)
             .as("All order SQL statements should be valid")
             .allSatisfy(sql -> {

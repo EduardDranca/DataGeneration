@@ -171,7 +171,6 @@ class GenerationTest {
         assertThat(collections).isNotNull();
         assertThat(collectionsNode).isNotNull();
 
-        // Verify same keys exist - eliminate for loop
         assertThat(collections.keySet())
             .as("Collections and collectionsNode should have same keys")
             .allSatisfy(key -> {

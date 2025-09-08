@@ -121,7 +121,6 @@ class SequentialReferenceTest {
             .as("Should have 3 non-banned users")
             .hasSize(3);
 
-        // Check that orders cycle through valid user IDs sequentially - eliminate for loop
         List<String> actualUserIds = orders.stream()
             .map(order -> order.get("userId").asText())
             .toList();
@@ -181,7 +180,6 @@ class SequentialReferenceTest {
             .mapToInt(user -> user.get("id").intValue())
             .toArray();
 
-        // Check sequential references follow round-robin pattern - eliminate for loop
         List<Integer> actualSequentialIds = orders.stream()
             .map(order -> order.get("sequentialUserId").intValue())
             .toList();
@@ -195,7 +193,6 @@ class SequentialReferenceTest {
             .as("Sequential references should follow round-robin pattern")
             .containsExactlyElementsOf(expectedSequentialIds);
 
-        // Random references should be valid user IDs but not necessarily in order - eliminate nested for loops
         List<Integer> actualRandomIds = orders.stream()
             .map(order -> order.get("randomUserId").intValue())
             .toList();
@@ -254,7 +251,6 @@ class SequentialReferenceTest {
 
         assertThat(tasks).hasSize(8);
 
-        // All tasks should have valid staff member IDs (1, 2, 3, or 4) - eliminate for loop
         assertThat(tasks)
             .extracting(task -> task.get("assignedTo").intValue())
             .as("All tasks should be assigned to valid staff member IDs (1-4)")
@@ -293,7 +289,6 @@ class SequentialReferenceTest {
 
         assertThat(orders).hasSize(4);
 
-        // Default behavior should be random (not sequential) - eliminate for loop
         // All user IDs should be valid (1 or 2)
         assertThat(orders)
             .extracting(order -> order.get("userId").intValue())
