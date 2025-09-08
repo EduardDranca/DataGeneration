@@ -83,7 +83,6 @@ class MultiStepCollectionTest {
         assertThat(regularCount).as("Should have 3 regular users").isEqualTo(3);
         assertThat(guestCount).as("Should have 1 guest user").isEqualTo(1);
 
-        // Verify all users have required fields - eliminate for loop
         assertThat(users)
             .as("All users should have required fields and correct ID ranges")
             .allSatisfy(user -> {
@@ -178,7 +177,6 @@ class MultiStepCollectionTest {
         // Verify orders reference products correctly
         assertThat(orders).as("Should have 4 orders").hasSize(4);
 
-        // Eliminate for loop - verify all orders have required fields and valid product references
         List<Integer> productIds = products.stream()
             .map(product -> product.get("id").intValue())
             .toList();
@@ -254,7 +252,6 @@ class MultiStepCollectionTest {
         // Verify events reference locations correctly
         assertThat(events).as("Should have 3 events").hasSize(3);
 
-        // Eliminate for loop - verify all events reference existing locations
         List<String> locationNames = locations.stream()
             .map(location -> location.get("name").asText())
             .toList();
@@ -354,7 +351,6 @@ class MultiStepCollectionTest {
             .filter(order -> "EU".equals(order.get("user_region").asText()))
             .toList();
 
-        // Verify US orders reference only US users - eliminate for loops
         assertThat(usOrders)
             .as("Should have 3 US orders")
             .hasSize(3)
@@ -369,7 +365,6 @@ class MultiStepCollectionTest {
                     .isBetween(1, 100);
             });
 
-        // Verify EU orders reference only EU users - eliminate for loops
         assertThat(euOrders)
             .as("Should have 2 EU orders")
             .hasSize(2)

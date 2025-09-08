@@ -53,7 +53,6 @@ class ReferenceSpreadTest {
         assertThat(users).hasSize(3);
         assertThat(orders).hasSize(5);
 
-        // Check if orders have the spread fields - eliminate for loop
         assertThat(orders)
             .as("All orders should have correct spread fields")
             .allSatisfy(order -> {
@@ -104,7 +103,6 @@ class ReferenceSpreadTest {
 
         assertThat(orders).hasSize(4);
 
-        // Check if orders have the renamed spread fields - eliminate for loop
         assertThat(orders)
             .as("All orders should have renamed spread fields")
             .allSatisfy(order -> {
@@ -154,7 +152,6 @@ class ReferenceSpreadTest {
 
         assertThat(orders).hasSize(3);
 
-        // Check if orders have all user fields when no fields array is specified - eliminate for loop
         assertThat(orders)
             .as("All orders should have all user fields when no fields array is specified")
             .allSatisfy(order -> {

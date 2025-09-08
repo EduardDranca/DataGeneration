@@ -45,7 +45,6 @@ class StaticValueTest {
 
         assertThat(products).hasSize(3);
 
-        // Check that all products have the same static values - eliminate for loop
         assertThat(products)
             .as("All products should have consistent static values")
             .allSatisfy(product -> {
@@ -106,7 +105,6 @@ class StaticValueTest {
 
         assertThat(orders).hasSize(2);
 
-        // Eliminate for loop and use AssertJ's allSatisfy
         assertThat(orders)
             .as("All orders should have consistent static nested objects")
             .allSatisfy(order -> {
@@ -169,7 +167,6 @@ class StaticValueTest {
 
         assertThat(users).hasSize(3);
 
-        // Eliminate for loop and use AssertJ's allSatisfy
         assertThat(users)
             .as("All users should have consistent static fields with varying dynamic fields")
             .allSatisfy(user -> {
