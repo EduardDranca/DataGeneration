@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.eddranca.datagenerator.exception.SerializationException;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class Generation {
      * will be converted to <code>'{"street":"123 Main St","city":"NYC"}'</code> in the SQL.</p>
      *
      * @return A map where keys are table names and values are SQL INSERT statements
-     * @throws RuntimeException if JSON serialization fails for complex objects
+     * @throws SerializationException if JSON serialization fails for complex objects
      */
     public Map<String, String> asSqlInserts() {
         return asSqlInserts((String[]) null);
@@ -85,7 +86,7 @@ public class Generation {
      *
      * @param collectionNames the names of collections to generate SQL for, or null/empty for all
      * @return A map where keys are table names and values are SQL INSERT statements
-     * @throws RuntimeException if JSON serialization fails for complex objects
+     * @throws SerializationException if JSON serialization fails for complex objects
      */
     public Map<String, String> asSqlInserts(String... collectionNames) {
         Map<String, String> sqlInserts = new HashMap<>();
@@ -180,7 +181,7 @@ public class Generation {
                     logger.log(Level.SEVERE,
                             "Failed to serialize complex object to JSON for table ''{0}'', field ''{1}''",
                             new Object[]{tableName, fieldName});
-                    throw new RuntimeException("Failed to serialize complex object to JSON", e);
+                    throw new SerializationException("Failed to serialize complex object to JSON", e);
                 }
             } else {
                 // Fallback for any other JsonNode types

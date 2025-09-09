@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.eddranca.datagenerator.exception.SerializationException;
 import com.github.eddranca.datagenerator.node.CollectionNode;
 import com.github.eddranca.datagenerator.visitor.DataGenerationVisitor;
 import com.github.eddranca.datagenerator.visitor.GenerationContext;
@@ -214,7 +215,7 @@ public class StreamingGeneration {
                     logger.log(Level.SEVERE,
                             "Failed to serialize complex object to JSON for table ''{0}'', field ''{1}''",
                             new Object[]{tableName, fieldName});
-                    throw new RuntimeException("Failed to serialize complex object to JSON", e);
+                    throw new SerializationException("Failed to serialize complex object to JSON", e);
                 }
             } else {
                 // Fallback for any other JsonNode types

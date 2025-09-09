@@ -1,7 +1,7 @@
 package com.github.eddranca.datagenerator.generator.defaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.eddranca.datagenerator.FilteringException;
+import com.github.eddranca.datagenerator.exception.FilteringException;
 import com.github.eddranca.datagenerator.generator.Generator;
 
 import java.util.ArrayList;
