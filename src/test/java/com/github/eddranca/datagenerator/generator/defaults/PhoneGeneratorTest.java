@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Collections;
 import java.util.List;
@@ -45,42 +47,18 @@ class PhoneGeneratorTest {
         assertThat(result.asText()).isNotEmpty();
     }
 
-    @Test
-    void testGenerateInternationalFormat() throws Exception {
-        JsonNode options = mapper.readTree("{\"format\": \"international\"}");
+    @ParameterizedTest
+    @ValueSource(strings = {"international", "cell", "mobile"})
+    void testGeneratePhoneFormats(String format) throws Exception {
+        JsonNode options = mapper.readTree("{\"format\": \"" + format + "\"}");
         JsonNode result = generator.generate(options);
+        
         assertThat(result.isTextual()).isTrue();
         assertThat(result.asText()).isNotEmpty();
 
         String phone = result.asText();
         assertThat(phone)
-            .as("International phone should contain digits: %s", phone)
-            .matches(".*\\d.*");
-    }
-
-    @Test
-    void testGenerateCellFormat() throws Exception {
-        JsonNode options = mapper.readTree("{\"format\": \"cell\"}");
-        JsonNode result = generator.generate(options);
-        assertThat(result.isTextual()).isTrue();
-        assertThat(result.asText()).isNotEmpty();
-
-        String phone = result.asText();
-        assertThat(phone)
-            .as("Cell phone should contain digits: %s", phone)
-            .matches(".*\\d.*");
-    }
-
-    @Test
-    void testGenerateMobileFormat() throws Exception {
-        JsonNode options = mapper.readTree("{\"format\": \"mobile\"}");
-        JsonNode result = generator.generate(options);
-        assertThat(result.isTextual()).isTrue();
-        assertThat(result.asText()).isNotEmpty();
-
-        String phone = result.asText();
-        assertThat(phone)
-            .as("Mobile phone should contain digits: %s", phone)
+            .as("%s phone should contain digits: %s", format, phone)
             .matches(".*\\d.*");
     }
 

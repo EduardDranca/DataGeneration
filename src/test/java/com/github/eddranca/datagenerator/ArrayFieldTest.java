@@ -15,6 +15,8 @@ import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -318,8 +320,12 @@ class ArrayFieldTest {
             assertThat(arrayNode.hasFixedSize()).isTrue();
         }
 
-        @Test
-        void testNegativeCountError() throws Exception {
+        @ParameterizedTest
+        @CsvSource({
+            "-1, count must be non-negative",
+            "\"three\", count must be a number"
+        })
+        void testInvalidCountErrors(String countValue, String expectedError) throws Exception {
             String dsl = """
                     {
                       "users": {
@@ -328,12 +334,12 @@ class ArrayFieldTest {
                           "invalid_tags": {
                             "gen": "choice",
                             "options": ["a", "b", "c"],
-                            "count": -1
+                            "count": %s
                           }
                         }
                       }
                     }
-                    """;
+                    """.formatted(countValue);
 
             JsonNode jsonNode = objectMapper.readTree(dsl);
             DslTreeBuildResult result = builder.build(jsonNode);
@@ -341,33 +347,7 @@ class ArrayFieldTest {
             assertThat(result).isNotNull();
             assertThat(result.hasErrors()).isTrue();
             assertThat(result.getErrors()).hasSize(1);
-            assertThat(result.getErrors().get(0).toString()).contains("count must be non-negative");
-        }
-
-        @Test
-        void testNonNumericCountError() throws Exception {
-            String dsl = """
-                    {
-                      "users": {
-                        "count": 1,
-                        "item": {
-                          "invalid_tags": {
-                            "gen": "choice",
-                            "options": ["a", "b", "c"],
-                            "count": "three"
-                          }
-                        }
-                      }
-                    }
-                    """;
-
-            JsonNode jsonNode = objectMapper.readTree(dsl);
-            DslTreeBuildResult result = builder.build(jsonNode);
-
-            assertThat(result).isNotNull();
-            assertThat(result.hasErrors()).isTrue();
-            assertThat(result.getErrors()).hasSize(1);
-            assertThat(result.getErrors().get(0).toString()).contains("count must be a number");
+            assertThat(result.getErrors().get(0).toString()).contains(expectedError);
         }
 
         @Test

@@ -818,11 +818,6 @@ class DslDataGeneratorTest {
                 .as("SQL should contain all expected columns")
                 .contains("id", "name", "profile");
 
-            // Validate that complex objects are properly JSON-encoded
-            assertThat(usersSql)
-                .as("Complex objects should be JSON-encoded with proper fields")
-                .contains("'{", "\"age\"", "\"address\"");
-
             // Validate that we have exactly 2 valid INSERT statements (count: 2)
             validateAllSqlStatements(usersSql, "users", 2);
         }

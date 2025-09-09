@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.Collections;
 import java.util.List;
@@ -45,40 +47,21 @@ class LoremGeneratorTest {
         assertThat(result.get("sentence").asText()).isNotEmpty();
     }
 
-    @Test
-    void testGenerateWords() throws Exception {
-        JsonNode options = mapper.readTree("{\"words\": 3}");
+    @ParameterizedTest
+    @CsvSource({
+        "words, 3, 0",
+        "sentences, 2, 5", 
+        "paragraphs, 2, 10"
+    })
+    void testGenerateTextTypes(String type, int count, int minExpectedSize) throws Exception {
+        JsonNode options = mapper.readTree("{\"" + type + "\": " + count + "}");
         JsonNode result = generator.generate(options);
 
         assertThat(result.isTextual()).isTrue();
         String text = result.asText();
         assertThat(text)
             .isNotEmpty()
-            .hasSizeGreaterThan(0);
-    }
-
-    @Test
-    void testGenerateSentences() throws Exception {
-        JsonNode options = mapper.readTree("{\"sentences\": 2}");
-        JsonNode result = generator.generate(options);
-
-        assertThat(result.isTextual()).isTrue();
-        String text = result.asText();
-        assertThat(text)
-            .isNotEmpty()
-            .hasSizeGreaterThan(5);
-    }
-
-    @Test
-    void testGenerateParagraphs() throws Exception {
-        JsonNode options = mapper.readTree("{\"paragraphs\": 2}");
-        JsonNode result = generator.generate(options);
-
-        assertThat(result.isTextual()).isTrue();
-        String text = result.asText();
-        assertThat(text)
-            .isNotEmpty()
-            .hasSizeGreaterThan(10);
+            .hasSizeGreaterThan(minExpectedSize);
     }
 
     @Test

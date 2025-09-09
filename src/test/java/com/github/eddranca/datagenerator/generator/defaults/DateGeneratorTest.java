@@ -89,60 +89,25 @@ class DateGeneratorTest {
         assertThat(result.asText()).isEqualTo("2023-06-15");
     }
 
-    @Test
-    @DisplayName("Should format date with custom format")
-    void shouldFormatDateWithCustomFormat() throws Exception {
+    @ParameterizedTest
+    @CsvSource({
+        "dd/MM/yyyy, 15/06/2023",
+        "iso_datetime, 2023-06-15T00:00",
+        "timestamp, 1686787200000",
+        "epoch, 1686787200",
+        "yyyy-MM-dd, 2023-06-15"
+    })
+    @DisplayName("Should format date with various formats")
+    void shouldFormatDateWithVariousFormats(String format, String expected) throws Exception {
         // Given
         JsonNode config = objectMapper
-            .readTree("{\"from\": \"2023-06-15\", \"to\": \"2023-06-15\", \"format\": \"dd/MM/yyyy\"}");
+            .readTree("{\"from\": \"2023-06-15\", \"to\": \"2023-06-15\", \"format\": \"" + format + "\"}");
 
         // When
         JsonNode result = dateGenerator.generate(config);
 
         // Then
-        assertThat(result.asText()).isEqualTo("15/06/2023");
-    }
-
-    @Test
-    @DisplayName("Should format date as ISO datetime")
-    void shouldFormatDateAsIsoDatetime() throws Exception {
-        // Given
-        JsonNode config = objectMapper
-            .readTree("{\"from\": \"2023-06-15\", \"to\": \"2023-06-15\", \"format\": \"iso_datetime\"}");
-
-        // When
-        JsonNode result = dateGenerator.generate(config);
-
-        // Then
-        assertThat(result.asText()).isEqualTo("2023-06-15T00:00");
-    }
-
-    @Test
-    @DisplayName("Should format date as timestamp")
-    void shouldFormatDateAsTimestamp() throws Exception {
-        // Given
-        JsonNode config = objectMapper
-            .readTree("{\"from\": \"2023-06-15\", \"to\": \"2023-06-15\", \"format\": \"timestamp\"}");
-
-        // When
-        JsonNode result = dateGenerator.generate(config);
-
-        // Then
-        assertThat(result.asText()).isEqualTo("1686787200000"); // 2023-06-15 00:00:00 UTC in milliseconds
-    }
-
-    @Test
-    @DisplayName("Should format date as epoch seconds")
-    void shouldFormatDateAsEpochSeconds() throws Exception {
-        // Given
-        JsonNode config = objectMapper
-            .readTree("{\"from\": \"2023-06-15\", \"to\": \"2023-06-15\", \"format\": \"epoch\"}");
-
-        // When
-        JsonNode result = dateGenerator.generate(config);
-
-        // Then
-        assertThat(result.asText()).isEqualTo("1686787200"); // 2023-06-15 00:00:00 UTC in seconds
+        assertThat(result.asText()).isEqualTo(expected);
     }
 
     @ParameterizedTest

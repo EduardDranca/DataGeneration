@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,39 +40,30 @@ class SequenceGeneratorTest {
         assertThat(result3.asInt()).isEqualTo(2);
     }
 
-    @Test
-    void testGenerateCustomSequence() throws Exception {
-        JsonNode options = mapper.readTree("{\"start\": 5, \"increment\": 3}");
+    @ParameterizedTest
+    @CsvSource({
+        "5, 3, 5, 8, 11",
+        "-10, 2, -10, -8, -6",
+        "0, 1, 0, 1, 2"
+    })
+    void testGenerateSequences(int start, int increment, int expected1, int expected2, int expected3) throws Exception {
+        JsonNode options = mapper.readTree("{\"start\": " + start + ", \"increment\": " + increment + "}");
+        
         JsonNode result1 = generator.generate(options);
         JsonNode result2 = generator.generate(options);
         JsonNode result3 = generator.generate(options);
 
         assertThat(result1).isNotNull();
         assertThat(result1.isInt()).isTrue();
-        assertThat(result1.asInt()).isEqualTo(5);
+        assertThat(result1.asInt()).isEqualTo(expected1);
 
         assertThat(result2).isNotNull();
         assertThat(result2.isInt()).isTrue();
-        assertThat(result2.asInt()).isEqualTo(8);
+        assertThat(result2.asInt()).isEqualTo(expected2);
 
         assertThat(result3).isNotNull();
         assertThat(result3.isInt()).isTrue();
-        assertThat(result3.asInt()).isEqualTo(11);
-    }
-
-    @Test
-    void testGenerateNegativeSequence() throws Exception {
-        JsonNode options = mapper.readTree("{\"start\": -10, \"increment\": 2}");
-        JsonNode result1 = generator.generate(options);
-        JsonNode result2 = generator.generate(options);
-
-        assertThat(result1).isNotNull();
-        assertThat(result1.isInt()).isTrue();
-        assertThat(result1.asInt()).isEqualTo(-10);
-
-        assertThat(result2).isNotNull();
-        assertThat(result2.isInt()).isTrue();
-        assertThat(result2.asInt()).isEqualTo(-8);
+        assertThat(result3.asInt()).isEqualTo(expected3);
     }
 
     @Test
