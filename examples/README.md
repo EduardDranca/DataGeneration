@@ -4,16 +4,15 @@ This directory contains practical examples demonstrating various use cases of th
 
 ## Available Examples
 
-| Example | Description          | Key Features |
-|---------|----------------------|--------------|
-| **[01-basic-users](01-basic-users/)** | Simple user profiles | UUID, names, emails, basic types |
-| **[02-ecommerce-store](02-ecommerce-store/)** | Online store data    | Entity relationships, nested objects |
-| **[03-company-employees](03-company-employees/)** | Corporate structure  | Tags, arrays, weighted choices |
-| **[04-social-media](04-social-media/)** | Social platform      | Complex relationships, engagement metrics |
+| Example                                                     | Description          | Key Features |
+|-------------------------------------------------------------|----------------------|--------------|
+| **[01-basic-users](01-basic-users/)**                       | Simple user profiles | UUID, names, emails, basic types |
+| **[02-ecommerce-store](02-ecommerce-store/)**               | Online store data    | Entity relationships, nested objects |
+| **[03-company-employees](03-company-employees/)**           | Corporate structure  | Tags, arrays, weighted choices |
+| **[04-social-media](04-social-media/)**                     | Social platform      | Complex relationships, engagement metrics |
 | **[05-financial-transactions](05-financial-transactions/)** | Banking system | Financial data, high-volume transactions |
-| **[06-educational-system](06-educational-system/)** | School management | Academic data, regex patterns, grading |
-| **[07-streaming-generation](07-streaming-generation/)** | Large dataset streaming | Memory efficiency, high-volume data |
-| **[08-custom-generator](08-custom-generator/)** | Custom business logic | Custom generators, domain-specific rules |
+| **[06-educational-system](06-educational-system/)**         | School management | Academic data, regex patterns, grading |
+| **[07-custom-generator](07-custom-generator/)**             | Custom business logic | Custom generators, domain-specific rules |
 
 ## Quick Start
 
@@ -69,7 +68,6 @@ Each example directory contains:
 | Social Media | 88 records | 4 | Social app testing |
 | Financial | 73 records | 4 | Banking simulation |
 | Educational | 97 records | 4 | School system testing |
-| Streaming | 1005 records | 2 | Large dataset processing |
 | Custom Generator | 19 records | 3 | Custom business logic |
 
 ## Integration Patterns

@@ -149,29 +149,10 @@ class ExamplesValidationTest {
     }
 
     @Test
-    @DisplayName("07-streaming-generation should generate streaming data")
-    void shouldValidateStreamingGenerationStructure() throws IOException {
-        // Given
-        Path dslPath = Paths.get(EXAMPLES_DIR, "07-streaming-generation", "dsl.json");
-        File dslFile = dslPath.toFile();
-
-        // When
-        Generation generation = DslDataGenerator.create()
-            .withSeed(12345L)
-            .fromFile(dslFile)
-            .generate();
-
-        // Then
-        assertThat(generation.getCollections()).isNotEmpty();
-        assertThat(generation.getCollections()).containsKey("reference_data");
-        assertThat(generation.getCollections()).containsKey("large_dataset");
-    }
-
-    @Test
-    @DisplayName("08-custom-generator should work with custom generators")
+    @DisplayName("07-custom-generator should work with custom generators")
     void shouldValidateCustomGeneratorStructure() throws IOException {
         // Given
-        Path dslPath = Paths.get(EXAMPLES_DIR, "08-custom-generator", "dsl.json");
+        Path dslPath = Paths.get(EXAMPLES_DIR, "07-custom-generator", "dsl.json");
         File dslFile = dslPath.toFile();
         ObjectMapper mapper = new ObjectMapper();
         Faker faker = new Faker(new Random(4202331));
