@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator.generator.defaults;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.eddranca.datagenerator.exception.DataGenerationException;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
@@ -28,7 +29,7 @@ public class CsvGenerator implements Generator {
             try (CSVReader reader = new CSVReader(new FileReader(f))) {
                 return reader.readAll();
             } catch (IOException | CsvException e) {
-                throw new RuntimeException("Error reading CSV file: " + f, e);
+                throw new DataGenerationException("Error reading CSV file: " + f, e);
             }
         });
 

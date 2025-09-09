@@ -2,7 +2,7 @@ package com.github.eddranca.datagenerator.generator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.FilteringException;
+import com.github.eddranca.datagenerator.exception.FilteringException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;

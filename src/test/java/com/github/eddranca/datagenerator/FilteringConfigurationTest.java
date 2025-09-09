@@ -2,6 +2,7 @@ package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.eddranca.datagenerator.exception.FilteringException;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

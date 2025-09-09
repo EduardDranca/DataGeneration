@@ -425,9 +425,7 @@ class DslDataGeneratorTest {
                     """);
 
             // Test using DslTreeBuilder directly to check validation
-            DslTreeBuilder builder =
-                new DslTreeBuilder(
-                    GeneratorRegistry.withDefaultGenerators(new Faker()));
+            DslTreeBuilder builder = new DslTreeBuilder(GeneratorRegistry.withDefaultGenerators(new Faker()));
 
             com.github.eddranca.datagenerator.validation.DslTreeBuildResult result = builder.build(invalidDsl);
 
@@ -925,8 +923,7 @@ class DslDataGeneratorTest {
 
         @Test
         void testSqlGenerationWithSpecialCharacters() throws Exception {
-            JsonNode dslNode = mapper.readTree(
-                    """
+            JsonNode dslNode = mapper.readTree("""
                             {
                                 "products": {
                                     "count": 1,
@@ -1155,7 +1152,7 @@ class DslDataGeneratorTest {
             try {
                 return CCJSqlParserUtil.parse(sql);
             } catch (JSQLParserException e) {
-                throw new RuntimeException("Failed to parse SQL: " + sql + ". Error: " + e.getMessage(), e);
+                throw new IllegalStateException("Failed to parse SQL: " + sql + ". Error: " + e.getMessage(), e);
             }
         }
 

@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator.generator.defaults;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.eddranca.datagenerator.exception.DataGenerationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -68,6 +69,6 @@ class CsvGeneratorTest {
         options.put("sequential", true);
 
         assertThatThrownBy(() -> csvGenerator.generate(options))
-            .isInstanceOf(RuntimeException.class);
+            .isInstanceOf(DataGenerationException.class);
     }
 }
