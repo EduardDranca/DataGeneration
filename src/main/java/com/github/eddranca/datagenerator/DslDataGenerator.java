@@ -110,52 +110,6 @@ public class DslDataGenerator {
     }
 
     /**
-     * Creates a streaming generation for memory-efficient processing of large
-     * datasets.
-     *
-     * @param jsonNode the DSL definition
-     * @return StreamingGeneration instance for streaming SQL generation
-     */
-    public StreamingGeneration createStreamingGeneration(JsonNode jsonNode) {
-        // Build and validate the DSL tree
-        DslTreeBuilder treeBuilder = new DslTreeBuilder(generatorRegistry);
-        DslTreeBuildResult buildResult = treeBuilder.build(jsonNode);
-
-        // Handle validation errors by throwing exception
-        if (buildResult.hasErrors()) {
-            throw new DslValidationException(buildResult.getErrors());
-        }
-
-        // Handle seed from the tree
-        RootNode rootNode = buildResult.getTree();
-        if (rootNode.getSeed() != null) {
-            this.random.setSeed(rootNode.getSeed());
-        }
-
-        // Create streaming generation context
-        GenerationContext context = new GenerationContext(generatorRegistry, random, maxFilteringRetries,
-                filteringBehavior);
-
-        return new StreamingGeneration(context, rootNode.getCollections());
-    }
-
-    /**
-     * Creates a streaming generation from a JSON string.
-     */
-    public StreamingGeneration createStreamingGeneration(String jsonString) throws IOException {
-        JsonNode jsonNode = mapper.readTree(jsonString);
-        return createStreamingGeneration(jsonNode);
-    }
-
-    /**
-     * Creates a streaming generation from a file.
-     */
-    public StreamingGeneration createStreamingGeneration(File file) throws IOException {
-        JsonNode jsonNode = mapper.readTree(file);
-        return createStreamingGeneration(jsonNode);
-    }
-
-    /**
      * Fluent builder for DslDataGenerator with a readable, chainable API.
      */
     public static class Builder {
@@ -284,31 +238,6 @@ public class DslDataGenerator {
          */
         public Generation.Builder fromJsonNode(JsonNode jsonNode) {
             return new Generation.Builder(build(), jsonNode);
-        }
-
-        /**
-         * Creates a streaming generation for memory-efficient processing of large
-         * datasets.
-         *
-         * @param jsonNode the DSL definition
-         * @return StreamingGeneration instance for streaming SQL generation
-         */
-        public StreamingGeneration createStreamingGeneration(JsonNode jsonNode) {
-            return build().createStreamingGeneration(jsonNode);
-        }
-
-        /**
-         * Creates a streaming generation from a JSON string.
-         */
-        public StreamingGeneration createStreamingGeneration(String jsonString) throws IOException {
-            return build().createStreamingGeneration(jsonString);
-        }
-
-        /**
-         * Creates a streaming generation from a file.
-         */
-        public StreamingGeneration createStreamingGeneration(File file) throws IOException {
-            return build().createStreamingGeneration(file);
         }
 
         /**
