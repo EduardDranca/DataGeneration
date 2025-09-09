@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Random;
 
@@ -35,40 +37,23 @@ class StringGeneratorTest {
             .matches("[a-zA-Z0-9]+");
     }
 
-    @Test
-    void testGenerateCustomLength() throws Exception {
-        JsonNode options = mapper.readTree("{\"length\": 5}");
+    @ParameterizedTest
+    @ValueSource(ints = {5, 100, 0})
+    void testGenerateWithSpecificLengths(int length) throws Exception {
+        JsonNode options = mapper.readTree("{\"length\": " + length + "}");
         JsonNode result = generator.generate(options);
 
         assertThat(result).isNotNull();
         assertThat(result.isTextual()).isTrue();
-        assertThat(result.asText())
-            .hasSize(5)
-            .matches("[a-zA-Z0-9]+");
-    }
-
-    @Test
-    void testGenerateLongString() throws Exception {
-        JsonNode options = mapper.readTree("{\"length\": 100}");
-        JsonNode result = generator.generate(options);
-
-        assertThat(result).isNotNull();
-        assertThat(result.isTextual()).isTrue();
-
+        
         String value = result.asText();
-        assertThat(value)
-            .hasSize(100)
-            .matches("[a-zA-Z0-9]+");
-    }
-
-    @Test
-    void testGenerateZeroLength() throws Exception {
-        JsonNode options = mapper.readTree("{\"length\": 0}");
-        JsonNode result = generator.generate(options);
-
-        assertThat(result).isNotNull();
-        assertThat(result.isTextual()).isTrue();
-        assertThat(result.asText()).isEmpty();
+        assertThat(value).hasSize(length);
+        
+        if (length > 0) {
+            assertThat(value).matches("[a-zA-Z0-9]+");
+        } else {
+            assertThat(value).isEmpty();
+        }
     }
 
     @Test

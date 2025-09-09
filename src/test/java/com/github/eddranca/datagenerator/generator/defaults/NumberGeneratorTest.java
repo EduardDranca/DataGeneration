@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.List;
 import java.util.Random;
@@ -35,35 +37,19 @@ class NumberGeneratorTest {
         assertThat(result.asInt()).isBetween(Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
-    @Test
-    void testGenerateNegativeRange() throws Exception {
-        JsonNode options = mapper.readTree("{\"min\": -50, \"max\": -10}");
+    @ParameterizedTest
+    @CsvSource({
+        "-50, -10, -50, -10",
+        "42, 42, 42, 42", 
+        "20, 10, 10, 20"
+    })
+    void testGenerateWithRanges(int min, int max, int expectedMin, int expectedMax) throws Exception {
+        JsonNode options = mapper.readTree("{\"min\": " + min + ", \"max\": " + max + "}");
         JsonNode result = generator.generate(options);
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();
-        assertThat(result.asInt()).isBetween(-50, -10);
-    }
-
-    @Test
-    void testGenerateSingleValue() throws Exception {
-        JsonNode options = mapper.readTree("{\"min\": 42, \"max\": 42}");
-        JsonNode result = generator.generate(options);
-
-        assertThat(result).isNotNull();
-        assertThat(result.isNumber()).isTrue();
-        assertThat(result.asInt()).isEqualTo(42);
-    }
-
-    @Test
-    void testGenerateInvalidRange() throws Exception {
-        // Max less than min - should swap them
-        JsonNode options = mapper.readTree("{\"min\": 20, \"max\": 10}");
-        JsonNode result = generator.generate(options);
-
-        assertThat(result).isNotNull();
-        assertThat(result.isNumber()).isTrue();
-        assertThat(result.asInt()).isBetween(10, 20);
+        assertThat(result.asInt()).isBetween(expectedMin, expectedMax);
     }
 
     @Test
