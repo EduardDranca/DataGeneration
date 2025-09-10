@@ -12,14 +12,6 @@ public class ReferenceFieldNode implements DslNode {
     private final List<FilterNode> filters;
     private final boolean sequential;
 
-    public ReferenceFieldNode(String reference) {
-        this(reference, new ArrayList<>(), false);
-    }
-
-    public ReferenceFieldNode(String reference, List<FilterNode> filters) {
-        this(reference, filters, false);
-    }
-
     public ReferenceFieldNode(String reference, boolean sequential) {
         this(reference, new ArrayList<>(), sequential);
     }
