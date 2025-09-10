@@ -16,6 +16,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -122,31 +123,50 @@ public class GenerationContext {
      */
     public JsonNode resolveReferenceWithFiltering(String reference, JsonNode currentItem, List<JsonNode> filterValues,
             ReferenceFieldNode node, boolean sequential) {
-        // Get or create filtered collection if filtering is needed
-        List<JsonNode> filteredCollection = null;
-        if (filterValues != null && !filterValues.isEmpty()) {
-            filteredCollection = getOrCreateFilteredCollection(reference, currentItem, filterValues);
-            if (filteredCollection != null && filteredCollection.isEmpty()) {
-                return handleFilteringFailure(
-                        new FilteringException("Reference '" + reference + "' has no valid values after filtering"));
-            }
+        List<JsonNode> filteredCollection = prepareFilteredCollection(reference, currentItem, filterValues);
+        if (filteredCollection != null && filteredCollection.isEmpty()) {
+            return handleFilteringFailure(
+                    new FilteringException("Reference '" + reference + "' has no valid values after filtering"));
         }
 
+        return resolveReferenceByType(reference, currentItem, filteredCollection, node, sequential);
+    }
+
+    private List<JsonNode> prepareFilteredCollection(String reference, JsonNode currentItem, List<JsonNode> filterValues) {
+        if (filterValues == null || filterValues.isEmpty()) {
+            return null;
+        }
+        return getOrCreateFilteredCollection(reference, currentItem, filterValues);
+    }
+
+    private JsonNode resolveReferenceByType(String reference, JsonNode currentItem, List<JsonNode> filteredCollection,
+            ReferenceFieldNode node, boolean sequential) {
         if (reference.startsWith("byTag[")) {
             return resolveTagReference(reference, currentItem, filteredCollection, node, sequential);
-        } else if (reference.startsWith("this.")) {
-            return resolveThisReference(reference, currentItem);
-        } else if (reference.contains("[*].")) {
-            return resolveArrayFieldReference(reference, filteredCollection, node, sequential);
-        } else if (reference.contains("[")) {
-            return resolveIndexedReference(reference, filteredCollection, node, sequential);
-        } else if (namedPicks.containsKey(reference) || (reference.contains(".")
-                && namedPicks.containsKey(reference.substring(0, reference.indexOf('.'))))) {
-            return resolvePickReference(reference);
-        } else {
-            // Invalid reference pattern - this should have been caught during validation
-            throw new InvalidReferenceException(reference);
         }
+
+        if (reference.startsWith("this.")) {
+            return resolveThisReference(reference, currentItem);
+        }
+
+        if (reference.contains("[*].")) {
+            return resolveArrayFieldReference(reference, filteredCollection, node, sequential);
+        }
+
+        if (reference.contains("[")) {
+            return resolveIndexedReference(reference, filteredCollection, node, sequential);
+        }
+
+        if (isPickReference(reference)) {
+            return resolvePickReference(reference);
+        }
+
+        throw new InvalidReferenceException(reference);
+    }
+
+    private boolean isPickReference(String reference) {
+        return namedPicks.containsKey(reference) ||
+               (reference.contains(".") && namedPicks.containsKey(reference.substring(0, reference.indexOf('.'))));
     }
 
     private JsonNode getReferencedElementFromCollection(String reference, ReferenceFieldNode node, boolean sequential,
@@ -171,51 +191,58 @@ public class GenerationContext {
             List<JsonNode> filterValues) {
         FilteredCollectionKey key = new FilteredCollectionKey(reference, currentItem, filterValues);
 
-        return filteredCollectionCache.computeIfAbsent(key, k -> {
-            List<JsonNode> sourceCollection;
-            String fieldName = "";
+        return filteredCollectionCache.computeIfAbsent(key, k ->
+            createFilteredCollection(reference, currentItem, filterValues));
+    }
 
-            if (reference.startsWith("byTag[")) {
-                int start = reference.indexOf('[') + 1;
-                int end = reference.indexOf(']');
-                String tagExpr = reference.substring(start, end);
+    private List<JsonNode> createFilteredCollection(String reference, JsonNode currentItem, List<JsonNode> filterValues) {
+        if (reference.startsWith("byTag[")) {
+            return createTagBasedFilteredCollection(reference, currentItem, filterValues);
+        }
 
-                if (reference.length() > end + 1 && reference.charAt(end + 1) == '.') {
-                    fieldName = reference.substring(end + 2);
-                }
+        if (reference.contains("[*].")) {
+            return createArrayFieldFilteredCollection(reference, filterValues);
+        }
 
-                String tag;
-                if (tagExpr.startsWith("this.")) {
-                    String localField = tagExpr.substring(5);
-                    JsonNode val = currentItem.path(localField);
-                    if (val == null || val.isNull())
-                        return new ArrayList<>();
-                    tag = val.asText();
-                } else {
-                    tag = tagExpr;
-                }
+        return createSimpleFilteredCollection(reference, filterValues);
+    }
 
-                sourceCollection = getTaggedCollection(tag);
-            } else if (reference.contains("[*].")) {
-                String base = reference.substring(0, reference.indexOf("[*]."));
-                String field = reference.substring(reference.indexOf("[*].") + 4);
-                sourceCollection = getCollection(base);
+    private List<JsonNode> createTagBasedFilteredCollection(String reference, JsonNode currentItem, List<JsonNode> filterValues) {
+        int start = reference.indexOf('[') + 1;
+        int end = reference.indexOf(']');
+        String tagExpr = reference.substring(start, end);
+        String fieldName = reference.length() > end + 1 && reference.charAt(end + 1) == '.' ?
+                          reference.substring(end + 2) : "";
 
-                // Filter based on the field values, but keep the original objects
-                if (sourceCollection != null) {
-                    return applyFilteringOnField(sourceCollection, field, filterValues);
-                }
-            } else {
-                // Simple collection reference (no special syntax)
-                sourceCollection = getCollection(reference);
-            }
+        String tag = resolveTagExpression(tagExpr, currentItem);
+        if (tag == null) {
+            return new ArrayList<>();
+        }
 
-            if (sourceCollection == null) {
-                return new ArrayList<>();
-            }
+        List<JsonNode> sourceCollection = getTaggedCollection(tag);
+        return sourceCollection == null ? new ArrayList<>() : applyFiltering(sourceCollection, fieldName, filterValues);
+    }
 
-            return applyFiltering(sourceCollection, fieldName, filterValues);
-        });
+    private String resolveTagExpression(String tagExpr, JsonNode currentItem) {
+        if (tagExpr.startsWith("this.")) {
+            String localField = tagExpr.substring(5);
+            JsonNode val = currentItem.path(localField);
+            return (val == null || val.isNull()) ? null : val.asText();
+        }
+        return tagExpr;
+    }
+
+    private List<JsonNode> createArrayFieldFilteredCollection(String reference, List<JsonNode> filterValues) {
+        String base = reference.substring(0, reference.indexOf("[*]."));
+        String field = reference.substring(reference.indexOf("[*].") + 4);
+        List<JsonNode> sourceCollection = getCollection(base);
+
+        return sourceCollection == null ? new ArrayList<>() : applyFilteringOnField(sourceCollection, field, filterValues);
+    }
+
+    private List<JsonNode> createSimpleFilteredCollection(String reference, List<JsonNode> filterValues) {
+        List<JsonNode> sourceCollection = getCollection(reference);
+        return sourceCollection == null ? new ArrayList<>() : applyFiltering(sourceCollection, "", filterValues);
     }
 
     /**
@@ -285,7 +312,6 @@ public class GenerationContext {
             } else {
                 tag = tagExpr;
             }
-
             collection = getTaggedCollection(tag);
         }
 
@@ -354,8 +380,7 @@ public class GenerationContext {
             // Wildcard - return random item from collection
             return getReferencedElementFromCollection(base, node, sequential, preFilteredCollection);
         } else {
-            // Invalid indexed reference pattern - this should have been caught during
-            // validation
+            // Invalid indexed reference pattern - this should have been caught during validation
             throw new InvalidReferenceException(reference);
         }
     }
@@ -416,13 +441,9 @@ public class GenerationContext {
             JsonNode fieldValue = item.path(fieldName);
 
             if (!fieldValue.isMissingNode()) {
-                boolean shouldFilter = false;
-                for (JsonNode filterValue : filterValues) {
-                    if (fieldValue.equals(filterValue)) {
-                        shouldFilter = true;
-                        break;
-                    }
-                }
+                boolean shouldFilter = Optional.ofNullable(filterValues)
+                    .map(val -> filterValues.contains(fieldValue))
+                    .orElse(false);
 
                 if (!shouldFilter) {
                     filtered.add(item);

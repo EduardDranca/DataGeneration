@@ -128,30 +128,45 @@ public class DslTreeBuilder {
     }
 
     private CollectionNode buildCollection(String name, JsonNode def) {
-        if (!def.isObject()) {
-            addError("Collection '" + name + "' must be an object");
+        if (!validateCollectionStructure(name, def)) {
             return null;
         }
 
-        // Validate required fields
-        if (!def.has(ITEM)) {
-            addError("Collection '" + name + "' is missing required 'item' field");
-            return null;
-        }
-
-        int count = def.path(COUNT).asInt(1);
-        if (count < 0) {
-            addError("Collection '" + name + "' count must be non-negative, got: " + count);
-            count = 1; // Use default for recovery
-        }
-
-        // Build item
+        int count = validateAndGetCount(name, def);
         ItemNode item = buildItem(def.get(ITEM));
         if (item == null) {
             return null;
         }
 
-        // Build tags
+        List<String> tags = buildCollectionTags(name, def);
+        Map<String, Integer> picks = buildCollectionPicks(name, def, count);
+        String collectionName = def.has(NAME) ? def.get(NAME).asText() : null;
+
+        return new CollectionNode(name, count, item, tags, picks, collectionName);
+    }
+
+    private boolean validateCollectionStructure(String name, JsonNode def) {
+        if (!def.isObject()) {
+            addError("Collection '" + name + "' must be an object");
+            return false;
+        }
+        if (!def.has(ITEM)) {
+            addError("Collection '" + name + "' is missing required 'item' field");
+            return false;
+        }
+        return true;
+    }
+
+    private int validateAndGetCount(String name, JsonNode def) {
+        int count = def.path(COUNT).asInt(1);
+        if (count < 0) {
+            addError("Collection '" + name + "' count must be non-negative, got: " + count);
+            return 1; // Use default for recovery
+        }
+        return count;
+    }
+
+    private List<String> buildCollectionTags(String name, JsonNode def) {
         List<String> tags = new ArrayList<>();
         if (def.has(TAGS)) {
             JsonNode tagsNode = def.get(TAGS);
@@ -163,8 +178,10 @@ public class DslTreeBuilder {
                 addError("Collection '" + name + "' tags must be an array");
             }
         }
+        return tags;
+    }
 
-        // Build picks
+    private Map<String, Integer> buildCollectionPicks(String name, JsonNode def, int count) {
         Map<String, Integer> picks = new HashMap<>();
         if (def.has(PICK)) {
             JsonNode pickNode = def.get(PICK);
@@ -184,11 +201,7 @@ public class DslTreeBuilder {
                 addError("Collection '" + name + "' pick must be an object");
             }
         }
-
-        // Custom collection name
-        String collectionName = def.has(NAME) ? def.get(NAME).asText() : null;
-
-        return new CollectionNode(name, count, item, tags, picks, collectionName);
+        return picks;
     }
 
     private ItemNode buildItem(JsonNode itemDef) {
@@ -220,36 +233,48 @@ public class DslTreeBuilder {
         }
 
         if (fieldDef.has(GENERATOR)) {
-            // Check if this is a spread field
-            if (fieldName.startsWith(ELLIPSIS)) {
-                return buildSpreadField(fieldName, fieldDef);
-            } else {
-                return buildGeneratedField(fieldName, fieldDef);
-            }
-        } else if (fieldDef.has(REFERENCE)) {
-            // Check if this is a reference spread field
-            if (fieldName.startsWith(ELLIPSIS)) {
-                return buildReferenceSpreadField(fieldName, fieldDef);
-            } else {
-                return buildReferenceField(fieldName, fieldDef);
-            }
-        } else if (fieldDef.has(ARRAY)) {
-            return buildArrayField(fieldName, fieldDef);
-        } else if (fieldDef.isObject()) {
-            Map<String, DslNode> fields = new LinkedHashMap<>();
-
-            for (Iterator<Map.Entry<String, JsonNode>> it = fieldDef.fields(); it.hasNext(); ) {
-                var field = it.next();
-                DslNode fieldNode = buildField(field.getKey(), field.getValue());
-                if (fieldNode != null) {
-                    fields.put(field.getKey(), fieldNode);
-                }
-            }
-            // Literal value
-            return new ObjectFieldNode(fields);
-        } else {
-            return new LiteralFieldNode(fieldDef);
+            return buildGeneratorBasedField(fieldName, fieldDef);
         }
+        
+        if (fieldDef.has(REFERENCE)) {
+            return buildReferenceBasedField(fieldName, fieldDef);
+        }
+        
+        if (fieldDef.has(ARRAY)) {
+            return buildArrayField(fieldName, fieldDef);
+        }
+        
+        if (fieldDef.isObject()) {
+            return buildObjectField(fieldDef);
+        }
+        
+        return new LiteralFieldNode(fieldDef);
+    }
+
+    private DslNode buildGeneratorBasedField(String fieldName, JsonNode fieldDef) {
+        if (fieldName.startsWith(ELLIPSIS)) {
+            return buildSpreadField(fieldName, fieldDef);
+        }
+        return buildGeneratedField(fieldName, fieldDef);
+    }
+
+    private DslNode buildReferenceBasedField(String fieldName, JsonNode fieldDef) {
+        if (fieldName.startsWith(ELLIPSIS)) {
+            return buildReferenceSpreadField(fieldName, fieldDef);
+        }
+        return buildReferenceField(fieldName, fieldDef);
+    }
+
+    private DslNode buildObjectField(JsonNode fieldDef) {
+        Map<String, DslNode> fields = new LinkedHashMap<>();
+        for (Iterator<Map.Entry<String, JsonNode>> it = fieldDef.fields(); it.hasNext(); ) {
+            var field = it.next();
+            DslNode fieldNode = buildField(field.getKey(), field.getValue());
+            if (fieldNode != null) {
+                fields.put(field.getKey(), fieldNode);
+            }
+        }
+        return new ObjectFieldNode(fields);
     }
 
     private DslNode buildGeneratedField(String fieldName, JsonNode fieldDef) {
@@ -296,31 +321,54 @@ public class DslTreeBuilder {
     }
 
     private DslNode buildChoiceField(String fieldName, JsonNode fieldDef) {
+        if (!validateChoiceFieldStructure(fieldName, fieldDef)) {
+            return null;
+        }
+
+        List<DslNode> options = buildChoiceOptions(fieldName, fieldDef);
+        if (options.isEmpty()) {
+            addError("Choice field '" + fieldName + "' must have at least one valid option");
+            return null;
+        }
+
+        List<FilterNode> filters = buildChoiceFilters(fieldName, fieldDef);
+        
+        if (fieldDef.has("weights")) {
+            List<Double> weights = buildChoiceWeights(fieldName, fieldDef, options.size());
+            if (weights == null) {
+                return null;
+            }
+            return ChoiceFieldNode.withWeightsAndFilters(options, weights, filters);
+        }
+
+        return filters.isEmpty() ? new ChoiceFieldNode(options) : ChoiceFieldNode.withFilters(options, filters);
+    }
+
+    private boolean validateChoiceFieldStructure(String fieldName, JsonNode fieldDef) {
         if (!fieldDef.has(OPTIONS)) {
             addError("Choice field '" + fieldName + "' is missing required 'options' array");
-            return null;
+            return false;
         }
-
-        JsonNode optionsNode = fieldDef.get(OPTIONS);
-        if (!optionsNode.isArray()) {
+        if (!fieldDef.get(OPTIONS).isArray()) {
             addError("Choice field '" + fieldName + "' options must be an array");
-            return null;
+            return false;
         }
+        return true;
+    }
 
+    private List<DslNode> buildChoiceOptions(String fieldName, JsonNode fieldDef) {
         List<DslNode> options = new ArrayList<>();
+        JsonNode optionsNode = fieldDef.get(OPTIONS);
         for (JsonNode optionNode : optionsNode) {
             DslNode option = buildField(fieldName + "[option]", optionNode);
             if (option != null) {
                 options.add(option);
             }
         }
+        return options;
+    }
 
-        if (options.isEmpty()) {
-            addError("Choice field '" + fieldName + "' must have at least one valid option");
-            return null;
-        }
-
-        // Build filters if present
+    private List<FilterNode> buildChoiceFilters(String fieldName, JsonNode fieldDef) {
         List<FilterNode> filters = new ArrayList<>();
         if (fieldDef.has(FILTER)) {
             JsonNode filtersNode = fieldDef.get(FILTER);
@@ -335,43 +383,38 @@ public class DslTreeBuilder {
                 addError("Choice field '" + fieldName + "' filter must be an array");
             }
         }
+        return filters;
+    }
 
-        // Check for weights
-        if (fieldDef.has("weights")) {
-            JsonNode weightsNode = fieldDef.get("weights");
-            if (!weightsNode.isArray()) {
-                addError("Choice field '" + fieldName + "' weights must be an array");
-                return null;
-            }
-
-            if (weightsNode.size() != optionsNode.size()) {
-                addError("Choice field '" + fieldName + "' weights array must have the same size as options array");
-                return null;
-            }
-
-            List<Double> weights = new ArrayList<>();
-            for (int i = 0; i < weightsNode.size(); i++) {
-                JsonNode weightNode = weightsNode.get(i);
-                if (!weightNode.isNumber()) {
-                    addError("Choice field '" + fieldName + "' weight at index " + i + " must be a number");
-                    return null;
-                }
-
-                double weight = weightNode.asDouble();
-                if (weight <= 0) {
-                    addError("Choice field '" + fieldName + "' weight at index " + i + " must be positive");
-                    return null;
-                }
-
-                // Round to 2 decimal places
-                weight = Math.round(weight * 100.0) / 100.0;
-                weights.add(weight);
-            }
-
-            return ChoiceFieldNode.withWeightsAndFilters(options, weights, filters);
+    private List<Double> buildChoiceWeights(String fieldName, JsonNode fieldDef, int optionsCount) {
+        JsonNode weightsNode = fieldDef.get("weights");
+        if (!weightsNode.isArray()) {
+            addError("Choice field '" + fieldName + "' weights must be an array");
+            return null;
         }
 
-        return filters.isEmpty() ? new ChoiceFieldNode(options) : ChoiceFieldNode.withFilters(options, filters);
+        if (weightsNode.size() != optionsCount) {
+            addError("Choice field '" + fieldName + "' weights array must have the same size as options array");
+            return null;
+        }
+
+        List<Double> weights = new ArrayList<>();
+        for (int i = 0; i < weightsNode.size(); i++) {
+            JsonNode weightNode = weightsNode.get(i);
+            if (!weightNode.isNumber()) {
+                addError("Choice field '" + fieldName + "' weight at index " + i + " must be a number");
+                return null;
+            }
+
+            double weight = weightNode.asDouble();
+            if (weight <= 0) {
+                addError("Choice field '" + fieldName + "' weight at index " + i + " must be positive");
+                return null;
+            }
+
+            weights.add(Math.round(weight * 100.0) / 100.0);
+        }
+        return weights;
     }
 
     private DslNode buildReferenceField(String fieldName, JsonNode fieldDef) {
@@ -435,24 +478,39 @@ public class DslTreeBuilder {
     }
 
     private void validateCollectionReference(String fieldName, String reference) {
-        String collectionName;
-
-        if (reference.contains("[*].")) {
-            collectionName = reference.substring(0, reference.indexOf("[*]."));
-        } else if (reference.contains("[")) {
-            collectionName = reference.substring(0, reference.indexOf("["));
-        } else if (reference.contains(".") && !context.isPickDeclared(reference.substring(0, reference.indexOf(".")))) {
-            addError("Reference field '" + fieldName + "' references field within collection: " + reference + " without index");
-            return;
-        } else if (!reference.contains(".") && !context.isPickDeclared(reference)) {
-            collectionName = reference;
-        } else {
-            return; // It's a valid pick reference
+        String collectionName = extractCollectionName(fieldName, reference);
+        if (collectionName == null) {
+            return; // Error already reported or it's a valid pick reference
         }
 
         if (!context.isCollectionDeclared(collectionName)) {
             addError("Reference field '" + fieldName + "' references undeclared collection or pick: " + collectionName);
         }
+    }
+
+    private String extractCollectionName(String fieldName, String reference) {
+        if (reference.contains("[*].")) {
+            return reference.substring(0, reference.indexOf("[*]."));
+        }
+        
+        if (reference.contains("[")) {
+            return reference.substring(0, reference.indexOf("["));
+        }
+        
+        if (reference.contains(".")) {
+            String baseName = reference.substring(0, reference.indexOf("."));
+            if (!context.isPickDeclared(baseName)) {
+                addError("Reference field '" + fieldName + "' references field within collection: " + reference + " without index");
+                return null;
+            }
+            return null; // It's a valid pick reference
+        }
+        
+        if (!context.isPickDeclared(reference)) {
+            return reference;
+        }
+        
+        return null; // It's a valid pick reference
     }
 
     private DslNode buildSpreadField(String fieldName, JsonNode fieldDef) {
@@ -601,43 +659,48 @@ public class DslTreeBuilder {
     }
 
     private ArrayFieldNode buildFieldWithCount(String fieldName, JsonNode fieldDef) {
-        JsonNode countNode = fieldDef.get(COUNT);
-
-        // Validate count value
-        if (!countNode.isNumber()) {
-            addError("Field '" + fieldName + "' count must be a number");
-            return null;
-        }
-
-        int count = countNode.asInt();
+        int count = validateCountValue(fieldName, fieldDef);
         if (count < 0) {
-            addError("Field '" + fieldName + "' count must be non-negative");
             return null;
         }
 
-        // Create a copy of the field definition without the count field
-        ObjectNode itemDef = fieldDef.deepCopy();
-        itemDef.remove(COUNT);
-
-        // Build the item node from the remaining definition
-        DslNode itemNode;
-        if (itemDef.isEmpty()) {
-            // If nothing left after removing count, this was just a count on a literal
-            addError("Field '" + fieldName + "' with count must have additional field definition");
-            return null;
-        } else if (itemDef.size() == 1 && itemDef.has("value")) {
-            // Special case: {"value": "something", "count": 3} -> literal array
-            itemNode = new LiteralFieldNode(itemDef.get("value"));
-        } else {
-            // Regular field definition
-            itemNode = buildField("item", itemDef);
-        }
-
+        DslNode itemNode = buildItemNodeFromCountField(fieldName, fieldDef);
         if (itemNode == null) {
             return null;
         }
 
         return new ArrayFieldNode(count, itemNode);
+    }
+
+    private int validateCountValue(String fieldName, JsonNode fieldDef) {
+        JsonNode countNode = fieldDef.get(COUNT);
+        if (!countNode.isNumber()) {
+            addError("Field '" + fieldName + "' count must be a number");
+            return -1;
+        }
+
+        int count = countNode.asInt();
+        if (count < 0) {
+            addError("Field '" + fieldName + "' count must be non-negative");
+            return -1;
+        }
+        return count;
+    }
+
+    private DslNode buildItemNodeFromCountField(String fieldName, JsonNode fieldDef) {
+        ObjectNode itemDef = fieldDef.deepCopy();
+        itemDef.remove(COUNT);
+
+        if (itemDef.isEmpty()) {
+            addError("Field '" + fieldName + "' with count must have additional field definition");
+            return null;
+        }
+        
+        if (itemDef.size() == 1 && itemDef.has("value")) {
+            return new LiteralFieldNode(itemDef.get("value"));
+        }
+        
+        return buildField("item", itemDef);
     }
 
     private void addError(String message) {
