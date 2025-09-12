@@ -92,5 +92,6 @@ jobs:
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         GPG_KEYNAME: ${{ env.GPG_KEYNAME }}
       run: |
+        printenv
         export GPG_TTY=$(tty)
         mvn clean deploy -Prelease -DskipTests
