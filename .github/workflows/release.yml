@@ -30,8 +30,6 @@ jobs:
         server-id: central
         server-username: CENTRAL_USERNAME
         server-password: CENTRAL_PASSWORD
-        gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-        gpg-passphrase: GPG_PASSPHRASE
 
     - name: print settings.xml
       run: |
@@ -89,8 +87,6 @@ jobs:
       env:
         CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
         CENTRAL_PASSWORD: ${{ secrets.CENTRAL_TOKEN }}
-        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        GPG_KEYNAME: ${{ vars.GPG_KEYNAME }}
       run: |
         printenv
         export GPG_TTY=$(tty)
