@@ -82,47 +82,6 @@ jobs:
         MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       run: mvn clean deploy -Prelease -DskipTests
 
-    - name: Generate changelog
-      id: changelog
-      uses: mikepenz/release-changelog-builder-action@v4
-      with:
-        configurationJson: |
-          {
-            "categories": [
-              {
-                "title": "## Features",
-                "labels": ["feature", "enhancement", "feat"]
-              },
-              {
-                "title": "## Bug Fixes", 
-                "labels": ["bug", "fix", "bugfix"]
-              },
-              {
-                "title": "## Documentation",
-                "labels": ["documentation", "docs"]
-              },
-              {
-                "title": "## Maintenance",
-                "labels": ["maintenance", "chore", "refactor"]
-              },
-              {
-                "title": "## Performance",
-                "labels": ["performance", "perf"]
-              },
-              {
-                "title": "## Other Changes",
-                "labels": []
-              }
-            ],
-            "ignore_labels": ["ignore-for-release", "duplicate", "invalid", "wontfix"],
-            "sort": "ASC",
-            "template": "${{CHANGELOG}}",
-            "pr_template": "- ${{TITLE}} (#${{NUMBER}}) @${{AUTHOR}}",
-            "empty_template": "- No changes in this release"
-          }
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Create GitHub Release
       uses: actions/create-release@v1
       env:
