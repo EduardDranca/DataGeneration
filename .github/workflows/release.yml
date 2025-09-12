@@ -80,4 +80,6 @@ jobs:
         CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
         CENTRAL_PASSWORD: ${{ secrets.CENTRAL_TOKEN }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-      run: mvn clean deploy -Prelease -DskipTests
+      run: |
+        export GPG_TTY=$(tty)
+        mvn clean deploy -Prelease -DskipTests
