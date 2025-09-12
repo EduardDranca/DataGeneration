@@ -3,7 +3,7 @@
 [![CI](https://github.com/EduardDranca/DataGeneration/workflows/CI/badge.svg)](https://github.com/EduardDranca/DataGeneration/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Java Version](https://img.shields.io/badge/Java-17%2B-orange)](https://openjdk.org/projects/jdk/17/)
-[![Maven Central](https://img.shields.io/maven-central/v/com.github.eduarddranca/data-generator.svg)](https://search.maven.org/artifact/com.github.eduarddranca/data-generator)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.eduarddranca/data-generator.svg)](https://search.maven.org/artifact/io.github.eduarddranca/data-generator)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=EduardDranca_DataGeneration&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=EduardDranca_DataGeneration)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=EduardDranca_DataGeneration&metric=coverage)](https://sonarcloud.io/summary/new_code?id=EduardDranca_DataGeneration)
 [![GitHub issues](https://img.shields.io/github/issues/EduardDranca/DataGeneration.svg)](https://github.com/EduardDranca/DataGeneration/issues)
@@ -53,7 +53,7 @@ String dsl = """
 **Maven:**
 ```xml
 <dependency>
-    <groupId>com.github.eduarddranca</groupId>
+    <groupId>io.github.eduarddranca</groupId>
     <artifactId>data-generator</artifactId>
     <version>0.1.0</version>
 </dependency>
@@ -61,7 +61,7 @@ String dsl = """
 
 **Gradle:**
 ```gradle
-implementation 'com.github.eduarddranca:data-generator:0.1.0'
+implementation 'io.github.eduarddranca:data-generator:0.1.0'
 ```
 
 ### Basic Usage
