@@ -10,7 +10,7 @@ jobs:
     name: Release to Maven Central
     runs-on: ubuntu-latest
     environment: release
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -28,10 +28,10 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         server-id: central
-        server-username: ${{ secrets.CENTRAL_USERNAME }}
-        server-password: ${{ secrets.CENTRAL_TOKEN }}
+        server-username: CENTRAL_USERNAME
+        server-password: CENTRAL_PASSWORD
         gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-        gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+        gpg-passphrase: GPG_PASSPHRASE
 
     - name: Cache Maven dependencies
       uses: actions/cache@v4
@@ -44,20 +44,20 @@ jobs:
       run: |
         TAG_VERSION="${{ steps.version.outputs.version }}"
         POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-        
+
         echo "Tag version: $TAG_VERSION"
         echo "POM version: $POM_VERSION"
-        
+
         # Extract major.minor from both versions
         TAG_MAJOR_MINOR=$(echo "$TAG_VERSION" | cut -d. -f1-2)
         POM_MAJOR_MINOR=$(echo "$POM_VERSION" | cut -d. -f1-2)
-        
+
         # Remove -SNAPSHOT suffix from POM version for comparison
         POM_MAJOR_MINOR_CLEAN=$(echo "$POM_MAJOR_MINOR" | sed 's/-SNAPSHOT//')
-        
+
         echo "Tag major.minor: $TAG_MAJOR_MINOR"
         echo "POM major.minor: $POM_MAJOR_MINOR_CLEAN"
-        
+
         if [ "$TAG_MAJOR_MINOR" != "$POM_MAJOR_MINOR_CLEAN" ]; then
           echo "Version mismatch!"
           echo "Tag version $TAG_VERSION (major.minor: $TAG_MAJOR_MINOR) doesn't match POM version $POM_VERSION (major.minor: $POM_MAJOR_MINOR_CLEAN)"
@@ -65,7 +65,7 @@ jobs:
           echo "Expected tag format: v${POM_MAJOR_MINOR_CLEAN}.X where X is the patch version"
           exit 1
         fi
-        
+
         echo "Version compatibility check passed"
 
     - name: Update version in pom.xml
@@ -77,84 +77,7 @@ jobs:
 
     - name: Deploy to Maven Central
       env:
-        MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
-        MAVEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN }}
-        MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+        CENTRAL_PASSWORD: ${{ secrets.CENTRAL_TOKEN }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       run: mvn clean deploy -Prelease -DskipTests
-
-    - name: Generate changelog
-      id: changelog
-      uses: mikepenz/release-changelog-builder-action@v4
-      with:
-        configurationJson: |
-          {
-            "categories": [
-              {
-                "title": "## Features",
-                "labels": ["feature", "enhancement", "feat"]
-              },
-              {
-                "title": "## Bug Fixes", 
-                "labels": ["bug", "fix", "bugfix"]
-              },
-              {
-                "title": "## Documentation",
-                "labels": ["documentation", "docs"]
-              },
-              {
-                "title": "## Maintenance",
-                "labels": ["maintenance", "chore", "refactor"]
-              },
-              {
-                "title": "## Performance",
-                "labels": ["performance", "perf"]
-              },
-              {
-                "title": "## Other Changes",
-                "labels": []
-              }
-            ],
-            "ignore_labels": ["ignore-for-release", "duplicate", "invalid", "wontfix"],
-            "sort": "ASC",
-            "template": "${{CHANGELOG}}",
-            "pr_template": "- ${{TITLE}} (#${{NUMBER}}) @${{AUTHOR}}",
-            "empty_template": "- No changes in this release"
-          }
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Create GitHub Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ steps.version.outputs.version }}
-        body: |
-          ## Release ${{ steps.version.outputs.version }}
-          
-          Published to Maven Central
-          
-          ${{ steps.changelog.outputs.changelog }}
-          
-          ---
-          
-          ### Installation
-          
-          **Maven:**
-          ```xml
-          <dependency>
-              <groupId>io.github.eduarddranca</groupId>
-              <artifactId>data-generation</artifactId>
-              <version>${{ steps.version.outputs.version }}</version>
-          </dependency>
-          ```
-          
-          **Gradle:**
-          ```gradle
-          implementation 'io.github.eduarddranca:data-generation:${{ steps.version.outputs.version }}'
-          ```
-          
-          **Note:** It may take up to 2 hours for the release to be available on Maven Central.
-        draft: false
-        prerelease: false
