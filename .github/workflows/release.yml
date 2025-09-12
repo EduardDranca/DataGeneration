@@ -75,6 +75,12 @@ jobs:
     - name: Run tests
       run: mvn clean test
 
+    - name: Import GPG key
+      uses: crazy-max/ghaction-import-gpg@v6
+      with:
+        gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+        passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
     - name: Deploy to Maven Central
       env:
         CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
