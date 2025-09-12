@@ -90,7 +90,7 @@ jobs:
         CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
         CENTRAL_PASSWORD: ${{ secrets.CENTRAL_TOKEN }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        GPG_KEYNAME: ${{ env.GPG_KEYNAME }}
+        GPG_KEYNAME: ${{ vars.GPG_KEYNAME }}
       run: |
         printenv
         export GPG_TTY=$(tty)
