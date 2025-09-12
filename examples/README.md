@@ -95,7 +95,7 @@ Add DataGeneration to your project:
 **Maven:**
 ```xml
 <dependency>
-    <groupId>com.github.eduarddranca</groupId>
+    <groupId>io.github.eduarddranca</groupId>
     <artifactId>data-generator</artifactId>
     <version>0.1.0</version>
 </dependency>
@@ -103,18 +103,8 @@ Add DataGeneration to your project:
 
 **Gradle:**
 ```gradle
-implementation 'com.github.eduarddranca:data-generator:0.1.0'
+implementation 'io.github.eduarddranca:data-generator:0.1.0'
 ```
-
-## Contributing Examples
-
-Have a great use case example? We'd love to include it!
-
-1. Create a new directory following the naming pattern
-2. Add a Java example and corresponding `dsl.json` file
-3. Include a detailed README.md
-4. Update this main README
-5. Submit a pull request
 
 ## Support
 

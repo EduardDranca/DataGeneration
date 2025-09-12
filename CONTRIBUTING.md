@@ -117,12 +117,6 @@ mvn test -Dtest=ArrayFilteringTest
 mvn test jacoco:report
 ```
 
-### Test Categories
-- **Unit tests**: Test individual components
-- **Integration tests**: Test component interactions
-- **Array filtering tests**: Test complex filtering scenarios
-- **Performance tests**: Ensure scalability
-
 ### Writing Good Tests
 ```java
 @Test
@@ -204,8 +198,6 @@ We follow [Semantic Versioning](https://semver.org/):
 ### Release Checklist
 - [ ] All tests pass
 - [ ] Documentation updated
-- [ ] Version bumped in pom.xml
-- [ ] CHANGELOG updated
 - [ ] Release notes prepared
 
 ## Community Guidelines
