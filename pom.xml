@@ -263,10 +263,6 @@
                                 </goals>
                             </execution>
                         </executions>
-                        <configuration>
-                            <keyname>${env.GPG_KEYNAME}</keyname>
-                            <passphraseServerId>${env.GPG_KEYNAME}</passphraseServerId>
-                        </configuration>
                     </plugin>
                     
                     <!-- Central Publishing plugin -->
