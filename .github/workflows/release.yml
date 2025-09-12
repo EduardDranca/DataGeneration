@@ -81,39 +81,3 @@ jobs:
         MAVEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       run: mvn clean deploy -Prelease -DskipTests
-
-    - name: Create GitHub Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ steps.version.outputs.version }}
-        body: |
-          ## Release ${{ steps.version.outputs.version }}
-          
-          Published to Maven Central
-          
-          ${{ steps.changelog.outputs.changelog }}
-          
-          ---
-          
-          ### Installation
-          
-          **Maven:**
-          ```xml
-          <dependency>
-              <groupId>io.github.eduarddranca</groupId>
-              <artifactId>data-generation</artifactId>
-              <version>${{ steps.version.outputs.version }}</version>
-          </dependency>
-          ```
-          
-          **Gradle:**
-          ```gradle
-          implementation 'io.github.eduarddranca:data-generation:${{ steps.version.outputs.version }}'
-          ```
-          
-          **Note:** It may take up to 2 hours for the release to be available on Maven Central.
-        draft: false
-        prerelease: false
