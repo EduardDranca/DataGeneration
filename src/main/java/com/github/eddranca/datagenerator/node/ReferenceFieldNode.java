@@ -7,7 +7,7 @@ import java.util.List;
  * Field node that references values from other collections.
  * Supports various reference patterns like "collection[*].field", "byTag[tag]", etc.
  */
-public class ReferenceFieldNode implements DslNode {
+public class ReferenceFieldNode implements DslNode, SequentialTrackable {
     private final String reference;
     private final List<FilterNode> filters;
     private final boolean sequential;

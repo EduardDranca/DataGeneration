@@ -5,20 +5,27 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.defaults.ChoiceGenerator;
+import com.github.eddranca.datagenerator.node.AbstractReferenceNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldNode;
+import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
+import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
 import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
+import com.github.eddranca.datagenerator.node.PickReferenceNode;
 import com.github.eddranca.datagenerator.node.ReferenceFieldNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
+import com.github.eddranca.datagenerator.node.SelfReferenceNode;
+import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
+import com.github.eddranca.datagenerator.node.TagReferenceNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,6 +137,45 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
                 node,
                 node.isSequential()
         );
+    }
+
+    @Override
+    public JsonNode visitTagReference(TagReferenceNode node) {
+        return handleSpecializedReference(node);
+    }
+
+    @Override
+    public JsonNode visitIndexedReference(IndexedReferenceNode node) {
+        return handleSpecializedReference(node);
+    }
+
+    @Override
+    public JsonNode visitArrayFieldReference(ArrayFieldReferenceNode node) {
+        return handleSpecializedReference(node);
+    }
+
+    @Override
+    public JsonNode visitSelfReference(SelfReferenceNode node) {
+        return handleSpecializedReference(node);
+    }
+
+    @Override
+    public JsonNode visitSimpleReference(SimpleReferenceNode node) {
+        return handleSpecializedReference(node);
+    }
+
+    @Override
+    public JsonNode visitPickReference(PickReferenceNode node) {
+        return handleSpecializedReference(node);
+    }
+
+    /**
+     * Common handler for all specialized reference nodes.
+     * Uses the node's own resolve method for type-safe resolution.
+     */
+    private JsonNode handleSpecializedReference(AbstractReferenceNode node) {
+        List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
+        return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
     }
 
     @Override

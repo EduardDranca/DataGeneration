@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.FilteringBehavior;
 import com.github.eddranca.datagenerator.exception.FilteringException;
-import com.github.eddranca.datagenerator.exception.InvalidReferenceException;
+
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
 import com.github.eddranca.datagenerator.node.ReferenceFieldNode;
@@ -381,18 +381,7 @@ class GenerationContextTest {
         assertThat(result.asText()).isEqualTo("name2");
     }
 
-    @Test
-    void testInvalidFieldExtractionThrowsException() {
-        List<JsonNode> collection = Arrays.asList(
-            createTestObject("name1", "value1"),
-            createTestObject("name2", "value2"));
-        context.registerCollection("testCollection", collection);
 
-        // Old field extraction syntax should throw exception (validation bug)
-        assertThatThrownBy(() -> context.resolveReferenceWithFiltering("testCollection[name]", null, null, null, false))
-            .isInstanceOf(InvalidReferenceException.class)
-            .hasMessageContaining("Invalid reference pattern: 'testCollection[name]'");
-    }
 
     @Test
     void testArrayFieldReference() {
@@ -527,17 +516,8 @@ class GenerationContextTest {
         assertThat(result2.isNull()).isTrue();
     }
 
-    @Test
-    void testInvalidReferencePatternThrowsException() {
-        List<JsonNode> collection = Collections.singletonList(mapper.valueToTree("item1"));
-        context.registerCollection("testCollection", collection);
-
-        // Simple collection name without brackets should throw exception (validation
-        // bug)
-        assertThatThrownBy(() -> context.resolveReferenceWithFiltering("testCollection", null, null, null, false))
-            .isInstanceOf(InvalidReferenceException.class)
-            .hasMessageContaining("Invalid reference pattern: 'testCollection'");
-    }
+    // Removed: This test is no longer relevant with specialized reference nodes
+    // Invalid reference patterns are now caught during parsing, not resolution
 
     @Test
     void testFilteredCollectionCaching() {

@@ -2,19 +2,25 @@ package com.github.eddranca.datagenerator.validation;
 
 import com.github.eddranca.datagenerator.ValidationError;
 import com.github.eddranca.datagenerator.node.ArrayFieldNode;
+import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
+import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
 import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
+import com.github.eddranca.datagenerator.node.PickReferenceNode;
 import com.github.eddranca.datagenerator.node.ReferenceFieldNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
+import com.github.eddranca.datagenerator.node.SelfReferenceNode;
+import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
+import com.github.eddranca.datagenerator.node.TagReferenceNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,6 +97,68 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
             filter.accept(this);
         }
 
+        return null;
+    }
+
+    @Override
+    public Void visitTagReference(TagReferenceNode node) {
+        // Tag references don't need additional validation beyond what was done during parsing
+        // Visit filters if present
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitIndexedReference(IndexedReferenceNode node) {
+        // Indexed references don't need additional validation beyond what was done during parsing
+        // Visit filters if present
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitArrayFieldReference(ArrayFieldReferenceNode node) {
+        // Array field references don't need additional validation beyond what was done during parsing
+        // Visit filters if present
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitSelfReference(SelfReferenceNode node) {
+        // Validate self-reference
+        validateSelfReference("this." + node.getFieldName());
+        
+        // Visit filters if present
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitSimpleReference(SimpleReferenceNode node) {
+        // Simple references don't need additional validation beyond what was done during parsing
+        // Visit filters if present
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitPickReference(PickReferenceNode node) {
+        // Pick references don't need additional validation beyond what was done during parsing
+        // Visit filters if present
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
         return null;
     }
 

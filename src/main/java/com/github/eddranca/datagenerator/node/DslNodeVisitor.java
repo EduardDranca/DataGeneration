@@ -18,6 +18,18 @@ public interface DslNodeVisitor<T> {
 
     T visitReferenceField(ReferenceFieldNode node);
 
+    T visitTagReference(TagReferenceNode node);
+
+    T visitIndexedReference(IndexedReferenceNode node);
+
+    T visitArrayFieldReference(ArrayFieldReferenceNode node);
+
+    T visitSelfReference(SelfReferenceNode node);
+
+    T visitSimpleReference(SimpleReferenceNode node);
+
+    T visitPickReference(PickReferenceNode node);
+
     T visitChoiceField(ChoiceFieldNode node);
 
     T visitObjectField(ObjectFieldNode node);
