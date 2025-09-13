@@ -16,8 +16,6 @@ public interface DslNodeVisitor<T> {
 
     T visitGeneratedField(GeneratedFieldNode node);
 
-    T visitReferenceField(ReferenceFieldNode node);
-
     T visitTagReference(TagReferenceNode node);
 
     T visitIndexedReference(IndexedReferenceNode node);

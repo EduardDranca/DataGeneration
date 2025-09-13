@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.defaults.ChoiceGenerator;
-
 import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
@@ -19,7 +18,6 @@ import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
 import com.github.eddranca.datagenerator.node.PickReferenceNode;
-import com.github.eddranca.datagenerator.node.ReferenceFieldNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
@@ -46,8 +44,6 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
 
     @Override
     public JsonNode visitRoot(RootNode node) {
-        context.clearFilteredCollectionCache();
-
         ObjectNode result = context.getMapper().createObjectNode();
 
         for (Map.Entry<String, CollectionNode> entry : node.getCollections().entrySet()) {
@@ -84,8 +80,6 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
                 context.registerPick(alias, items.get(index));
             }
         }
-
-        context.clearFilteredCollectionCache();
 
         return context.getMapper().valueToTree(items);
     }
@@ -124,19 +118,6 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
         } else {
             return generator.generate(node.getOptions());
         }
-    }
-
-    @Override
-    public JsonNode visitReferenceField(ReferenceFieldNode node) {
-        List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
-
-        return context.resolveReferenceWithFiltering(
-                node.getReference(),
-                currentItem,
-                filterValues.isEmpty() ? null : filterValues,
-                node,
-                node.isSequential()
-        );
     }
 
     @Override
@@ -245,8 +226,7 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
                 if (value != null && value.isObject()) {
                     ObjectNode spreadObj = (ObjectNode) value;
                     spreadObj.fieldNames().forEachRemaining(
-                            fn -> newObject.set(fn, spreadObj.get(fn))
-                    );
+                            fn -> newObject.set(fn, spreadObj.get(fn)));
                 }
             } else {
                 newObject.set(fieldName, value);
@@ -301,13 +281,8 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
     public JsonNode visitReferenceSpreadField(ReferenceSpreadFieldNode node) {
         List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
 
-        JsonNode referencedItem = context.resolveReferenceWithFiltering(
-                node.getReference(),
-                currentItem,
-                filterValues.isEmpty() ? null : filterValues,
-                node,
-                node.isSequential()
-        );
+        // Use the typed reference node directly
+        JsonNode referencedItem = node.getReferenceNode().resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
 
         if (referencedItem == null || referencedItem.isNull()) {
             return context.getMapper().createObjectNode();
@@ -326,6 +301,8 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
     // ------------------------
     // Private helpers
     // ------------------------
+
+
 
     private void spreadInto(ObjectNode target, JsonNode source, List<String> fieldSpecs) {
         if (source == null || !source.isObject()) {
@@ -354,4 +331,5 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
             }
         }
     }
+
 }

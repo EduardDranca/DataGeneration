@@ -14,7 +14,7 @@ import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
 import com.github.eddranca.datagenerator.node.PickReferenceNode;
-import com.github.eddranca.datagenerator.node.ReferenceFieldNode;
+
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
@@ -86,21 +86,7 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
         return null;
     }
 
-    @Override
-    public Void visitReferenceField(ReferenceFieldNode node) {
-        String reference = node.getReference();
 
-        if (reference.startsWith(THIS_PREFIX)) {
-            validateSelfReference(reference);
-        }
-
-        // Visit filters if present
-        for (FilterNode filter : node.getFilters()) {
-            filter.accept(this);
-        }
-
-        return null;
-    }
 
     @Override
     public Void visitTagReference(TagReferenceNode node) {
@@ -136,7 +122,7 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
     public Void visitSelfReference(SelfReferenceNode node) {
         // Validate self-reference
         validateSelfReference(THIS_PREFIX + node.getFieldName());
-        
+
         // Visit filters if present
         for (FilterNode filter : node.getFilters()) {
             filter.accept(this);
@@ -188,7 +174,7 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
     @Override
     public Void visitReferenceSpreadField(ReferenceSpreadFieldNode node) {
         // Validate the reference in the spread field
-        String reference = node.getReference();
+        String reference = node.getReferenceNode().getReferenceString();
 
         // Validate self-references
         if (reference.startsWith(THIS_PREFIX)) {
@@ -223,9 +209,8 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitFilter(FilterNode node) {
-        if (node.getFilterExpression() instanceof ReferenceFieldNode refNode) {
-            refNode.accept(this);
-        }
+        // Filter expressions are now handled by their specific typed reference nodes
+        node.getFilterExpression().accept(this);
         return null;
     }
 

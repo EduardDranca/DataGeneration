@@ -9,7 +9,6 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.*;
 /**
  * Builder for array field nodes.
  */
-// TODO: Most of these classes should be package-private, we don't need to expose most of them publicly
 public class ArrayFieldNodeBuilder {
     private final NodeBuilderContext context;
     private final FieldBuilder fieldBuilder;
@@ -76,7 +75,7 @@ public class ArrayFieldNodeBuilder {
     private DslNode createFixedSizeArrayNode(String fieldName, JsonNode arrayDef, DslNode itemNode) {
         int size = arrayDef.get(SIZE).asInt();
         if (size < 0) {
-            context.addError("Array field '" + fieldName + "' size must be non-negative");
+            addArrayFieldError(fieldName, "' size must be non-negative");
             return null;
         }
         return new ArrayFieldNode(size, itemNode);
@@ -87,12 +86,12 @@ public class ArrayFieldNodeBuilder {
         int maxSize = arrayDef.path(MAX_SIZE).asInt(10);
 
         if (minSize < 0) {
-            context.addError("Array field '" + fieldName + "' minSize must be non-negative");
+            addArrayFieldError(fieldName, "' minSize must be non-negative");
             return null;
         }
 
         if (maxSize < minSize) {
-            context.addError("Array field '" + fieldName + "' maxSize must be >= minSize");
+            addArrayFieldError(fieldName, "' maxSize must be >= minSize");
             return null;
         }
 

@@ -6,7 +6,6 @@ import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
 import com.github.eddranca.datagenerator.node.PickReferenceNode;
-import com.github.eddranca.datagenerator.node.ReferenceFieldNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
 import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
@@ -46,11 +45,14 @@ public class ReferenceFieldNodeBuilder {
         // filters is never null now, always returns empty list on error
 
         AbstractReferenceNode referenceNode = parseReference(fieldName, reference, filters, sequential);
-        if (referenceNode == null) {
-            return new ReferenceFieldNode(reference, filters, sequential);
+        if (referenceNode != null) {
+            // Return the typed reference node directly
+            return referenceNode;
         }
 
-        return referenceNode;
+        // If parsing fails, create a SimpleReferenceNode as fallback
+        // This handles cases where validation fails but the reference might still work at runtime
+        return new SimpleReferenceNode(reference, null, filters, sequential);
     }
 
     private DslNode buildReferenceSpreadField(String fieldName, JsonNode fieldDef) {
@@ -58,10 +60,16 @@ public class ReferenceFieldNodeBuilder {
         boolean sequential = fieldDef.path(SEQUENTIAL).asBoolean(false);
 
         List<String> fields = extractSpreadFields(fieldName, fieldDef);
-
         List<FilterNode> filters = buildSpreadFieldFilters(fieldName, fieldDef);
 
-        return new ReferenceSpreadFieldNode(reference, fields, filters, sequential);
+        AbstractReferenceNode referenceNode = parseReference(fieldName, reference, filters, sequential);
+        if (referenceNode != null) {
+            return new ReferenceSpreadFieldNode(referenceNode, fields);
+        }
+
+        // Fallback to SimpleReferenceNode for invalid cases
+        SimpleReferenceNode fallbackNode = new SimpleReferenceNode(reference, null, filters, sequential);
+        return new ReferenceSpreadFieldNode(fallbackNode, fields);
     }
 
     private List<FilterNode> buildReferenceFilters(String fieldName, JsonNode fieldDef) {

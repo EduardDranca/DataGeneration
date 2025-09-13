@@ -20,8 +20,8 @@ public class ArrayFieldReferenceNode extends AbstractReferenceNode {
         this.fieldName = fieldName;
     }
 
-    public ArrayFieldReferenceNode(String collectionName, String fieldName, 
-                                  List<FilterNode> filters, boolean sequential) {
+    public ArrayFieldReferenceNode(String collectionName, String fieldName,
+            List<FilterNode> filters, boolean sequential) {
         super(filters, sequential);
         this.collectionName = collectionName;
         this.fieldName = fieldName;
@@ -43,23 +43,24 @@ public class ArrayFieldReferenceNode extends AbstractReferenceNode {
     @Override
     public JsonNode resolve(GenerationContext context, JsonNode currentItem, List<JsonNode> filterValues) {
         List<JsonNode> collection = context.getCollection(collectionName);
-        
+
         // Apply filtering based on the field values
         if (filterValues != null && !filterValues.isEmpty()) {
             collection = context.applyFilteringOnField(collection, fieldName, filterValues);
             if (collection.isEmpty()) {
-                return context.handleFilteringFailure("Array field reference '" + getReferenceString() + "' has no valid values after filtering");
+                return context.handleFilteringFailure(
+                        "Array field reference '" + getReferenceString() + "' has no valid values after filtering");
             }
         }
-        
+
         if (collection.isEmpty()) {
             return context.getMapper().nullNode();
         }
-        
+
         // Select an element and extract the field
         JsonNode selected = context.getElementFromCollection(collection, this, sequential);
         JsonNode fieldValue = selected.path(fieldName);
-        
+
         return fieldValue.isMissingNode() ? context.getMapper().nullNode() : fieldValue;
     }
 

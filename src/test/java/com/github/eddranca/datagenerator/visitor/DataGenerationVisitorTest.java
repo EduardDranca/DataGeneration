@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.builder.DslTreeBuilder;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
 import com.github.eddranca.datagenerator.validation.DslTreeBuildResult;
-import com.github.eddranca.datagenerator.visitor.GenerationContext;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
