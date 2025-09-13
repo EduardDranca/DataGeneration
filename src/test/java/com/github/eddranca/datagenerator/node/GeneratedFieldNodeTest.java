@@ -36,7 +36,7 @@ class GeneratedFieldNodeTest {
         JsonNode options = mapper.createObjectNode();
         GeneratedFieldNode node = new GeneratedFieldNode("name", options, "", List.of());
 
-        assertThat(node.getPath()).isEqualTo("");
+        assertThat(node.getPath()).isEmpty();
         assertThat(node.hasPath()).isFalse();
     }
 

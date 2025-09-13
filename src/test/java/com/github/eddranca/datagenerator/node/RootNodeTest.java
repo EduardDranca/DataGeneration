@@ -45,7 +45,7 @@ class RootNodeTest {
         node.addCollection("users", mockCollection1);
 
         assertThat(node.getCollections()).hasSize(1);
-        assertThat(node.getCollections().get("users")).isEqualTo(mockCollection1);
+        assertThat(node.getCollections()).containsEntry("users", mockCollection1);
     }
 
     @Test
@@ -55,8 +55,8 @@ class RootNodeTest {
         node.addCollection("products", mockCollection2);
 
         assertThat(node.getCollections()).hasSize(2);
-        assertThat(node.getCollections().get("users")).isEqualTo(mockCollection1);
-        assertThat(node.getCollections().get("products")).isEqualTo(mockCollection2);
+        assertThat(node.getCollections()).containsEntry("users", mockCollection1);
+        assertThat(node.getCollections()).containsEntry("products", mockCollection2);
     }
 
     @Test
@@ -75,7 +75,7 @@ class RootNodeTest {
         node.addCollection("users", mockCollection2); // Overwrite
 
         assertThat(node.getCollections()).hasSize(1);
-        assertThat(node.getCollections().get("users")).isEqualTo(mockCollection2);
+        assertThat(node.getCollections()).containsEntry("users", mockCollection2);
     }
 
     @Test

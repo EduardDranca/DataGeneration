@@ -28,8 +28,8 @@ class ObjectFieldNodeTest {
         ObjectFieldNode node = new ObjectFieldNode(fields);
 
         assertThat(node.getFields()).hasSize(2);
-        assertThat(node.getFields().get("name")).isEqualTo(mockField1);
-        assertThat(node.getFields().get("age")).isEqualTo(mockField2);
+        assertThat(node.getFields()).containsEntry("name", mockField1);
+        assertThat(node.getFields()).containsEntry("age", mockField2);
     }
 
     @Test
