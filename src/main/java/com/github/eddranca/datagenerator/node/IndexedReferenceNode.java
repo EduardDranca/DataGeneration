@@ -16,15 +16,6 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
     private final boolean isWildcardIndex;
     private final Integer numericIndex; // Parsed numeric index, null for wildcards
 
-    public IndexedReferenceNode(String collectionName, String index, String fieldName, boolean sequential) {
-        super(sequential);
-        this.collectionName = collectionName;
-        this.index = index;
-        this.fieldName = fieldName != null ? fieldName : "";
-        this.isWildcardIndex = "*".equals(index);
-        this.numericIndex = isWildcardIndex ? null : parseNumericIndex(index);
-    }
-
     public IndexedReferenceNode(String collectionName, String index, String fieldName,
                                 List<FilterNode> filters, boolean sequential) {
         super(filters, sequential);
@@ -43,32 +34,12 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
         }
     }
 
-    public String getCollectionName() {
-        return collectionName;
-    }
-
-    public String getIndex() {
-        return index;
-    }
-
-    public String getFieldName() {
-        return fieldName;
-    }
-
     public boolean hasFieldName() {
         return !fieldName.isEmpty();
     }
 
     public boolean isWildcardIndex() {
         return isWildcardIndex;
-    }
-
-    public boolean isNumericIndex() {
-        return !isWildcardIndex;
-    }
-
-    public Integer getNumericIndex() {
-        return numericIndex;
     }
 
     @Override

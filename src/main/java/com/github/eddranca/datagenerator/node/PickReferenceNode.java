@@ -13,25 +13,11 @@ public class PickReferenceNode extends AbstractReferenceNode {
     private final String pickName;
     private final String fieldName; // Optional field to extract from the pick
 
-    public PickReferenceNode(String pickName, String fieldName, boolean sequential) {
-        super(sequential);
-        this.pickName = pickName;
-        this.fieldName = fieldName != null ? fieldName : "";
-    }
-
     public PickReferenceNode(String pickName, String fieldName,
                              List<FilterNode> filters, boolean sequential) {
         super(filters, sequential);
         this.pickName = pickName;
         this.fieldName = fieldName != null ? fieldName : "";
-    }
-
-    public String getPickName() {
-        return pickName;
-    }
-
-    public String getFieldName() {
-        return fieldName;
     }
 
     public boolean hasFieldName() {

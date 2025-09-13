@@ -17,10 +17,6 @@ class NodeBuilderContext {
         this.errors = errors;
     }
 
-    public ValidationContext getValidationContext() {
-        return validationContext;
-    }
-
     public void addError(String message) {
         String path = validationContext.getCurrentCollection() != null ?
             validationContext.getCurrentCollection() : "root";

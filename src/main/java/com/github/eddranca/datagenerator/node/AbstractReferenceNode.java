@@ -28,10 +28,6 @@ public abstract class AbstractReferenceNode implements DslNode, Sequential, Refe
         return sequential;
     }
 
-    public void addFilter(FilterNode filter) {
-        filters.add(filter);
-    }
-
     /**
      * Returns a string representation of this reference for debugging and error messages.
      */

@@ -13,25 +13,11 @@ public class SimpleReferenceNode extends AbstractReferenceNode {
     private final String collectionName;
     private final String fieldName; // Optional field to extract from the referenced item
 
-    public SimpleReferenceNode(String collectionName, String fieldName, boolean sequential) {
-        super(sequential);
-        this.collectionName = collectionName;
-        this.fieldName = fieldName != null ? fieldName : "";
-    }
-
     public SimpleReferenceNode(String collectionName, String fieldName,
                                List<FilterNode> filters, boolean sequential) {
         super(filters, sequential);
         this.collectionName = collectionName;
         this.fieldName = fieldName != null ? fieldName : "";
-    }
-
-    public String getCollectionName() {
-        return collectionName;
-    }
-
-    public String getFieldName() {
-        return fieldName;
     }
 
     public boolean hasFieldName() {

@@ -14,11 +14,6 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.THIS_PREFIX;
 public class SelfReferenceNode extends AbstractReferenceNode {
     private final String fieldName;
 
-    public SelfReferenceNode(String fieldName, boolean sequential) {
-        super(sequential);
-        this.fieldName = fieldName;
-    }
-
     public SelfReferenceNode(String fieldName, List<FilterNode> filters, boolean sequential) {
         super(filters, sequential);
         this.fieldName = fieldName;

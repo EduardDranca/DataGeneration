@@ -25,10 +25,6 @@ public class TagReferenceNode extends AbstractReferenceNode {
         this.isDynamicTag = tagExpression.startsWith(THIS_PREFIX);
     }
 
-    public String getFieldName() {
-        return fieldName;
-    }
-
     public boolean hasFieldName() {
         return !fieldName.isEmpty();
     }
