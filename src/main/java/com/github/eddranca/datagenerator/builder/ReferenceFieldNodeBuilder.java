@@ -1,5 +1,6 @@
 package com.github.eddranca.datagenerator.builder;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.node.AbstractReferenceNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
@@ -10,18 +11,22 @@ import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
 import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 import com.github.eddranca.datagenerator.node.TagReferenceNode;
-import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.github.eddranca.datagenerator.builder.KeyWords.*;
+import static com.github.eddranca.datagenerator.builder.KeyWords.ELLIPSIS;
+import static com.github.eddranca.datagenerator.builder.KeyWords.FIELDS;
+import static com.github.eddranca.datagenerator.builder.KeyWords.FILTER;
+import static com.github.eddranca.datagenerator.builder.KeyWords.REFERENCE;
+import static com.github.eddranca.datagenerator.builder.KeyWords.SEQUENTIAL;
+import static com.github.eddranca.datagenerator.builder.KeyWords.THIS_PREFIX;
 
 /**
  * Specialized builder for reference field nodes.
  * Handles all reference types and patterns.
  */
-public class ReferenceFieldNodeBuilder {
+class ReferenceFieldNodeBuilder {
     private final NodeBuilderContext context;
     private final FieldBuilder fieldBuilder;
 
@@ -139,7 +144,7 @@ public class ReferenceFieldNodeBuilder {
     }
 
     private AbstractReferenceNode parseReference(String fieldName, String reference,
-                                               List<FilterNode> filters, boolean sequential) {
+                                                 List<FilterNode> filters, boolean sequential) {
         if (reference == null || reference.trim().isEmpty()) {
             addReferenceFieldError(fieldName, "has empty reference");
             return null;
@@ -163,7 +168,7 @@ public class ReferenceFieldNodeBuilder {
     }
 
     private TagReferenceNode parseTagReference(String fieldName, String reference,
-                                              List<FilterNode> filters, boolean sequential) {
+                                               List<FilterNode> filters, boolean sequential) {
         int start = reference.indexOf('[') + 1;
         int end = reference.indexOf(']');
 
@@ -188,7 +193,7 @@ public class ReferenceFieldNodeBuilder {
     }
 
     private SelfReferenceNode parseSelfReference(String fieldName, String reference,
-                                                List<FilterNode> filters, boolean sequential) {
+                                                 List<FilterNode> filters, boolean sequential) {
         String localField = reference.substring(THIS_PREFIX.length());
 
         if (localField.isEmpty()) {
@@ -200,7 +205,7 @@ public class ReferenceFieldNodeBuilder {
     }
 
     private ArrayFieldReferenceNode parseArrayFieldReference(String fieldName, String reference,
-                                                            List<FilterNode> filters, boolean sequential) {
+                                                             List<FilterNode> filters, boolean sequential) {
         String collectionName = reference.substring(0, reference.indexOf("[*]."));
         String field = reference.substring(reference.indexOf("[*].") + 4);
 
@@ -218,7 +223,7 @@ public class ReferenceFieldNodeBuilder {
     }
 
     private IndexedReferenceNode parseIndexedReference(String fieldName, String reference,
-                                                      List<FilterNode> filters, boolean sequential) {
+                                                       List<FilterNode> filters, boolean sequential) {
         String collectionName = reference.substring(0, reference.indexOf("["));
         String indexPart = reference.substring(reference.indexOf("[") + 1, reference.indexOf("]"));
         String fieldPart = "";
@@ -246,7 +251,7 @@ public class ReferenceFieldNodeBuilder {
     }
 
     private AbstractReferenceNode parseDotNotationReference(String fieldName, String reference,
-                                                           List<FilterNode> filters, boolean sequential) {
+                                                            List<FilterNode> filters, boolean sequential) {
         String baseName = reference.substring(0, reference.indexOf("."));
         String field = reference.substring(reference.indexOf(".") + 1);
 
@@ -263,7 +268,7 @@ public class ReferenceFieldNodeBuilder {
     }
 
     private AbstractReferenceNode parseSimpleReference(String fieldName, String reference,
-                                                      List<FilterNode> filters, boolean sequential) {
+                                                       List<FilterNode> filters, boolean sequential) {
         if (context.isPickDeclared(reference)) {
             return new PickReferenceNode(reference, null, filters, sequential);
         }

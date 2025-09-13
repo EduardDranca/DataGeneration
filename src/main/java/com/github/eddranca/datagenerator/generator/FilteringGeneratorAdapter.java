@@ -35,9 +35,9 @@ public class FilteringGeneratorAdapter implements Generator {
 
         // Apply retry logic for generators that don't support filtering
         return generateWithRetryFiltering(
-                () -> delegate.generate(options),
-                filterValues,
-                "Generator filtering"
+            () -> delegate.generate(options),
+            filterValues,
+            "Generator filtering"
         );
     }
 
@@ -55,9 +55,9 @@ public class FilteringGeneratorAdapter implements Generator {
 
         // Apply retry logic for path generation with filtering
         return generateWithRetryFiltering(
-                () -> delegate.generateAtPath(options, path),
-                filterValues,
-                "Generator path filtering"
+            () -> delegate.generateAtPath(options, path),
+            filterValues,
+            "Generator path filtering"
         );
     }
 
@@ -82,9 +82,9 @@ public class FilteringGeneratorAdapter implements Generator {
      * @return generated value that doesn't match any filter values
      */
     private JsonNode generateWithRetryFiltering(
-            Supplier<JsonNode> generator,
-            List<JsonNode> filterValues,
-            String errorContext
+        Supplier<JsonNode> generator,
+        List<JsonNode> filterValues,
+        String errorContext
     ) {
         if (filterValues == null || filterValues.isEmpty()) {
             return generator.get();
@@ -99,7 +99,7 @@ public class FilteringGeneratorAdapter implements Generator {
         }
 
         throw new FilteringException(errorContext + " failed to generate a valid value after " +
-                maxFilteringRetries + " retries");
+            maxFilteringRetries + " retries");
     }
 
     /**

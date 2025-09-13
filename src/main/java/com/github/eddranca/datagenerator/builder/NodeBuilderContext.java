@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Shared context for node builders containing validation context and error collection.
  */
-public class NodeBuilderContext {
+class NodeBuilderContext {
     private final ValidationContext validationContext;
     private final List<ValidationError> errors;
 
@@ -23,7 +23,7 @@ public class NodeBuilderContext {
 
     public void addError(String message) {
         String path = validationContext.getCurrentCollection() != null ?
-                validationContext.getCurrentCollection() : "root";
+            validationContext.getCurrentCollection() : "root";
         errors.add(new ValidationError(path, message));
     }
 

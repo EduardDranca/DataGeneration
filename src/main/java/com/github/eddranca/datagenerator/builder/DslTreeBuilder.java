@@ -21,7 +21,7 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.TAGS;
 /**
  * Builder that parses JSON DSL and creates a validated node tree.
  * Performs validation during building and collects errors.
- *
+ * <p>
  * This class coordinates the building process and delegates to specialized builders.
  */
 public class DslTreeBuilder {
@@ -79,7 +79,7 @@ public class DslTreeBuilder {
     private void declareCollectionAndTags(String dslKeyName, JsonNode collectionDef) {
         // Declare both the DSL key name and the final collection name
         String finalCollectionName = collectionDef.has(NAME) ?
-                collectionDef.get(NAME).asText() : dslKeyName;
+            collectionDef.get(NAME).asText() : dslKeyName;
 
         context.declareCollection(dslKeyName);
         if (!dslKeyName.equals(finalCollectionName)) {
@@ -105,8 +105,8 @@ public class DslTreeBuilder {
         if (!context.declareTagForCollection(tag, collectionName)) {
             String existingCollection = context.getTagCollection(tag);
             addError("Tag '" + tag + "' is already declared by collection '" +
-                    existingCollection + "' and cannot be redeclared by collection '" +
-                    collectionName + "'. Tags can only be shared by collections with the same final name.");
+                existingCollection + "' and cannot be redeclared by collection '" +
+                collectionName + "'. Tags can only be shared by collections with the same final name.");
         }
     }
 
@@ -122,9 +122,6 @@ public class DslTreeBuilder {
             }
         }
     }
-
-
-
 
 
     private void addError(String message) {

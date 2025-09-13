@@ -11,13 +11,16 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static com.github.eddranca.datagenerator.builder.KeyWords.*;
+import static com.github.eddranca.datagenerator.builder.KeyWords.ARRAY;
+import static com.github.eddranca.datagenerator.builder.KeyWords.COUNT;
+import static com.github.eddranca.datagenerator.builder.KeyWords.GENERATOR;
+import static com.github.eddranca.datagenerator.builder.KeyWords.REFERENCE;
 
 /**
  * Main field builder that coordinates with specialized builders.
  * Handles basic field types (literal, object, count arrays) and delegates to specialists.
  */
-public class FieldNodeBuilder implements FieldBuilder {
+class FieldNodeBuilder implements FieldBuilder {
     private final NodeBuilderContext context;
 
     public FieldNodeBuilder(NodeBuilderContext context) {
@@ -55,7 +58,7 @@ public class FieldNodeBuilder implements FieldBuilder {
 
     private DslNode buildObjectField(JsonNode fieldDef) {
         Map<String, DslNode> fields = new LinkedHashMap<>();
-        for (Iterator<Map.Entry<String, JsonNode>> it = fieldDef.fields(); it.hasNext();) {
+        for (Iterator<Map.Entry<String, JsonNode>> it = fieldDef.fields(); it.hasNext(); ) {
             var field = it.next();
             DslNode fieldNode = buildField(field.getKey(), field.getValue());
             if (fieldNode != null) {

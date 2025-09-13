@@ -20,25 +20,25 @@ public class AddressGenerator implements Generator {
     @Override
     public JsonNode generate(JsonNode options) {
         return mapper.valueToTree(
-                Map.of(
-                        "streetAddress", faker.address().streetAddress(),
-                        "city", faker.address().city(),
-                        "state", faker.address().state(),
-                        "zipCode", faker.address().zipCode(),
-                        "country", faker.address().country(),
-                        "countryCode", faker.address().countryCode(),
-                        "fullAddress", faker.address().fullAddress()));
+            Map.of(
+                "streetAddress", faker.address().streetAddress(),
+                "city", faker.address().city(),
+                "state", faker.address().state(),
+                "zipCode", faker.address().zipCode(),
+                "country", faker.address().country(),
+                "countryCode", faker.address().countryCode(),
+                "fullAddress", faker.address().fullAddress()));
     }
 
     @Override
     public Map<String, Supplier<JsonNode>> getFieldSuppliers(JsonNode options) {
         return Map.of(
-                "streetAddress", () -> mapper.valueToTree(faker.address().streetAddress()),
-                "city", () -> mapper.valueToTree(faker.address().city()),
-                "state", () -> mapper.valueToTree(faker.address().state()),
-                "zipCode", () -> mapper.valueToTree(faker.address().zipCode()),
-                "country", () -> mapper.valueToTree(faker.address().country()),
-                "countryCode", () -> mapper.valueToTree(faker.address().countryCode()),
-                "fullAddress", () -> mapper.valueToTree(faker.address().fullAddress()));
+            "streetAddress", () -> mapper.valueToTree(faker.address().streetAddress()),
+            "city", () -> mapper.valueToTree(faker.address().city()),
+            "state", () -> mapper.valueToTree(faker.address().state()),
+            "zipCode", () -> mapper.valueToTree(faker.address().zipCode()),
+            "country", () -> mapper.valueToTree(faker.address().country()),
+            "countryCode", () -> mapper.valueToTree(faker.address().countryCode()),
+            "fullAddress", () -> mapper.valueToTree(faker.address().fullAddress()));
     }
 }

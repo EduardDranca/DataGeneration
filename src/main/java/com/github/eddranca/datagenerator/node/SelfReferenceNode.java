@@ -38,15 +38,15 @@ public class SelfReferenceNode extends AbstractReferenceNode {
         if (currentItem == null) {
             return context.getMapper().nullNode();
         }
-        
+
         JsonNode value = currentItem.path(fieldName);
-        
+
         // Self-references typically don't need filtering since they reference the current item
         // But if filtering is requested, we can check if the value matches any filter
         if (filterValues != null && !filterValues.isEmpty() && filterValues.contains(value)) {
             return context.handleFilteringFailure("Self reference '" + getReferenceString() + "' value matches filter");
         }
-        
+
         return value.isMissingNode() ? context.getMapper().nullNode() : value;
     }
 

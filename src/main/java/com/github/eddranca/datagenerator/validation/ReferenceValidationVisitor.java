@@ -14,7 +14,6 @@ import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
 import com.github.eddranca.datagenerator.node.PickReferenceNode;
-
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
@@ -85,7 +84,6 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
         // Generated fields don't have references to validate
         return null;
     }
-
 
 
     @Override

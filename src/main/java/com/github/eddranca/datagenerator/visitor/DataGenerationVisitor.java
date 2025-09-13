@@ -226,7 +226,7 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
                 if (value != null && value.isObject()) {
                     ObjectNode spreadObj = (ObjectNode) value;
                     spreadObj.fieldNames().forEachRemaining(
-                            fn -> newObject.set(fn, spreadObj.get(fn)));
+                        fn -> newObject.set(fn, spreadObj.get(fn)));
                 }
             } else {
                 newObject.set(fieldName, value);
@@ -301,7 +301,6 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
     // ------------------------
     // Private helpers
     // ------------------------
-
 
 
     private void spreadInto(ObjectNode target, JsonNode source, List<String> fieldSpecs) {

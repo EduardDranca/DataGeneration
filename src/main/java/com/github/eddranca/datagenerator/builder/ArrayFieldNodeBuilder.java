@@ -4,12 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 
-import static com.github.eddranca.datagenerator.builder.KeyWords.*;
+import static com.github.eddranca.datagenerator.builder.KeyWords.ARRAY;
+import static com.github.eddranca.datagenerator.builder.KeyWords.ITEM;
+import static com.github.eddranca.datagenerator.builder.KeyWords.MAX_SIZE;
+import static com.github.eddranca.datagenerator.builder.KeyWords.MIN_SIZE;
+import static com.github.eddranca.datagenerator.builder.KeyWords.SIZE;
 
 /**
  * Builder for array field nodes.
  */
-public class ArrayFieldNodeBuilder {
+class ArrayFieldNodeBuilder {
     private final NodeBuilderContext context;
     private final FieldBuilder fieldBuilder;
 

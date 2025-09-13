@@ -63,7 +63,7 @@ public class TagReferenceNode extends AbstractReferenceNode {
             collection = context.applyFiltering(collection, hasFieldName() ? fieldName : "", filterValues);
             if (collection.isEmpty()) {
                 return context.handleFilteringFailure(
-                        "Tag reference '" + getReferenceString() + "' has no valid values after filtering");
+                    "Tag reference '" + getReferenceString() + "' has no valid values after filtering");
             }
         }
 

@@ -10,12 +10,16 @@ import com.github.eddranca.datagenerator.node.SpreadFieldNode;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.github.eddranca.datagenerator.builder.KeyWords.*;
+import static com.github.eddranca.datagenerator.builder.KeyWords.ELLIPSIS;
+import static com.github.eddranca.datagenerator.builder.KeyWords.FIELDS;
+import static com.github.eddranca.datagenerator.builder.KeyWords.FILTER;
+import static com.github.eddranca.datagenerator.builder.KeyWords.GENERATOR;
+import static com.github.eddranca.datagenerator.builder.KeyWords.OPTIONS;
 
 /**
  * Builder for generated field nodes (generators, choices, spreads).
  */
-public class GeneratedFieldNodeBuilder {
+class GeneratedFieldNodeBuilder {
     private final NodeBuilderContext context;
     private final FieldBuilder fieldBuilder;
 
@@ -50,16 +54,6 @@ public class GeneratedFieldNodeBuilder {
         List<FilterNode> filters = buildGeneratedFieldFilters(fieldName, fieldDef);
 
         return new GeneratedFieldNode(generatorInfo.name, fieldDef, generatorInfo.path, filters);
-    }
-
-    private static class GeneratorInfo {
-        final String name;
-        final String path;
-
-        GeneratorInfo(String name, String path) {
-            this.name = name;
-            this.path = path;
-        }
     }
 
     private GeneratorInfo parseGeneratorSpec(String generatorSpec) {
@@ -274,5 +268,15 @@ public class GeneratedFieldNodeBuilder {
 
     private void addUnknownGeneratorError(String generatorName) {
         context.addError("Unknown generator: " + generatorName);
+    }
+
+    private static class GeneratorInfo {
+        final String name;
+        final String path;
+
+        GeneratorInfo(String name, String path) {
+            this.name = name;
+            this.path = path;
+        }
     }
 }

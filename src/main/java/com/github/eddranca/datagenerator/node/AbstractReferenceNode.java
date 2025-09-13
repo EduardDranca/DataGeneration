@@ -7,7 +7,7 @@ import java.util.List;
  * Abstract base class for all reference nodes.
  * Provides common functionality for filters and sequential behavior.
  */
-public abstract class AbstractReferenceNode implements DslNode, SequentialTrackable, ReferenceResolver {
+public abstract class AbstractReferenceNode implements DslNode, Sequential, ReferenceResolver {
     protected final List<FilterNode> filters;
     protected final boolean sequential;
 

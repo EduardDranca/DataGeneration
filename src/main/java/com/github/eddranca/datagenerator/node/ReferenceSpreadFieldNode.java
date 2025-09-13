@@ -9,10 +9,10 @@ import java.util.List;
  * <p>
  * Example: "...userInfo": {"ref": "users[*]", "fields": ["id", "name"]}
  * This would spread the id and name fields from a referenced user into the current item.
- *
+ * <p>
  * Now uses typed AbstractReferenceNode for type safety and better performance.
  */
-public class ReferenceSpreadFieldNode implements DslNode, SequentialTrackable {
+public class ReferenceSpreadFieldNode implements DslNode, Sequential {
     private final AbstractReferenceNode referenceNode;
     private final List<String> fields;
     private final List<FilterNode> filters;

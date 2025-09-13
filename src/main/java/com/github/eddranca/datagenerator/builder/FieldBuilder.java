@@ -7,7 +7,7 @@ import com.github.eddranca.datagenerator.node.DslNode;
  * Interface for building fields from JSON definitions.
  * This breaks circular dependencies between specialized builders.
  */
-public interface FieldBuilder {
+interface FieldBuilder {
     /**
      * Builds a field node from a JSON definition.
      */

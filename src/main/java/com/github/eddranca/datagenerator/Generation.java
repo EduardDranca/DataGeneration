@@ -40,7 +40,7 @@ public class Generation {
     }
 
     public JsonNode asJsonNode() {
-            return mapper.valueToTree(collections);
+        return mapper.valueToTree(collections);
     }
 
     public String asJson() throws JsonProcessingException {
@@ -135,7 +135,7 @@ public class Generation {
         }
 
         return collection.stream()
-                .map(item -> generateSqlInsert(collectionName, item));
+            .map(item -> generateSqlInsert(collectionName, item));
     }
 
     /**
@@ -168,10 +168,10 @@ public class Generation {
             } else if (val.isObject() || val.isArray()) {
                 // Handle complex objects by converting to JSON string
                 logger.log(Level.WARNING,
-                        "Complex object detected in table ''{0}'', field ''{1}''. " +
-                                "Converting to JSON string representation for SQL insert. " +
-                                "Consider using a database with native JSON support for optimal performance.",
-                        new Object[]{tableName, fieldName});
+                    "Complex object detected in table ''{0}'', field ''{1}''. " +
+                        "Converting to JSON string representation for SQL insert. " +
+                        "Consider using a database with native JSON support for optimal performance.",
+                    new Object[]{tableName, fieldName});
 
                 try {
                     String jsonString = mapper.writeValueAsString(val);
@@ -179,8 +179,8 @@ public class Generation {
                     values.add("'" + escaped + "'");
                 } catch (JsonProcessingException e) {
                     logger.log(Level.SEVERE,
-                            "Failed to serialize complex object to JSON for table ''{0}'', field ''{1}''",
-                            new Object[]{tableName, fieldName});
+                        "Failed to serialize complex object to JSON for table ''{0}'', field ''{1}''",
+                        new Object[]{tableName, fieldName});
                     throw new SerializationException("Failed to serialize complex object to JSON", e);
                 }
             } else {

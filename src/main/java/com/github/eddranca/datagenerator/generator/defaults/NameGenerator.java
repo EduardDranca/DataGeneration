@@ -20,24 +20,24 @@ public class NameGenerator implements Generator {
     @Override
     public JsonNode generate(JsonNode options) {
         return mapper.valueToTree(
-                Map.of("firstName", faker.name().firstName(),
-                        "lastName", faker.name().lastName(),
-                        "fullName", faker.name().fullName(),
-                        "prefix", faker.name().prefix(),
-                        "suffix", faker.name().suffix(),
-                        "title", faker.name().title())
+            Map.of("firstName", faker.name().firstName(),
+                "lastName", faker.name().lastName(),
+                "fullName", faker.name().fullName(),
+                "prefix", faker.name().prefix(),
+                "suffix", faker.name().suffix(),
+                "title", faker.name().title())
         );
     }
 
     @Override
     public Map<String, Supplier<JsonNode>> getFieldSuppliers(JsonNode options) {
         return Map.of(
-                "firstName", () -> mapper.valueToTree(faker.name().firstName()),
-                "lastName", () -> mapper.valueToTree(faker.name().lastName()),
-                "fullName", () -> mapper.valueToTree(faker.name().fullName()),
-                "prefix", () -> mapper.valueToTree(faker.name().prefix()),
-                "suffix", () -> mapper.valueToTree(faker.name().suffix()),
-                "title", () -> mapper.valueToTree(faker.name().title())
+            "firstName", () -> mapper.valueToTree(faker.name().firstName()),
+            "lastName", () -> mapper.valueToTree(faker.name().lastName()),
+            "fullName", () -> mapper.valueToTree(faker.name().fullName()),
+            "prefix", () -> mapper.valueToTree(faker.name().prefix()),
+            "suffix", () -> mapper.valueToTree(faker.name().suffix()),
+            "title", () -> mapper.valueToTree(faker.name().title())
         );
     }
 }

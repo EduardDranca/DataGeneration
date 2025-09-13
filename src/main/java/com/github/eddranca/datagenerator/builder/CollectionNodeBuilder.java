@@ -12,12 +12,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.eddranca.datagenerator.builder.KeyWords.*;
+import static com.github.eddranca.datagenerator.builder.KeyWords.COUNT;
+import static com.github.eddranca.datagenerator.builder.KeyWords.ITEM;
+import static com.github.eddranca.datagenerator.builder.KeyWords.NAME;
+import static com.github.eddranca.datagenerator.builder.KeyWords.PICK;
+import static com.github.eddranca.datagenerator.builder.KeyWords.TAGS;
 
 /**
  * Builder for collection nodes.
  */
-public class CollectionNodeBuilder {
+class CollectionNodeBuilder {
     private final NodeBuilderContext context;
     private final FieldNodeBuilder fieldBuilder;
 
@@ -107,8 +111,8 @@ public class CollectionNodeBuilder {
     }
 
     private void addCollectionPickError(String name, String alias, int index, int count) {
-        context.addError("Collection '" + name + "' pick alias '" + alias + 
-                        "' index " + index + " is out of bounds (count: " + count + ")");
+        context.addError("Collection '" + name + "' pick alias '" + alias +
+            "' index " + index + " is out of bounds (count: " + count + ")");
     }
 
     private ItemNode buildItem(JsonNode itemDef) {

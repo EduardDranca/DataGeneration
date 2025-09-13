@@ -1,8 +1,8 @@
 package com.github.eddranca.datagenerator.generator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.Collections;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Supplier;
 

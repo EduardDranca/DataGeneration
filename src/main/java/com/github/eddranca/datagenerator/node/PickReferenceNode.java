@@ -19,8 +19,8 @@ public class PickReferenceNode extends AbstractReferenceNode {
         this.fieldName = fieldName != null ? fieldName : "";
     }
 
-    public PickReferenceNode(String pickName, String fieldName, 
-                            List<FilterNode> filters, boolean sequential) {
+    public PickReferenceNode(String pickName, String fieldName,
+                             List<FilterNode> filters, boolean sequential) {
         super(filters, sequential);
         this.pickName = pickName;
         this.fieldName = fieldName != null ? fieldName : "";
@@ -49,14 +49,14 @@ public class PickReferenceNode extends AbstractReferenceNode {
         if (pick == null) {
             return context.getMapper().nullNode();
         }
-        
+
         JsonNode value = hasFieldName() ? pick.path(fieldName) : pick;
-        
+
         // Check filtering if needed
         if (filterValues != null && !filterValues.isEmpty() && filterValues.contains(value)) {
             return context.handleFilteringFailure("Pick reference '" + getReferenceString() + "' value matches filter");
         }
-        
+
         return value.isMissingNode() ? context.getMapper().nullNode() : value;
     }
 

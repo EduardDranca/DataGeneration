@@ -43,12 +43,14 @@ public class GeneratorRegistry {
         registry.register("string", new StringGenerator(faker));
         registry.register("sequence", new SequenceGenerator());
         registry.register("csv", new CsvGenerator());
-registry.register("date", new DateGenerator(faker));
+        registry.register("date", new DateGenerator(faker));
         registry.register("boolean", new BooleanGenerator(faker));
         registry.register("lorem", new LoremGenerator(faker));
         registry.register("phone", new PhoneGenerator(faker));
         return registry;
-    }public void register(String name, Generator generator) {
+    }
+
+    public void register(String name, Generator generator) {
         generators.put(name, generator);
     }
 

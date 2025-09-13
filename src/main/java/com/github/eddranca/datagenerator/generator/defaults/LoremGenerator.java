@@ -10,15 +10,14 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class LoremGenerator implements Generator {
-    private final Faker faker;
-    private final ObjectMapper mapper;
-
     private static final String WORD = "word";
     private static final String WORDS = "words";
-        private static final String SENTENCE = "sentence";
+    private static final String SENTENCE = "sentence";
     private static final String SENTENCES = "sentences";
-        private static final String PARAGRAPH = "paragraph";
+    private static final String PARAGRAPH = "paragraph";
     private static final String PARAGRAPHS = "paragraphs";
+    private final Faker faker;
+    private final ObjectMapper mapper;
 
     public LoremGenerator(Faker faker) {
         this.faker = faker;
@@ -66,12 +65,12 @@ public class LoremGenerator implements Generator {
     @Override
     public Map<String, Supplier<JsonNode>> getFieldSuppliers(JsonNode options) {
         return Map.of(
-                WORD, () -> mapper.valueToTree(faker.lorem().word()),
-                WORDS, () -> mapper.valueToTree(String.join(" ", faker.lorem().words(5))),
-                SENTENCE, () -> mapper.valueToTree(faker.lorem().sentence()),
-                SENTENCES, () -> mapper.valueToTree(String.join(" ", faker.lorem().sentences(3))),
-                PARAGRAPH, () -> mapper.valueToTree(faker.lorem().paragraph()),
-                PARAGRAPHS, () -> mapper.valueToTree(String.join("\n\n", faker.lorem().paragraphs(2)))
+            WORD, () -> mapper.valueToTree(faker.lorem().word()),
+            WORDS, () -> mapper.valueToTree(String.join(" ", faker.lorem().words(5))),
+            SENTENCE, () -> mapper.valueToTree(faker.lorem().sentence()),
+            SENTENCES, () -> mapper.valueToTree(String.join(" ", faker.lorem().sentences(3))),
+            PARAGRAPH, () -> mapper.valueToTree(faker.lorem().paragraph()),
+            PARAGRAPHS, () -> mapper.valueToTree(String.join("\n\n", faker.lorem().paragraphs(2)))
         );
     }
 

@@ -7,7 +7,7 @@ import com.github.eddranca.datagenerator.exception.FilteringException;
 import com.github.eddranca.datagenerator.generator.FilteringGeneratorAdapter;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
-import com.github.eddranca.datagenerator.node.SequentialTrackable;
+import com.github.eddranca.datagenerator.node.Sequential;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,25 +17,24 @@ import java.util.Map;
 import java.util.Random;
 
 
-
 /**
  * Context for data generation that maintains state during visitor traversal.
  * Tracks generated collections, tagged collections, and provides access to
  * generators.
- *
+ * <p>
  * ARCHITECTURE:
  * This class provides core utilities for the typed reference system:
  * 1. Collection management (registration, retrieval, caching)
  * 2. Sequential tracking for deterministic generation
  * 3. Filtering utilities with configurable behavior
  * 4. Generator integration with filtering support
- *
+ * <p>
  * All reference nodes use these core utility methods:
  * - getElementFromCollection() for element selection
  * - applyFiltering() for collection filtering
  * - handleFilteringFailure() for error handling
  * - getNextSequentialIndex() for sequential tracking
- *
+ * <p>
  * The system now uses typed AbstractReferenceNode instances exclusively,
  * eliminating string-based reference resolution and improving type safety.
  */
@@ -45,15 +44,15 @@ public class GenerationContext {
     private final ObjectMapper mapper;
     private final Map<String, List<JsonNode>> namedCollections; // Final collections for output
     private final Map<String, List<JsonNode>> referenceCollections; // Collections available for references (includes
-                                                                    // DSL keys)
+    // DSL keys)
     private final Map<String, List<JsonNode>> taggedCollections;
     private final Map<String, JsonNode> namedPicks;
-    private final Map<SequentialTrackable, Integer> sequentialCounters;
+    private final Map<Sequential, Integer> sequentialCounters;
     private final int maxFilteringRetries;
     private final FilteringBehavior filteringBehavior;
 
     public GenerationContext(GeneratorRegistry generatorRegistry, Random random, int maxFilteringRetries,
-            FilteringBehavior filteringBehavior) {
+                             FilteringBehavior filteringBehavior) {
         this.generatorRegistry = generatorRegistry;
         this.random = random;
         this.mapper = new ObjectMapper();
@@ -136,16 +135,16 @@ public class GenerationContext {
 
     /**
      * Gets a random or sequential element from a collection.
-     *
+     * <p>
      * This is a CORE utility method that typed reference nodes should use.
      */
-    public JsonNode getElementFromCollection(List<JsonNode> collection, SequentialTrackable node, boolean sequential) {
+    public JsonNode getElementFromCollection(List<JsonNode> collection, Sequential node, boolean sequential) {
         if (collection.isEmpty()) {
             return mapper.nullNode();
         }
 
         int index = sequential && node != null ? getNextSequentialIndex(node, collection.size())
-                : random.nextInt(collection.size());
+            : random.nextInt(collection.size());
         return collection.get(index);
     }
 
@@ -153,7 +152,7 @@ public class GenerationContext {
      * Applies filtering to a collection based on filter values.
      * If fieldName is provided, filters based on that field's value.
      * Otherwise, filters based on the entire object.
-     *
+     * <p>
      * This is a CORE utility method that typed reference nodes should use.
      */
     public List<JsonNode> applyFiltering(List<JsonNode> collection, String fieldName, List<JsonNode> filterValues) {
@@ -162,10 +161,10 @@ public class GenerationContext {
         }
 
         return collection.stream()
-                .filter(item -> {
-                    JsonNode valueToCheck = fieldName.isEmpty() ? item : item.path(fieldName);
-                    return filterValues.stream().noneMatch(valueToCheck::equals);
-                }).toList();
+            .filter(item -> {
+                JsonNode valueToCheck = fieldName.isEmpty() ? item : item.path(fieldName);
+                return filterValues.stream().noneMatch(valueToCheck::equals);
+            }).toList();
     }
 
     /**
@@ -174,26 +173,26 @@ public class GenerationContext {
      * This is used for field extraction cases where we want to filter based on
      * field values but return the original objects so field extraction can happen
      * later.
-     *
+     * <p>
      * This is a CORE utility method that typed reference nodes should use.
      */
     public List<JsonNode> applyFilteringOnField(List<JsonNode> collection, String fieldName,
-            List<JsonNode> filterValues) {
+                                                List<JsonNode> filterValues) {
         if (collection.isEmpty() || filterValues == null || filterValues.isEmpty()) {
             return new ArrayList<>(collection);
         }
 
         return collection.stream()
-                .filter(item -> {
-                    JsonNode fieldValue = item.path(fieldName);
-                    return !fieldValue.isMissingNode() &&
-                            filterValues.stream().noneMatch(fieldValue::equals);
-                }).toList();
+            .filter(item -> {
+                JsonNode fieldValue = item.path(fieldName);
+                return !fieldValue.isMissingNode() &&
+                    filterValues.stream().noneMatch(fieldValue::equals);
+            }).toList();
     }
 
     /**
      * Handles filtering failure according to the configured filtering behavior.
-     *
+     * <p>
      * This is a CORE utility method that typed reference nodes should use.
      */
     public JsonNode handleFilteringFailure(String message) {
@@ -206,14 +205,14 @@ public class GenerationContext {
     /**
      * Gets the next sequential index for a reference field node.
      * Each reference field node maintains its own counter for round-robin access.
-     *
+     * <p>
      * This is a CORE utility method that typed reference nodes should use.
      *
      * @param node           the reference field node
      * @param collectionSize the size of the collection being referenced
      * @return the next sequential index (with automatic wrap-around)
      */
-    public int getNextSequentialIndex(SequentialTrackable node, int collectionSize) {
+    public int getNextSequentialIndex(Sequential node, int collectionSize) {
         if (collectionSize <= 0) {
             return 0;
         }
@@ -236,7 +235,7 @@ public class GenerationContext {
      * @return generated value that doesn't match any filter values
      */
     public JsonNode generateWithFilter(Generator generator, JsonNode options, String path,
-            List<JsonNode> filterValues) {
+                                       List<JsonNode> filterValues) {
         FilteringGeneratorAdapter adapter = new FilteringGeneratorAdapter(generator, maxFilteringRetries);
         try {
             if (path != null) {

@@ -19,8 +19,8 @@ public class SimpleReferenceNode extends AbstractReferenceNode {
         this.fieldName = fieldName != null ? fieldName : "";
     }
 
-    public SimpleReferenceNode(String collectionName, String fieldName, 
-                              List<FilterNode> filters, boolean sequential) {
+    public SimpleReferenceNode(String collectionName, String fieldName,
+                               List<FilterNode> filters, boolean sequential) {
         super(filters, sequential);
         this.collectionName = collectionName;
         this.fieldName = fieldName != null ? fieldName : "";
@@ -47,7 +47,7 @@ public class SimpleReferenceNode extends AbstractReferenceNode {
     public JsonNode resolve(GenerationContext context, JsonNode currentItem, List<JsonNode> filterValues) {
         // Get the collection
         List<JsonNode> collection = context.getCollection(collectionName);
-        
+
         // Apply filtering if needed
         if (filterValues != null && !filterValues.isEmpty()) {
             collection = context.applyFiltering(collection, hasFieldName() ? fieldName : "", filterValues);
@@ -55,14 +55,14 @@ public class SimpleReferenceNode extends AbstractReferenceNode {
                 return context.handleFilteringFailure("Simple reference '" + getReferenceString() + "' has no valid values after filtering");
             }
         }
-        
+
         if (collection.isEmpty()) {
             return context.getMapper().nullNode();
         }
-        
+
         // Select an element
         JsonNode selected = context.getElementFromCollection(collection, this, sequential);
-        
+
         // Extract field if specified
         return hasFieldName() ? selected.path(fieldName) : selected;
     }

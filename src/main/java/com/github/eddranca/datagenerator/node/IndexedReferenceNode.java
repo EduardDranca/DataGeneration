@@ -25,8 +25,8 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
         this.numericIndex = isWildcardIndex ? null : parseNumericIndex(index);
     }
 
-    public IndexedReferenceNode(String collectionName, String index, String fieldName, 
-                               List<FilterNode> filters, boolean sequential) {
+    public IndexedReferenceNode(String collectionName, String index, String fieldName,
+                                List<FilterNode> filters, boolean sequential) {
         super(filters, sequential);
         this.collectionName = collectionName;
         this.index = index;
@@ -80,7 +80,7 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
     @Override
     public JsonNode resolve(GenerationContext context, JsonNode currentItem, List<JsonNode> filterValues) {
         List<JsonNode> collection = context.getCollection(collectionName);
-        
+
         if (isWildcardIndex()) {
             return resolveWildcardIndex(context, collection, filterValues);
         } else {
@@ -96,11 +96,11 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
                 return context.handleFilteringFailure("Indexed reference '" + getReferenceString() + "' has no valid values after filtering");
             }
         }
-        
+
         if (collection.isEmpty()) {
             return context.getMapper().nullNode();
         }
-        
+
         // Select an element
         JsonNode selected = context.getElementFromCollection(collection, this, sequential);
         return hasFieldName() ? selected.path(fieldName) : selected;
@@ -111,15 +111,15 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
         if (numericIndex >= collection.size()) {
             return context.getMapper().nullNode();
         }
-        
+
         JsonNode selected = collection.get(numericIndex);
         JsonNode value = hasFieldName() ? selected.path(fieldName) : selected;
-        
+
         // Check filtering for numeric index
         if (filterValues != null && !filterValues.isEmpty() && filterValues.contains(value)) {
             return context.handleFilteringFailure("Indexed reference '" + getReferenceString() + "' value matches filter");
         }
-        
+
         return value;
     }
 

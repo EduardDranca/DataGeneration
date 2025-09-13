@@ -21,7 +21,7 @@ public class ArrayFieldReferenceNode extends AbstractReferenceNode {
     }
 
     public ArrayFieldReferenceNode(String collectionName, String fieldName,
-            List<FilterNode> filters, boolean sequential) {
+                                   List<FilterNode> filters, boolean sequential) {
         super(filters, sequential);
         this.collectionName = collectionName;
         this.fieldName = fieldName;
@@ -49,7 +49,7 @@ public class ArrayFieldReferenceNode extends AbstractReferenceNode {
             collection = context.applyFilteringOnField(collection, fieldName, filterValues);
             if (collection.isEmpty()) {
                 return context.handleFilteringFailure(
-                        "Array field reference '" + getReferenceString() + "' has no valid values after filtering");
+                    "Array field reference '" + getReferenceString() + "' has no valid values after filtering");
             }
         }
 
