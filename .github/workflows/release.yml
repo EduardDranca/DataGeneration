@@ -42,6 +42,10 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
+    - name: print settings.xml
+      run: |
+        cat ~/.m2/settings.xml
+
     - name: Validate version compatibility
       run: |
         TAG_VERSION="${{ steps.version.outputs.version }}"
@@ -70,18 +74,34 @@ jobs:
         
         echo "Version compatibility check passed"
 
+    - name: print settings.xml
+      run: |
+        cat ~/.m2/settings.xml
+
     - name: Update version in pom.xml
       run: |
         mvn versions:set -DnewVersion=${{ steps.version.outputs.version }} -DgenerateBackupPoms=false
 
+    - name: print settings.xml
+      run: |
+        cat ~/.m2/settings.xml
+
     - name: Run tests
       run: mvn clean test
+
+    - name: print settings.xml
+      run: |
+        cat ~/.m2/settings.xml
 
     - name: Import GPG key
       uses: crazy-max/ghaction-import-gpg@v6
       with:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+    - name: print settings.xml
+      run: |
+        cat ~/.m2/settings.xml
 
     - name: Deploy to Maven Central
       env:
