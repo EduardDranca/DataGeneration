@@ -89,5 +89,6 @@ jobs:
         CENTRAL_PASSWORD: ${{ secrets.CENTRAL_TOKEN }}
       run: |
         printenv
+        cat ~/.m2/settings.xml
         export GPG_TTY=$(tty)
         mvn clean deploy -Prelease -DskipTests
