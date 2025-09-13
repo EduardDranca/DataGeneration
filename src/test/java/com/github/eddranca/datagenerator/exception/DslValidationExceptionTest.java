@@ -122,13 +122,13 @@ class DslValidationExceptionTest {
                 assertThat(exception.getValidationErrors()).isNotEmpty().hasSize(1);
 
                 ValidationError error = exception.getValidationErrors().get(0);
-                assertThat(error.toString()).contains("references undeclared collection or pick: countries");
+                assertThat(error.toString()).contains("references undeclared collection: countries");
 
                 String message = exception.getMessage();
                 assertThat(message)
                     .contains("DSL validation failed")
                     .contains("1 error(s)")
-                    .contains("references undeclared collection or pick: countries");
+                    .contains("references undeclared collection: countries");
             });
     }
 
@@ -227,13 +227,13 @@ class DslValidationExceptionTest {
                 assertThat(exception.getValidationErrors()).isNotEmpty().hasSize(1);
 
                 ValidationError error = exception.getValidationErrors().get(0);
-                assertThat(error.toString()).contains("references undeclared collection or pick: countries");
+                assertThat(error.toString()).contains("references undeclared collection: countries");
 
                 String message = exception.getMessage();
                 assertThat(message)
                     .contains("DSL validation failed")
                     .contains("1 error(s)")
-                    .contains("references undeclared collection or pick: countries");
+                    .contains("references undeclared collection: countries");
             });
     }
 

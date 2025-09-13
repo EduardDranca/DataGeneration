@@ -32,7 +32,7 @@ public class DslDataGenerator {
         this.maxFilteringRetries = builder.maxFilteringRetries;
         this.filteringBehavior = builder.filteringBehavior;
         this.generatorRegistry = builder.generatorRegistry != null ? builder.generatorRegistry
-                : GeneratorRegistry.withDefaultGenerators(new Faker(random));
+            : GeneratorRegistry.withDefaultGenerators(new Faker(random));
 
         // Add custom generators if any
         if (builder.customGenerators != null) {
@@ -100,7 +100,7 @@ public class DslDataGenerator {
 
         // Generate data using the visitor
         GenerationContext context = new GenerationContext(generatorRegistry, random, maxFilteringRetries,
-                filteringBehavior);
+            filteringBehavior);
         DataGenerationVisitor visitor = new DataGenerationVisitor(context);
 
         rootNode.accept(visitor);

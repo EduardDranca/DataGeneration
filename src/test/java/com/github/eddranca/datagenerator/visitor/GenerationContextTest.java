@@ -2,20 +2,17 @@ package com.github.eddranca.datagenerator.visitor;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.FilteringBehavior;
 import com.github.eddranca.datagenerator.exception.FilteringException;
-import com.github.eddranca.datagenerator.exception.InvalidReferenceException;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
-import com.github.eddranca.datagenerator.node.ReferenceFieldNode;
+import com.github.eddranca.datagenerator.node.Sequential;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -23,548 +20,385 @@ import java.util.Random;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class GenerationContextTest {
-    private GenerationContext context;
-    private ObjectMapper mapper;
-    private Random random;
 
     @Mock
-    private GeneratorRegistry generatorRegistry;
+    private GeneratorRegistry mockGeneratorRegistry;
+
+    @Mock
+    private Random mockRandom;
 
     @Mock
     private Generator mockGenerator;
 
     @Mock
-    private ReferenceFieldNode mockReferenceNode;
+    private Sequential mockSequentialNode;
+
+    private GenerationContext context;
+    private ObjectMapper mapper;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        context = new GenerationContext(mockGeneratorRegistry, mockRandom, 5, FilteringBehavior.RETURN_NULL);
         mapper = new ObjectMapper();
-        random = new Random(42);
-        context = new GenerationContext(generatorRegistry, random, 100, FilteringBehavior.RETURN_NULL);
     }
 
     @Test
-    void testConstructorAndBasicGetters() {
-        // Test constructor with all parameters
-        assertThat(context.getGeneratorRegistry()).isEqualTo(generatorRegistry);
-        assertThat(context.getRandom()).isEqualTo(random);
-        assertThat(context.getMapper()).isNotNull();
+    void testConstructorWithDefaults() {
+        GenerationContext defaultContext = new GenerationContext(mockGeneratorRegistry, mockRandom);
 
-        // Test constructor with defaults
-        GenerationContext defaultContext = new GenerationContext(generatorRegistry, random);
-        assertThat(defaultContext.getGeneratorRegistry()).isEqualTo(generatorRegistry);
-        assertThat(defaultContext.getRandom()).isEqualTo(random);
+        assertThat(defaultContext.getGeneratorRegistry()).isEqualTo(mockGeneratorRegistry);
+        assertThat(defaultContext.getRandom()).isEqualTo(mockRandom);
         assertThat(defaultContext.getMapper()).isNotNull();
     }
 
     @Test
+    void testConstructorWithCustomSettings() {
+        GenerationContext customContext = new GenerationContext(
+            mockGeneratorRegistry,
+            mockRandom,
+            10,
+            FilteringBehavior.THROW_EXCEPTION
+        );
+
+        assertThat(customContext.getGeneratorRegistry()).isEqualTo(mockGeneratorRegistry);
+        assertThat(customContext.getRandom()).isEqualTo(mockRandom);
+    }
+
+    @Test
     void testRegisterAndGetCollection() {
-        List<JsonNode> collection = Arrays.asList(
-            mapper.valueToTree("item1"),
-            mapper.valueToTree("item2"));
+        JsonNode item1 = mapper.valueToTree("value1");
+        JsonNode item2 = mapper.valueToTree("value2");
+        List<JsonNode> collection = List.of(item1, item2);
 
         context.registerCollection("testCollection", collection);
 
         List<JsonNode> retrieved = context.getCollection("testCollection");
-        assertThat(retrieved)
-            .isNotNull()
-            .hasSize(2);
-        assertThat(retrieved.get(0).asText()).isEqualTo("item1");
-        assertThat(retrieved.get(1).asText()).isEqualTo("item2");
+        assertThat(retrieved).hasSize(2);
+        assertThat(retrieved.get(0).asText()).isEqualTo("value1");
+        assertThat(retrieved.get(1).asText()).isEqualTo("value2");
     }
 
     @Test
-    void testRegisterCollectionMerging() {
-        List<JsonNode> collection1 = Collections.singletonList(mapper.valueToTree("item1"));
-        List<JsonNode> collection2 = Collections.singletonList(mapper.valueToTree("item2"));
+    void testRegisterCollectionMergesExisting() {
+        JsonNode item1 = mapper.valueToTree("value1");
+        JsonNode item2 = mapper.valueToTree("value2");
+        JsonNode item3 = mapper.valueToTree("value3");
 
-        context.registerCollection("testCollection", collection1);
-        context.registerCollection("testCollection", collection2);
+        context.registerCollection("testCollection", List.of(item1));
+        context.registerCollection("testCollection", List.of(item2, item3));
 
-        List<JsonNode> merged = context.getCollection("testCollection");
-        assertThat(merged).hasSize(2);
-        assertThat(merged.get(0).asText()).isEqualTo("item1");
-        assertThat(merged.get(1).asText()).isEqualTo("item2");
+        List<JsonNode> retrieved = context.getCollection("testCollection");
+        assertThat(retrieved).hasSize(3);
+        assertThat(retrieved.get(0).asText()).isEqualTo("value1");
+        assertThat(retrieved.get(1).asText()).isEqualTo("value2");
+        assertThat(retrieved.get(2).asText()).isEqualTo("value3");
+    }
+
+    @Test
+    void testGetCollectionReturnsEmptyForNonExistent() {
+        List<JsonNode> retrieved = context.getCollection("nonExistent");
+        assertThat(retrieved).isEmpty();
     }
 
     @Test
     void testRegisterAndGetReferenceCollection() {
-        List<JsonNode> collection = Arrays.asList(
-            mapper.valueToTree("ref1"),
-            mapper.valueToTree("ref2"));
+        JsonNode item = mapper.valueToTree("refValue");
+        List<JsonNode> collection = List.of(item);
 
         context.registerReferenceCollection("refCollection", collection);
 
-        // Reference collections should be accessible via getCollection
         List<JsonNode> retrieved = context.getCollection("refCollection");
-        assertThat(retrieved)
-            .isNotNull()
-            .hasSize(2);
-        assertThat(retrieved.get(0).asText()).isEqualTo("ref1");
-        assertThat(retrieved.get(1).asText()).isEqualTo("ref2");
+        assertThat(retrieved).hasSize(1);
+        assertThat(retrieved.get(0).asText()).isEqualTo("refValue");
     }
 
     @Test
-    void testReferenceCollectionTakesPrecedence() {
-        List<JsonNode> namedCollection = Collections.singletonList(mapper.valueToTree("named"));
-        List<JsonNode> refCollection = Collections.singletonList(mapper.valueToTree("reference"));
+    void testReferenceCollectionTakesPrecedenceOverNamedCollection() {
+        JsonNode namedItem = mapper.valueToTree("namedValue");
+        JsonNode refItem = mapper.valueToTree("refValue");
 
-        context.registerCollection("sameName", namedCollection);
-        context.registerReferenceCollection("sameName", refCollection);
+        context.registerCollection("testCollection", List.of(namedItem));
+        context.registerReferenceCollection("testCollection", List.of(refItem));
 
-        // Reference collection should take precedence
-        List<JsonNode> retrieved = context.getCollection("sameName");
-        assertThat(retrieved.get(0).asText()).isEqualTo("reference");
+        List<JsonNode> retrieved = context.getCollection("testCollection");
+        assertThat(retrieved).hasSize(1);
+        assertThat(retrieved.get(0).asText()).isEqualTo("refValue");
     }
 
     @Test
     void testRegisterAndGetTaggedCollection() {
-        List<JsonNode> collection = Arrays.asList(
-            mapper.valueToTree("tagged1"),
-            mapper.valueToTree("tagged2"));
+        JsonNode item1 = mapper.valueToTree("tagged1");
+        JsonNode item2 = mapper.valueToTree("tagged2");
+        List<JsonNode> collection = List.of(item1, item2);
 
         context.registerTaggedCollection("testTag", collection);
 
         List<JsonNode> retrieved = context.getTaggedCollection("testTag");
-        assertThat(retrieved)
-            .isNotNull()
-            .hasSize(2);
+        assertThat(retrieved).hasSize(2);
         assertThat(retrieved.get(0).asText()).isEqualTo("tagged1");
+        assertThat(retrieved.get(1).asText()).isEqualTo("tagged2");
     }
 
     @Test
-    void testTaggedCollectionMerging() {
-        List<JsonNode> collection1 = Collections.singletonList(mapper.valueToTree("tagged1"));
-        List<JsonNode> collection2 = Collections.singletonList(mapper.valueToTree("tagged2"));
+    void testRegisterTaggedCollectionMergesExisting() {
+        JsonNode item1 = mapper.valueToTree("tagged1");
+        JsonNode item2 = mapper.valueToTree("tagged2");
 
-        context.registerTaggedCollection("testTag", collection1);
-        context.registerTaggedCollection("testTag", collection2);
+        context.registerTaggedCollection("testTag", List.of(item1));
+        context.registerTaggedCollection("testTag", List.of(item2));
 
-        List<JsonNode> merged = context.getTaggedCollection("testTag");
-        assertThat(merged).hasSize(2);
-        assertThat(merged.get(0).asText()).isEqualTo("tagged1");
-        assertThat(merged.get(1).asText()).isEqualTo("tagged2");
+        List<JsonNode> retrieved = context.getTaggedCollection("testTag");
+        assertThat(retrieved).hasSize(2);
     }
 
     @Test
-    void testGetNamedCollections() {
-        List<JsonNode> collection1 = Collections.singletonList(mapper.valueToTree("item1"));
-        List<JsonNode> collection2 = Collections.singletonList(mapper.valueToTree("item2"));
-
-        context.registerCollection("collection1", collection1);
-        context.registerCollection("collection2", collection2);
-
-        Map<String, List<JsonNode>> namedCollections = context.getNamedCollections();
-        assertThat(namedCollections)
-            .hasSize(2)
-            .containsKeys("collection1", "collection2");
-
-        // Should be a copy, not the original map
-        namedCollections.clear();
-        assertThat(context.getNamedCollections()).hasSize(2);
+    void testGetTaggedCollectionReturnsEmptyForNonExistent() {
+        List<JsonNode> retrieved = context.getTaggedCollection("nonExistentTag");
+        assertThat(retrieved).isEmpty();
     }
 
     @Test
-    void testGetTaggedCollections() {
-        List<JsonNode> collection = Collections.singletonList(mapper.valueToTree("tagged1"));
+    void testRegisterAndGetPick() {
+        JsonNode pickValue = mapper.valueToTree("pickValue");
 
-        context.registerTaggedCollection("tag1", collection);
+        context.registerPick("testPick", pickValue);
 
-        Map<String, List<JsonNode>> taggedCollections = context.getTaggedCollections();
-        assertThat(taggedCollections)
-            .hasSize(1)
-            .containsKey("tag1");
-
-        // Should be a copy
-        taggedCollections.clear();
-        assertThat(context.getTaggedCollections()).hasSize(1);
+        JsonNode retrieved = context.getNamedPick("testPick");
+        assertThat(retrieved.asText()).isEqualTo("pickValue");
     }
 
     @Test
-    void testSequentialIndexing() {
-        // Test that sequential indexing works correctly with wrap-around
-        int collectionSize = 3;
+    void testGetNamedPickReturnsNullForNonExistent() {
+        JsonNode retrieved = context.getNamedPick("nonExistentPick");
+        assertThat(retrieved).isNull();
+    }
 
-        assertThat(context.getNextSequentialIndex(mockReferenceNode, collectionSize)).isEqualTo(0);
-        assertThat(context.getNextSequentialIndex(mockReferenceNode, collectionSize)).isEqualTo(1);
-        assertThat(context.getNextSequentialIndex(mockReferenceNode, collectionSize)).isEqualTo(2);
-        assertThat(context.getNextSequentialIndex(mockReferenceNode, collectionSize)).isEqualTo(0); // Wrap around
-        assertThat(context.getNextSequentialIndex(mockReferenceNode, collectionSize)).isEqualTo(1);
+    @Test
+    void testGetNamedCollectionsReturnsCopy() {
+        JsonNode item = mapper.valueToTree("value");
+        context.registerCollection("testCollection", List.of(item));
+
+        Map<String, List<JsonNode>> collections = context.getNamedCollections();
+        assertThat(collections).hasSize(1);
+        assertThat(collections.get("testCollection")).hasSize(1);
+
+        // Modify the returned map - should not affect internal state
+        collections.clear();
+        assertThat(context.getCollection("testCollection")).hasSize(1);
+    }
+
+    @Test
+    void testGetElementFromCollectionWithRandomSelection() {
+        JsonNode item1 = mapper.valueToTree("item1");
+        JsonNode item2 = mapper.valueToTree("item2");
+        List<JsonNode> collection = List.of(item1, item2);
+
+        when(mockRandom.nextInt(2)).thenReturn(1);
+
+        JsonNode result = context.getElementFromCollection(collection, mockSequentialNode, false);
+        assertThat(result.asText()).isEqualTo("item2");
+    }
+
+    @Test
+    void testGetElementFromCollectionWithSequentialSelection() {
+        JsonNode item1 = mapper.valueToTree("item1");
+        JsonNode item2 = mapper.valueToTree("item2");
+        List<JsonNode> collection = List.of(item1, item2);
+
+        JsonNode result1 = context.getElementFromCollection(collection, mockSequentialNode, true);
+        JsonNode result2 = context.getElementFromCollection(collection, mockSequentialNode, true);
+        JsonNode result3 = context.getElementFromCollection(collection, mockSequentialNode, true);
+
+        assertThat(result1.asText()).isEqualTo("item1");
+        assertThat(result2.asText()).isEqualTo("item2");
+        assertThat(result3.asText()).isEqualTo("item1"); // Wraps around
+    }
+
+    @Test
+    void testGetElementFromEmptyCollectionReturnsNull() {
+        List<JsonNode> emptyCollection = List.of();
+
+        JsonNode result = context.getElementFromCollection(emptyCollection, mockSequentialNode, false);
+        assertThat(result.isNull()).isTrue();
     }
 
     @Test
     void testSequentialIndexingWithDifferentNodes() {
+        JsonNode item1 = mapper.valueToTree("item1");
+        JsonNode item2 = mapper.valueToTree("item2");
+        List<JsonNode> collection = List.of(item1, item2);
+
+        Sequential node1 = mock(Sequential.class);
+        Sequential node2 = mock(Sequential.class);
+
         // Different nodes should have independent counters
-        ReferenceFieldNode node1 = mock(ReferenceFieldNode.class);
-        ReferenceFieldNode node2 = mock(ReferenceFieldNode.class);
+        JsonNode result1 = context.getElementFromCollection(collection, node1, true);
+        JsonNode result2 = context.getElementFromCollection(collection, node2, true);
+        JsonNode result3 = context.getElementFromCollection(collection, node1, true);
 
-        assertThat(context.getNextSequentialIndex(node1, 5)).isEqualTo(0);
-        assertThat(context.getNextSequentialIndex(node2, 5)).isEqualTo(0);
-        assertThat(context.getNextSequentialIndex(node1, 5)).isEqualTo(1);
-        assertThat(context.getNextSequentialIndex(node2, 5)).isEqualTo(1);
+        assertThat(result1.asText()).isEqualTo("item1"); // node1 index 0
+        assertThat(result2.asText()).isEqualTo("item1"); // node2 index 0
+        assertThat(result3.asText()).isEqualTo("item2"); // node1 index 1
     }
 
     @Test
-    void testSequentialIndexingWithZeroSize() {
-        assertThat(context.getNextSequentialIndex(mockReferenceNode, 0)).isEqualTo(0);
+    void testGetNextSequentialIndex() {
+        assertThat(context.getNextSequentialIndex(mockSequentialNode, 3)).isEqualTo(0);
+        assertThat(context.getNextSequentialIndex(mockSequentialNode, 3)).isEqualTo(1);
+        assertThat(context.getNextSequentialIndex(mockSequentialNode, 3)).isEqualTo(2);
+        assertThat(context.getNextSequentialIndex(mockSequentialNode, 3)).isEqualTo(0); // Wraps around
     }
 
     @Test
-    void testClearFilteredCollectionCache() {
-        // Set up a collection and create a filtered version using field extraction
-        List<JsonNode> collection = Arrays.asList(
-            createTestObject("name1", "value1"),
-            createTestObject("name2", "value2"));
-        context.registerCollection("testCollection", collection);
-
-        List<JsonNode> filterValues = Collections.singletonList(mapper.valueToTree("value1"));
-
-        // Create filtered collection using field extraction (should be cached)
-        List<JsonNode> filtered1 = context.getOrCreateFilteredCollection("testCollection[*].value", null, filterValues);
-        List<JsonNode> filtered2 = context.getOrCreateFilteredCollection("testCollection[*].value", null, filterValues);
-
-        // Should be the same instance (cached)
-        assertThat(filtered1).isSameAs(filtered2);
-
-        // Clear cache
-        context.clearFilteredCollectionCache();
-
-        // Should create a new instance
-        List<JsonNode> filtered3 = context.getOrCreateFilteredCollection("testCollection[*].value", null, filterValues);
-        assertThat(filtered1)
-            .isNotSameAs(filtered3)
-            .hasSameSizeAs(filtered3); // But same content
+    void testGetNextSequentialIndexWithZeroSize() {
+        assertThat(context.getNextSequentialIndex(mockSequentialNode, 0)).isEqualTo(0);
     }
 
     @Test
-    void testWildcardReferenceResolution() {
-        List<JsonNode> collection = Arrays.asList(
-            mapper.valueToTree("item1"),
-            mapper.valueToTree("item2"),
-            mapper.valueToTree("item3"));
-        context.registerCollection("testCollection", collection);
+    void testApplyFilteringWithEmptyFieldName() {
+        JsonNode item1 = mapper.valueToTree("keep");
+        JsonNode item2 = mapper.valueToTree("filter");
+        JsonNode item3 = mapper.valueToTree("keep");
+        List<JsonNode> collection = List.of(item1, item2, item3);
 
-        JsonNode result = context.resolveReferenceWithFiltering("testCollection[*]", null, null, null, false);
+        JsonNode filterValue = mapper.valueToTree("filter");
+        List<JsonNode> filterValues = List.of(filterValue);
 
-        assertThat(result).isNotNull();
-        assertThat(result.isTextual()).isTrue();
-        assertThat(result.asText()).isIn("item1", "item2", "item3");
+        List<JsonNode> result = context.applyFiltering(collection, "", filterValues);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).asText()).isEqualTo("keep");
+        assertThat(result.get(1).asText()).isEqualTo("keep");
     }
 
     @Test
-    void testSequentialReferenceResolution() {
-        List<JsonNode> collection = Arrays.asList(
-            mapper.valueToTree("item1"),
-            mapper.valueToTree("item2"),
-            mapper.valueToTree("item3"));
-        context.registerCollection("testCollection", collection);
+    void testApplyFilteringWithFieldName() {
+        JsonNode item1 = mapper.createObjectNode().put("name", "keep1").put("value", 1);
+        JsonNode item2 = mapper.createObjectNode().put("name", "filter").put("value", 2);
+        JsonNode item3 = mapper.createObjectNode().put("name", "keep2").put("value", 3);
+        List<JsonNode> collection = List.of(item1, item2, item3);
 
-        // Sequential access should return items in order
-        JsonNode result1 = context.resolveReferenceWithFiltering("testCollection[*]", null, null, mockReferenceNode,
-            true);
-        JsonNode result2 = context.resolveReferenceWithFiltering("testCollection[*]", null, null, mockReferenceNode,
-            true);
-        JsonNode result3 = context.resolveReferenceWithFiltering("testCollection[*]", null, null, mockReferenceNode,
-            true);
-        JsonNode result4 = context.resolveReferenceWithFiltering("testCollection[*]", null, null, mockReferenceNode,
-            true);
+        JsonNode filterValue = mapper.valueToTree("filter");
+        List<JsonNode> filterValues = List.of(filterValue);
 
-        assertThat(result1.asText()).isEqualTo("item1");
-        assertThat(result2.asText()).isEqualTo("item2");
-        assertThat(result3.asText()).isEqualTo("item3");
-        assertThat(result4.asText()).isEqualTo("item1"); // Wrap around
+        List<JsonNode> result = context.applyFiltering(collection, "name", filterValues);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).get("name").asText()).isEqualTo("keep1");
+        assertThat(result.get(1).get("name").asText()).isEqualTo("keep2");
     }
 
     @Test
-    void testThisReferenceResolution() {
-        ObjectNode currentItem = mapper.createObjectNode();
-        currentItem.put("name", "John");
-        currentItem.put("age", 30);
-
-        JsonNode nameResult = context.resolveReferenceWithFiltering("this.name", currentItem, null, null, false);
-        JsonNode ageResult = context.resolveReferenceWithFiltering("this.age", currentItem, null, null, false);
-        JsonNode missingResult = context.resolveReferenceWithFiltering("this.missing", currentItem, null, null, false);
-
-        assertThat(nameResult.asText()).isEqualTo("John");
-        assertThat(ageResult.asInt()).isEqualTo(30);
-        assertThat(missingResult.isNull() || missingResult.isMissingNode()).isTrue();
-    }
-
-    @Test
-    void testPickReferenceResolution() {
-        ObjectNode pickValue = mapper.createObjectNode();
-        pickValue.put("name", "John");
-        pickValue.put("age", 30);
-
-        context.registerPick("testPick", pickValue);
-
-        JsonNode directResult = context.resolveReferenceWithFiltering("testPick", null, null, null, false);
-        JsonNode fieldResult = context.resolveReferenceWithFiltering("testPick.name", null, null, null, false);
-
-        assertThat(directResult).isEqualTo(pickValue);
-        assertThat(fieldResult.asText()).isEqualTo("John");
-    }
-
-    @Test
-    void testTagReferenceResolution() {
-        List<JsonNode> taggedCollection = Arrays.asList(
-            createTestObject("name1", "value1"),
-            createTestObject("name2", "value2"));
-        context.registerTaggedCollection("testTag", taggedCollection);
-
-        JsonNode result = context.resolveReferenceWithFiltering("byTag[testTag]", null, null, null, false);
-
-        assertThat(result).isNotNull();
-        assertThat(result.isObject()).isTrue();
-    }
-
-    @Test
-    void testTagReferenceWithThisExpression() {
-        ObjectNode currentItem = mapper.createObjectNode();
-        currentItem.put("category", "electronics");
-
-        List<JsonNode> taggedCollection = Arrays.asList(
-            createTestObject("product1", "phone"),
-            createTestObject("product2", "laptop"));
-        context.registerTaggedCollection("electronics", taggedCollection);
-
-        JsonNode result = context.resolveReferenceWithFiltering("byTag[this.category]", currentItem, null, null, false);
-
-        assertThat(result).isNotNull();
-        assertThat(result.isObject()).isTrue();
-    }
-
-    @Test
-    void testTagReferenceWithFieldExtraction() {
-        List<JsonNode> taggedCollection = Arrays.asList(
-            createTestObject("name1", "value1"),
-            createTestObject("name2", "value2"));
-        context.registerTaggedCollection("testTag", taggedCollection);
-
-        JsonNode result = context.resolveReferenceWithFiltering("byTag[testTag].name", null, null, null, false);
-
-        assertThat(result).isNotNull();
-        assertThat(result.isTextual()).isTrue();
-        assertThat(result.asText()).isIn("name1", "name2");
-    }
-
-    @Test
-    void testIndexedReferenceResolution() {
-        List<JsonNode> collection = Arrays.asList(
-            createTestObject("name1", "value1"),
-            createTestObject("name2", "value2"),
-            createTestObject("name3", "value3"));
-        context.registerCollection("testCollection", collection);
-
-        JsonNode result = context.resolveReferenceWithFiltering("testCollection[1]", null, null, null, false);
-
-        assertThat(result).isNotNull();
-        assertThat(result.get("name").asText()).isEqualTo("name2");
-    }
-
-    @Test
-    void testIndexedReferenceWithFieldExtraction() {
-        List<JsonNode> collection = Arrays.asList(
-            createTestObject("name1", "value1"),
-            createTestObject("name2", "value2"));
-        context.registerCollection("testCollection", collection);
-
-        JsonNode result = context.resolveReferenceWithFiltering("testCollection[1].name", null, null, null, false);
-
-        assertThat(result.asText()).isEqualTo("name2");
-    }
-
-    @Test
-    void testInvalidFieldExtractionThrowsException() {
-        List<JsonNode> collection = Arrays.asList(
-            createTestObject("name1", "value1"),
-            createTestObject("name2", "value2"));
-        context.registerCollection("testCollection", collection);
-
-        // Old field extraction syntax should throw exception (validation bug)
-        assertThatThrownBy(() -> context.resolveReferenceWithFiltering("testCollection[name]", null, null, null, false))
-            .isInstanceOf(InvalidReferenceException.class)
-            .hasMessageContaining("Invalid reference pattern: 'testCollection[name]'");
-    }
-
-    @Test
-    void testArrayFieldReference() {
-        List<JsonNode> collection = Arrays.asList(
-            createTestObject("name1", "value1"),
-            createTestObject("name2", "value2"));
-        context.registerCollection("testCollection", collection);
-
-        JsonNode result = context.resolveReferenceWithFiltering("testCollection[*].name", null, null, null, false);
-
-        assertThat(result).isNotNull();
-        assertThat(result.isTextual()).isTrue();
-        assertThat(result.asText()).isIn("name1", "name2");
-    }
-
-    @Test
-    void testReferenceResolutionWithFiltering() {
-        List<JsonNode> collection = Arrays.asList(
-            createTestObject("name1", "value1"),
-            createTestObject("name2", "value2"),
-            createTestObject("name3", "value3"));
-        context.registerCollection("testCollection", collection);
-
-        // Filter by field values using correct field extraction syntax
-        List<JsonNode> filterValues = Arrays.asList(
-            mapper.valueToTree("value1"),
-            mapper.valueToTree("value2"));
-
-        JsonNode result = context.resolveReferenceWithFiltering("testCollection[*].value", null, filterValues, null,
-            false);
-
-        // Field extraction returns the field value, not the full object
-        assertThat(result).isNotNull();
-        assertThat(result.asText()).isEqualTo("value3");
-    }
-
-    @Test
-    void testReferenceResolutionWithAllFiltered() {
-        List<JsonNode> collection = List.of(createTestObject("name1", "value1"));
-        context.registerCollection("testCollection", collection);
-
-        List<JsonNode> filterValues = Collections.singletonList(
-            mapper.valueToTree("value1"));
-
-        JsonNode result = context.resolveReferenceWithFiltering("testCollection[*].value", null, filterValues, null,
-            false);
-
-        assertThat(result.isNull()).isTrue();
-    }
-
-    @Test
-    void testReferenceResolutionWithAllFilteredThrowException() {
-        GenerationContext throwContext = new GenerationContext(generatorRegistry, random, 100,
-            FilteringBehavior.THROW_EXCEPTION);
-
-        List<JsonNode> collection = List.of(createTestObject("name1", "value1"));
-        throwContext.registerCollection("testCollection", collection);
-
-        List<JsonNode> filterValues = Collections.singletonList(
-            mapper.valueToTree("value1"));
-
-        assertThatThrownBy(() -> throwContext.resolveReferenceWithFiltering("testCollection[*].value", null,
-            filterValues, null, false)).isInstanceOf(FilteringException.class);
-    }
-
-    @Test
-    void testGenerateWithFilterReturnNull() {
-        when(mockGenerator.supportsFiltering()).thenReturn(true);
-        when(mockGenerator.generateWithFilter(any(), anyList())).thenThrow(new FilteringException("All filtered"));
-
-        ObjectNode options = mapper.createObjectNode();
-        List<JsonNode> filterValues = Collections.singletonList(mapper.valueToTree("filtered"));
-
-        JsonNode result = context.generateWithFilter(mockGenerator, options, null, filterValues);
-
-        assertThat(result.isNull()).isTrue();
-    }
-
-    @Test
-    void testGenerateWithFilterThrowException() {
-        GenerationContext throwContext = new GenerationContext(generatorRegistry, random, 100,
-            FilteringBehavior.THROW_EXCEPTION);
-
-        when(mockGenerator.supportsFiltering()).thenReturn(true);
-        when(mockGenerator.generateWithFilter(any(), anyList())).thenThrow(new FilteringException("All filtered"));
-
-        ObjectNode options = mapper.createObjectNode();
-        List<JsonNode> filterValues = Collections.singletonList(mapper.valueToTree("filtered"));
-
-        assertThatThrownBy(() -> throwContext.generateWithFilter(mockGenerator, options, null, filterValues))
-            .isInstanceOf(FilteringException.class);
-    }
-
-    @Test
-    void testGenerateWithFilterSuccess() {
-        JsonNode expectedResult = mapper.valueToTree("generated");
-        when(mockGenerator.supportsFiltering()).thenReturn(true);
-        when(mockGenerator.generateWithFilter(any(), anyList())).thenReturn(expectedResult);
-
-        ObjectNode options = mapper.createObjectNode();
-        List<JsonNode> filterValues = Collections.singletonList(mapper.valueToTree("filtered"));
-
-        JsonNode result = context.generateWithFilter(mockGenerator, options, null, filterValues);
-
-        assertThat(result).isEqualTo(expectedResult);
-    }
-
-    @Test
-    void testGenerateWithFilterAtPath() {
-        JsonNode expectedResult = mapper.valueToTree("generated");
-        when(mockGenerator.supportsFiltering()).thenReturn(true);
-        when(mockGenerator.generateAtPathWithFilter(any(), eq("testPath"), anyList())).thenReturn(expectedResult);
-
-        ObjectNode options = mapper.createObjectNode();
-        List<JsonNode> filterValues = Collections.singletonList(mapper.valueToTree("filtered"));
-
-        JsonNode result = context.generateWithFilter(mockGenerator, options, "testPath", filterValues);
-
-        assertThat(result).isEqualTo(expectedResult);
-    }
-
-    @Test
-    void testEdgeCaseCollectionsReturnNull() {
-        // Non-existent collection should return null
-        JsonNode result1 = context.resolveReferenceWithFiltering("nonExistent[*]", null, null, null, false);
-        assertThat(result1.isNull()).isTrue();
-
-        // Empty collection should return null
+    void testApplyFilteringWithEmptyCollection() {
         List<JsonNode> emptyCollection = List.of();
-        context.registerCollection("emptyCollection", emptyCollection);
-        JsonNode result2 = context.resolveReferenceWithFiltering("emptyCollection[*]", null, null, null, false);
-        assertThat(result2.isNull()).isTrue();
+        JsonNode filterValue = mapper.valueToTree("filter");
+        List<JsonNode> filterValues = List.of(filterValue);
+
+        List<JsonNode> result = context.applyFiltering(emptyCollection, "field", filterValues);
+
+        assertThat(result).isEmpty();
     }
 
     @Test
-    void testInvalidReferencePatternThrowsException() {
-        List<JsonNode> collection = Collections.singletonList(mapper.valueToTree("item1"));
-        context.registerCollection("testCollection", collection);
+    void testApplyFilteringWithNullFilterValues() {
+        JsonNode item = mapper.valueToTree("item");
+        List<JsonNode> collection = List.of(item);
 
-        // Simple collection name without brackets should throw exception (validation
-        // bug)
-        assertThatThrownBy(() -> context.resolveReferenceWithFiltering("testCollection", null, null, null, false))
-            .isInstanceOf(InvalidReferenceException.class)
-            .hasMessageContaining("Invalid reference pattern: 'testCollection'");
+        List<JsonNode> result = context.applyFiltering(collection, "field", null);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0)).isEqualTo(item);
     }
 
     @Test
-    void testFilteredCollectionCaching() {
-        List<JsonNode> collection = Arrays.asList(
-            createTestObject("name1", "value1"),
-            createTestObject("name2", "value2"));
-        context.registerCollection("testCollection", collection);
+    void testApplyFilteringOnField() {
+        JsonNode item1 = mapper.createObjectNode().put("name", "keep1").put("value", 1);
+        JsonNode item2 = mapper.createObjectNode().put("name", "filter").put("value", 2);
+        JsonNode item3 = mapper.createObjectNode().put("name", "keep2").put("value", 3);
+        List<JsonNode> collection = List.of(item1, item2, item3);
 
-        List<JsonNode> filterValues = Collections.singletonList(mapper.valueToTree("value1"));
+        JsonNode filterValue = mapper.valueToTree("filter");
+        List<JsonNode> filterValues = List.of(filterValue);
 
-        // First call should create and cache using field extraction
-        List<JsonNode> filtered1 = context.getOrCreateFilteredCollection("testCollection[*].value", null, filterValues);
+        List<JsonNode> result = context.applyFilteringOnField(collection, "name", filterValues);
 
-        // Second call should return cached version
-        List<JsonNode> filtered2 = context.getOrCreateFilteredCollection("testCollection[*].value", null, filterValues);
-
-        assertThat(filtered1)
-            .isSameAs(filtered2)
-            .hasSize(1);
-        assertThat(filtered1.get(0).get("name").asText()).isEqualTo("name2");
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).get("name").asText()).isEqualTo("keep1");
+        assertThat(result.get(1).get("name").asText()).isEqualTo("keep2");
     }
 
-    // Helper method to create test objects
-    private ObjectNode createTestObject(String name, String value) {
-        ObjectNode obj = mapper.createObjectNode();
-        obj.put("name", name);
-        obj.put("value", value);
-        return obj;
+    @Test
+    void testApplyFilteringOnFieldWithMissingField() {
+        JsonNode item1 = mapper.createObjectNode().put("name", "keep1");
+        JsonNode item2 = mapper.createObjectNode(); // Missing "name" field
+        JsonNode item3 = mapper.createObjectNode().put("name", "keep2");
+        List<JsonNode> collection = List.of(item1, item2, item3);
+
+        JsonNode filterValue = mapper.valueToTree("filter");
+        List<JsonNode> filterValues = List.of(filterValue);
+
+        List<JsonNode> result = context.applyFilteringOnField(collection, "name", filterValues);
+
+        // Item2 should be filtered out because it has a missing field
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).get("name").asText()).isEqualTo("keep1");
+        assertThat(result.get(1).get("name").asText()).isEqualTo("keep2");
+    }
+
+    @Test
+    void testHandleFilteringFailureWithReturnNull() {
+        GenerationContext nullContext = new GenerationContext(
+            mockGeneratorRegistry,
+            mockRandom,
+            5,
+            FilteringBehavior.RETURN_NULL
+        );
+
+        JsonNode result = nullContext.handleFilteringFailure("Test failure");
+
+        assertThat(result.isNull()).isTrue();
+    }
+
+    @Test
+    void testHandleFilteringFailureWithThrowException() {
+        GenerationContext exceptionContext = new GenerationContext(
+            mockGeneratorRegistry,
+            mockRandom,
+            5,
+            FilteringBehavior.THROW_EXCEPTION
+        );
+
+        assertThatThrownBy(() -> exceptionContext.handleFilteringFailure("Test failure"))
+            .isInstanceOf(FilteringException.class)
+            .hasMessage("Test failure");
+    }
+
+    @Test
+    void testGenerateWithFilterWithoutPath() {
+        JsonNode options = mapper.createObjectNode();
+        JsonNode expectedResult = mapper.valueToTree("generated");
+
+        when(mockGenerator.generate(any())).thenReturn(expectedResult);
+
+        JsonNode result = context.generateWithFilter(mockGenerator, options, null, null);
+
+        assertThat(result).isEqualTo(expectedResult);
+    }
+
+    @Test
+    void testGenerateWithFilterWithPath() {
+        JsonNode options = mapper.createObjectNode();
+        JsonNode expectedResult = mapper.valueToTree("pathGenerated");
+
+        when(mockGenerator.generateAtPath(any(), any())).thenReturn(expectedResult);
+
+        JsonNode result = context.generateWithFilter(mockGenerator, options, "testPath", null);
+
+        assertThat(result).isEqualTo(expectedResult);
     }
 }

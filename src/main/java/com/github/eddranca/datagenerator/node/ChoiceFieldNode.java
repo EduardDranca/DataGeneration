@@ -85,10 +85,6 @@ public class ChoiceFieldNode implements DslNode {
         return weights;
     }
 
-    public double getTotalWeight() {
-        return totalWeight;
-    }
-
     public boolean hasWeights() {
         return weights != null;
     }

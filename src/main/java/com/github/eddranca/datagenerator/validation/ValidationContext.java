@@ -29,10 +29,6 @@ public class ValidationContext {
         declaredCollections.add(name);
     }
 
-    public void declareTag(String tag) {
-        declaredTags.add(tag);
-    }
-
     /**
      * Declares a tag for a specific collection with validation.
      * Tags can only be redeclared by collections with the same final name.

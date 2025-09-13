@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.ValidationError;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
 import com.github.eddranca.datagenerator.node.ArrayFieldNode;
+import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
 import com.github.eddranca.datagenerator.node.DslNode;
@@ -12,7 +13,7 @@ import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
 import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
-import com.github.eddranca.datagenerator.node.ReferenceFieldNode;
+
 import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
 import com.github.eddranca.datagenerator.validation.DslTreeBuildResult;
@@ -145,9 +146,11 @@ class DslTreeBuilderTest {
         CollectionNode users = result.getTree().getCollections().get("users");
         DslNode countryField = users.getItem().getFields().get("country");
 
-        assertThat(countryField).isInstanceOf(ReferenceFieldNode.class);
-        ReferenceFieldNode ref = (ReferenceFieldNode) countryField;
-        assertThat(ref.getReference()).isEqualTo("countries[*].name");
+        assertThat(countryField).isInstanceOf(ArrayFieldReferenceNode.class);
+        ArrayFieldReferenceNode ref = (ArrayFieldReferenceNode) countryField;
+        assertThat(ref.getReferenceString()).isEqualTo("countries[*].name");
+        assertThat(ref.getCollectionName()).isEqualTo("countries");
+        assertThat(ref.getFieldName()).isEqualTo("name");
         assertThat(ref.getFilters()).isEmpty();
     }
 
@@ -175,7 +178,7 @@ class DslTreeBuilderTest {
         assertThat(result.getErrors())
             .extracting(ValidationError::toString)
             .anyMatch(error -> error.contains("Unknown generator: nonexistent"))
-            .anyMatch(error -> error.contains("references undeclared collection or pick: nonexistent"));
+            .anyMatch(error -> error.contains("references undeclared collection: nonexistent"));
     }
 
     @Test

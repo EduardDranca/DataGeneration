@@ -38,12 +38,12 @@ public class BooleanGenerator implements Generator {
 
         // Convert filter values to booleans using streams
         boolean filterTrue = filterValues.stream()
-                .filter(JsonNode::isBoolean)
-                .anyMatch(JsonNode::asBoolean);
+            .filter(JsonNode::isBoolean)
+            .anyMatch(JsonNode::asBoolean);
 
         boolean filterFalse = filterValues.stream()
-                .filter(JsonNode::isBoolean)
-                .anyMatch(node -> !node.asBoolean());
+            .filter(JsonNode::isBoolean)
+            .anyMatch(node -> !node.asBoolean());
 
         // If both true and false are filtered, return null
         if (filterTrue && filterFalse) {
