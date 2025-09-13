@@ -20,20 +20,20 @@ public class BookGenerator implements Generator {
     @Override
     public JsonNode generate(JsonNode options) {
         return mapper.valueToTree(
-                Map.of("title", faker.book().title(),
-                        "author", faker.book().author(),
-                        "publisher", faker.book().publisher(),
-                        "genre", faker.book().genre())
+            Map.of("title", faker.book().title(),
+                "author", faker.book().author(),
+                "publisher", faker.book().publisher(),
+                "genre", faker.book().genre())
         );
     }
 
     @Override
     public Map<String, Supplier<JsonNode>> getFieldSuppliers(JsonNode options) {
         return Map.of(
-                "title", () -> mapper.valueToTree(faker.book().title()),
-                "author", () -> mapper.valueToTree(faker.book().author()),
-                "publisher", () -> mapper.valueToTree(faker.book().publisher()),
-                "genre", () -> mapper.valueToTree(faker.book().genre())
+            "title", () -> mapper.valueToTree(faker.book().title()),
+            "author", () -> mapper.valueToTree(faker.book().author()),
+            "publisher", () -> mapper.valueToTree(faker.book().publisher()),
+            "genre", () -> mapper.valueToTree(faker.book().genre())
         );
     }
 }

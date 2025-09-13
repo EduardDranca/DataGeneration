@@ -38,9 +38,9 @@ public class PhoneGenerator implements Generator {
     @Override
     public Map<String, Supplier<JsonNode>> getFieldSuppliers(JsonNode options) {
         return Map.of(
-                "phoneNumber", () -> mapper.valueToTree(faker.phoneNumber().phoneNumber()),
-                "cellPhone", () -> mapper.valueToTree(faker.phoneNumber().cellPhone()),
-                "extension", () -> mapper.valueToTree(faker.phoneNumber().extension())
+            "phoneNumber", () -> mapper.valueToTree(faker.phoneNumber().phoneNumber()),
+            "cellPhone", () -> mapper.valueToTree(faker.phoneNumber().cellPhone()),
+            "extension", () -> mapper.valueToTree(faker.phoneNumber().extension())
         );
     }
 

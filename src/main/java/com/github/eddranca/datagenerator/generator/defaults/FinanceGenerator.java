@@ -20,18 +20,18 @@ public class FinanceGenerator implements Generator {
     @Override
     public JsonNode generate(JsonNode options) {
         return mapper.valueToTree(
-                Map.of("iban", faker.finance().iban(),
-                        "bic", faker.finance().bic(),
-                        "creditCard", faker.finance().creditCard())
+            Map.of("iban", faker.finance().iban(),
+                "bic", faker.finance().bic(),
+                "creditCard", faker.finance().creditCard())
         );
     }
 
     @Override
     public Map<String, Supplier<JsonNode>> getFieldSuppliers(JsonNode options) {
         return Map.of(
-                "iban", () -> mapper.valueToTree(faker.finance().iban()),
-                "bic", () -> mapper.valueToTree(faker.finance().bic()),
-                "creditCard", () -> mapper.valueToTree(faker.finance().creditCard())
+            "iban", () -> mapper.valueToTree(faker.finance().iban()),
+            "bic", () -> mapper.valueToTree(faker.finance().bic()),
+            "creditCard", () -> mapper.valueToTree(faker.finance().creditCard())
         );
     }
 }

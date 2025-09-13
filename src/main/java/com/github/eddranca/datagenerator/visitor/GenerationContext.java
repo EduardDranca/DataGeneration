@@ -4,25 +4,39 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.FilteringBehavior;
 import com.github.eddranca.datagenerator.exception.FilteringException;
-import com.github.eddranca.datagenerator.exception.InvalidReferenceException;
 import com.github.eddranca.datagenerator.generator.FilteringGeneratorAdapter;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
-import com.github.eddranca.datagenerator.node.ReferenceFieldNode;
+import com.github.eddranca.datagenerator.node.Sequential;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Random;
+
 
 /**
  * Context for data generation that maintains state during visitor traversal.
  * Tracks generated collections, tagged collections, and provides access to
  * generators.
+ * <p>
+ * ARCHITECTURE:
+ * This class provides core utilities for the typed reference system:
+ * 1. Collection management (registration, retrieval, caching)
+ * 2. Sequential tracking for deterministic generation
+ * 3. Filtering utilities with configurable behavior
+ * 4. Generator integration with filtering support
+ * <p>
+ * All reference nodes use these core utility methods:
+ * - getElementFromCollection() for element selection
+ * - applyFiltering() for collection filtering
+ * - handleFilteringFailure() for error handling
+ * - getNextSequentialIndex() for sequential tracking
+ * <p>
+ * The system now uses typed AbstractReferenceNode instances exclusively,
+ * eliminating string-based reference resolution and improving type safety.
  */
 public class GenerationContext {
     private final GeneratorRegistry generatorRegistry;
@@ -30,16 +44,15 @@ public class GenerationContext {
     private final ObjectMapper mapper;
     private final Map<String, List<JsonNode>> namedCollections; // Final collections for output
     private final Map<String, List<JsonNode>> referenceCollections; // Collections available for references (includes
-                                                                    // DSL keys)
+    // DSL keys)
     private final Map<String, List<JsonNode>> taggedCollections;
     private final Map<String, JsonNode> namedPicks;
-    private final Map<FilteredCollectionKey, List<JsonNode>> filteredCollectionCache;
-    private final Map<ReferenceFieldNode, Integer> sequentialCounters;
+    private final Map<Sequential, Integer> sequentialCounters;
     private final int maxFilteringRetries;
     private final FilteringBehavior filteringBehavior;
 
     public GenerationContext(GeneratorRegistry generatorRegistry, Random random, int maxFilteringRetries,
-            FilteringBehavior filteringBehavior) {
+                             FilteringBehavior filteringBehavior) {
         this.generatorRegistry = generatorRegistry;
         this.random = random;
         this.mapper = new ObjectMapper();
@@ -47,10 +60,10 @@ public class GenerationContext {
         this.referenceCollections = new HashMap<>();
         this.taggedCollections = new HashMap<>();
         this.namedPicks = new HashMap<>();
-        this.filteredCollectionCache = new HashMap<>();
         this.sequentialCounters = new IdentityHashMap<>();
         this.maxFilteringRetries = maxFilteringRetries;
         this.filteringBehavior = filteringBehavior;
+
     }
 
     public GenerationContext(GeneratorRegistry generatorRegistry, Random random) {
@@ -103,167 +116,88 @@ public class GenerationContext {
         if (collection != null) {
             return collection;
         }
-        return namedCollections.get(name);
+        collection = namedCollections.get(name);
+        return collection != null ? collection : List.of();
     }
 
     public List<JsonNode> getTaggedCollection(String tag) {
-        return taggedCollections.get(tag);
+        List<JsonNode> collection = taggedCollections.get(tag);
+        return collection != null ? collection : List.of();
     }
 
     public Map<String, List<JsonNode>> getNamedCollections() {
         return new HashMap<>(namedCollections);
     }
 
-    public Map<String, List<JsonNode>> getTaggedCollections() {
-        return new HashMap<>(taggedCollections);
+    public JsonNode getNamedPick(String name) {
+        return namedPicks.get(name);
     }
 
     /**
-     * Resolves a reference with full control over filtering and sequential behavior.
+     * Gets a random or sequential element from a collection.
+     * <p>
+     * This is a CORE utility method that typed reference nodes should use.
      */
-    public JsonNode resolveReferenceWithFiltering(String reference, JsonNode currentItem, List<JsonNode> filterValues,
-            ReferenceFieldNode node, boolean sequential) {
-        List<JsonNode> filteredCollection = prepareFilteredCollection(reference, currentItem, filterValues);
-        if (filteredCollection != null && filteredCollection.isEmpty()) {
-            return handleFilteringFailure(
-                    new FilteringException("Reference '" + reference + "' has no valid values after filtering"));
-        }
-
-        return resolveReferenceByType(reference, currentItem, filteredCollection, node, sequential);
-    }
-
-    private List<JsonNode> prepareFilteredCollection(String reference, JsonNode currentItem, List<JsonNode> filterValues) {
-        if (filterValues == null || filterValues.isEmpty()) {
-            return null;
-        }
-        return getOrCreateFilteredCollection(reference, currentItem, filterValues);
-    }
-
-    private JsonNode resolveReferenceByType(String reference, JsonNode currentItem, List<JsonNode> filteredCollection,
-            ReferenceFieldNode node, boolean sequential) {
-        if (reference.startsWith("byTag[")) {
-            return resolveTagReference(reference, currentItem, filteredCollection, node, sequential);
-        }
-
-        if (reference.startsWith("this.")) {
-            return resolveThisReference(reference, currentItem);
-        }
-
-        if (reference.contains("[*].")) {
-            return resolveArrayFieldReference(reference, filteredCollection, node, sequential);
-        }
-
-        if (reference.contains("[")) {
-            return resolveIndexedReference(reference, filteredCollection, node, sequential);
-        }
-
-        if (isPickReference(reference)) {
-            return resolvePickReference(reference);
-        }
-
-        throw new InvalidReferenceException(reference);
-    }
-
-    private boolean isPickReference(String reference) {
-        return namedPicks.containsKey(reference) ||
-               (reference.contains(".") && namedPicks.containsKey(reference.substring(0, reference.indexOf('.'))));
-    }
-
-    private JsonNode getReferencedElementFromCollection(String reference, ReferenceFieldNode node, boolean sequential,
-            List<JsonNode> filteredCollection) {
-        List<JsonNode> collection = filteredCollection != null ? filteredCollection : getCollection(reference);
-        if (collection == null || collection.isEmpty()) {
+    public JsonNode getElementFromCollection(List<JsonNode> collection, Sequential node, boolean sequential) {
+        if (collection.isEmpty()) {
             return mapper.nullNode();
         }
 
         int index = sequential && node != null ? getNextSequentialIndex(node, collection.size())
-                : random.nextInt(collection.size());
+            : random.nextInt(collection.size());
         return collection.get(index);
     }
 
     /**
-     * Gets or creates a filtered collection for the given reference and filter
-     * values.
-     * Uses caching to avoid recomputing the same filtered collection multiple
-     * times.
+     * Applies filtering to a collection based on filter values.
+     * If fieldName is provided, filters based on that field's value.
+     * Otherwise, filters based on the entire object.
+     * <p>
+     * This is a CORE utility method that typed reference nodes should use.
      */
-    public List<JsonNode> getOrCreateFilteredCollection(String reference, JsonNode currentItem,
-            List<JsonNode> filterValues) {
-        FilteredCollectionKey key = new FilteredCollectionKey(reference, currentItem, filterValues);
-
-        return filteredCollectionCache.computeIfAbsent(key, k ->
-            createFilteredCollection(reference, currentItem, filterValues));
-    }
-
-    private List<JsonNode> createFilteredCollection(String reference, JsonNode currentItem, List<JsonNode> filterValues) {
-        if (reference.startsWith("byTag[")) {
-            return createTagBasedFilteredCollection(reference, currentItem, filterValues);
+    public List<JsonNode> applyFiltering(List<JsonNode> collection, String fieldName, List<JsonNode> filterValues) {
+        if (collection.isEmpty() || filterValues == null || filterValues.isEmpty()) {
+            return new ArrayList<>(collection);
         }
 
-        if (reference.contains("[*].")) {
-            return createArrayFieldFilteredCollection(reference, filterValues);
-        }
-
-        return createSimpleFilteredCollection(reference, filterValues);
-    }
-
-    private List<JsonNode> createTagBasedFilteredCollection(String reference, JsonNode currentItem, List<JsonNode> filterValues) {
-        int start = reference.indexOf('[') + 1;
-        int end = reference.indexOf(']');
-        String tagExpr = reference.substring(start, end);
-        String fieldName = reference.length() > end + 1 && reference.charAt(end + 1) == '.' ?
-                          reference.substring(end + 2) : "";
-
-        String tag = resolveTagExpression(tagExpr, currentItem);
-        if (tag == null) {
-            return new ArrayList<>();
-        }
-
-        List<JsonNode> sourceCollection = getTaggedCollection(tag);
-        return sourceCollection == null ? new ArrayList<>() : applyFiltering(sourceCollection, fieldName, filterValues);
-    }
-
-    private String resolveTagExpression(String tagExpr, JsonNode currentItem) {
-        if (tagExpr.startsWith("this.")) {
-            String localField = tagExpr.substring(5);
-            JsonNode val = currentItem.path(localField);
-            return (val == null || val.isNull()) ? null : val.asText();
-        }
-        return tagExpr;
-    }
-
-    private List<JsonNode> createArrayFieldFilteredCollection(String reference, List<JsonNode> filterValues) {
-        String base = reference.substring(0, reference.indexOf("[*]."));
-        String field = reference.substring(reference.indexOf("[*].") + 4);
-        List<JsonNode> sourceCollection = getCollection(base);
-
-        return sourceCollection == null ? new ArrayList<>() : applyFilteringOnField(sourceCollection, field, filterValues);
-    }
-
-    private List<JsonNode> createSimpleFilteredCollection(String reference, List<JsonNode> filterValues) {
-        List<JsonNode> sourceCollection = getCollection(reference);
-        return sourceCollection == null ? new ArrayList<>() : applyFiltering(sourceCollection, "", filterValues);
+        return collection.stream()
+            .filter(item -> {
+                JsonNode valueToCheck = fieldName.isEmpty() ? item : item.path(fieldName);
+                return filterValues.stream().noneMatch(valueToCheck::equals);
+            }).toList();
     }
 
     /**
-     * Clears the filtered collection cache. Should be called when generation
-     * context is reset
-     * or when we want to ensure fresh filtering results.
+     * Applies filtering to a collection based on field values, but keeps the
+     * original objects.
+     * This is used for field extraction cases where we want to filter based on
+     * field values but return the original objects so field extraction can happen
+     * later.
+     * <p>
+     * This is a CORE utility method that typed reference nodes should use.
      */
-    public void clearFilteredCollectionCache() {
-        filteredCollectionCache.clear();
+    public List<JsonNode> applyFilteringOnField(List<JsonNode> collection, String fieldName,
+                                                List<JsonNode> filterValues) {
+        if (collection.isEmpty() || filterValues == null || filterValues.isEmpty()) {
+            return new ArrayList<>(collection);
+        }
+
+        return collection.stream()
+            .filter(item -> {
+                JsonNode fieldValue = item.path(fieldName);
+                return !fieldValue.isMissingNode() &&
+                    filterValues.stream().noneMatch(fieldValue::equals);
+            }).toList();
     }
 
     /**
      * Handles filtering failure according to the configured filtering behavior.
-     *
-     * @param exception the FilteringException that occurred
-     * @return null JsonNode if behavior is RETURN_NULL
-     * @throws FilteringException if behavior is THROW_EXCEPTION
+     * <p>
+     * This is a CORE utility method that typed reference nodes should use.
      */
-    private JsonNode handleFilteringFailure(FilteringException exception) {
+    public JsonNode handleFilteringFailure(String message) {
         if (filteringBehavior == FilteringBehavior.THROW_EXCEPTION) {
-            throw exception;
+            throw new FilteringException(message);
         }
         return mapper.nullNode();
     }
@@ -271,12 +205,14 @@ public class GenerationContext {
     /**
      * Gets the next sequential index for a reference field node.
      * Each reference field node maintains its own counter for round-robin access.
+     * <p>
+     * This is a CORE utility method that typed reference nodes should use.
      *
      * @param node           the reference field node
      * @param collectionSize the size of the collection being referenced
      * @return the next sequential index (with automatic wrap-around)
      */
-    public int getNextSequentialIndex(ReferenceFieldNode node, int collectionSize) {
+    public int getNextSequentialIndex(Sequential node, int collectionSize) {
         if (collectionSize <= 0) {
             return 0;
         }
@@ -285,173 +221,6 @@ public class GenerationContext {
         int index = current % collectionSize;
         sequentialCounters.put(node, current + 1);
         return index;
-    }
-
-    private JsonNode resolveTagReference(String reference, JsonNode currentItem, List<JsonNode> preFilteredCollection,
-            ReferenceFieldNode node, boolean sequential) {
-        int start = reference.indexOf('[') + 1;
-        int end = reference.indexOf(']');
-        String tagExpr = reference.substring(start, end);
-
-        String fieldNameAfter = "";
-        if (reference.length() > end + 1 && reference.charAt(end + 1) == '.') {
-            fieldNameAfter = reference.substring(end + 2);
-        }
-
-        List<JsonNode> collection;
-        if (preFilteredCollection != null) {
-            collection = preFilteredCollection;
-        } else {
-            String tag;
-            if (tagExpr.startsWith("this.")) {
-                String localField = tagExpr.substring(5);
-                JsonNode val = currentItem.path(localField);
-                if (val == null || val.isNull())
-                    return mapper.nullNode();
-                tag = val.asText();
-            } else {
-                tag = tagExpr;
-            }
-            collection = getTaggedCollection(tag);
-        }
-
-        if (collection == null || collection.isEmpty()) {
-            return mapper.nullNode();
-        }
-
-        // Pick item (sequential or random) and extract field if needed
-        int index = sequential && node != null ? getNextSequentialIndex(node, collection.size())
-                : random.nextInt(collection.size());
-        JsonNode picked = collection.get(index);
-        return fieldNameAfter.isEmpty() ? picked : picked.path(fieldNameAfter);
-    }
-
-    private JsonNode resolveThisReference(String reference, JsonNode currentItem) {
-        return currentItem.path(reference.substring(5));
-    }
-
-    private JsonNode pickFieldFromCollection(List<JsonNode> collection, String field, ReferenceFieldNode node,
-            boolean sequential) {
-        if (collection == null || collection.isEmpty()) {
-            return mapper.nullNode();
-        }
-
-        // Pick item (sequential or random) and extract field
-        int index = sequential && node != null ? getNextSequentialIndex(node, collection.size())
-                : random.nextInt(collection.size());
-        JsonNode item = collection.get(index);
-        JsonNode fieldValue = item.path(field);
-
-        return fieldValue.isMissingNode() ? mapper.nullNode() : fieldValue;
-    }
-
-    private JsonNode resolveArrayFieldReference(String reference, List<JsonNode> preFilteredCollection,
-            ReferenceFieldNode node, boolean sequential) {
-        String base = reference.substring(0, reference.indexOf("[*]."));
-        String field = reference.substring(reference.indexOf("[*].") + 4);
-
-        List<JsonNode> collection = preFilteredCollection != null ? preFilteredCollection : getCollection(base);
-        return pickFieldFromCollection(collection, field, node, sequential);
-    }
-
-    private JsonNode resolveIndexedReference(String reference, List<JsonNode> preFilteredCollection,
-            ReferenceFieldNode node, boolean sequential) {
-        String base = reference.substring(0, reference.indexOf("["));
-        String inner = reference.substring(reference.indexOf("[") + 1, reference.indexOf("]"));
-
-        if (inner.matches("\\d+")) {
-            // Numeric index
-            int index = Integer.parseInt(inner);
-            List<JsonNode> collection = getCollection(base);
-            if (collection == null || index >= collection.size()) {
-                return mapper.nullNode();
-            }
-
-            JsonNode item = collection.get(index);
-
-            // Check if there's a field access after the index
-            if (reference.contains("].")) {
-                String field = reference.substring(reference.indexOf("].") + 2);
-                return item.path(field);
-            } else {
-                return item;
-            }
-        } else if ("*".equals(inner)) {
-            // Wildcard - return random item from collection
-            return getReferencedElementFromCollection(base, node, sequential, preFilteredCollection);
-        } else {
-            // Invalid indexed reference pattern - this should have been caught during validation
-            throw new InvalidReferenceException(reference);
-        }
-    }
-
-    private JsonNode resolvePickReference(String reference) {
-        if (namedPicks.containsKey(reference)) {
-            return namedPicks.get(reference);
-        } else {
-            String base = reference.substring(0, reference.indexOf('.'));
-            String field = reference.substring(reference.indexOf('.') + 1);
-            JsonNode pick = namedPicks.get(base);
-            if (pick != null && pick.has(field)) {
-                return pick.path(field);
-            }
-        }
-        return mapper.nullNode();
-    }
-
-    /**
-     * Applies filtering to a collection based on filter values.
-     * If fieldName is provided, filters based on that field's value.
-     * Otherwise, filters based on the entire object.
-     */
-    private List<JsonNode> applyFiltering(List<JsonNode> collection, String fieldName, List<JsonNode> filterValues) {
-        List<JsonNode> filtered = new ArrayList<>();
-
-        for (JsonNode item : collection) {
-            JsonNode valueToCheck = fieldName.isEmpty() ? item : item.path(fieldName);
-
-            boolean shouldFilter = false;
-            for (JsonNode filterValue : filterValues) {
-                if (valueToCheck.equals(filterValue)) {
-                    shouldFilter = true;
-                    break;
-                }
-            }
-
-            if (!shouldFilter) {
-                filtered.add(item);
-            }
-        }
-
-        return filtered;
-    }
-
-    /**
-     * Applies filtering to a collection based on field values, but keeps the
-     * original objects.
-     * This is used for field extraction cases where we want to filter based on
-     * field values
-     * but return the original objects so field extraction can happen later.
-     */
-    private List<JsonNode> applyFilteringOnField(List<JsonNode> collection, String fieldName,
-            List<JsonNode> filterValues) {
-        List<JsonNode> filtered = new ArrayList<>();
-
-        for (JsonNode item : collection) {
-            JsonNode fieldValue = item.path(fieldName);
-
-            if (!fieldValue.isMissingNode()) {
-                boolean shouldFilter = Optional.ofNullable(filterValues)
-                    .map(val -> filterValues.contains(fieldValue))
-                    .orElse(false);
-
-                if (!shouldFilter) {
-                    filtered.add(item);
-                }
-            }
-        }
-
-        return filtered;
     }
 
     /**
@@ -466,9 +235,8 @@ public class GenerationContext {
      * @return generated value that doesn't match any filter values
      */
     public JsonNode generateWithFilter(Generator generator, JsonNode options, String path,
-            List<JsonNode> filterValues) {
+                                       List<JsonNode> filterValues) {
         FilteringGeneratorAdapter adapter = new FilteringGeneratorAdapter(generator, maxFilteringRetries);
-
         try {
             if (path != null) {
                 return adapter.generateAtPathWithFilter(options, path, filterValues);
@@ -476,45 +244,7 @@ public class GenerationContext {
                 return adapter.generateWithFilter(options, filterValues);
             }
         } catch (FilteringException e) {
-            return handleFilteringFailure(e);
-        }
-    }
-
-    /**
-     * Key class for caching filtered collections.
-     * Combines reference string, current item context, and filter values to create
-     * a unique cache key.
-     * Uses pre-computed hash code for better performance in HashMap operations.
-     */
-    private static class FilteredCollectionKey {
-        private final String reference;
-        private final JsonNode currentItem;
-        private final List<JsonNode> filterValues;
-        private final int hashCode;
-
-        public FilteredCollectionKey(String reference, JsonNode currentItem, List<JsonNode> filterValues) {
-            this.reference = reference;
-            this.currentItem = currentItem;
-            this.filterValues = filterValues;
-            this.hashCode = Objects.hash(reference, currentItem, filterValues);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null || getClass() != obj.getClass())
-                return false;
-
-            FilteredCollectionKey that = (FilteredCollectionKey) obj;
-            return Objects.equals(reference, that.reference) &&
-                    Objects.equals(currentItem, that.currentItem) &&
-                    Objects.equals(filterValues, that.filterValues);
-        }
-
-        @Override
-        public int hashCode() {
-            return hashCode;
+            return handleFilteringFailure(e.getMessage());
         }
     }
 }

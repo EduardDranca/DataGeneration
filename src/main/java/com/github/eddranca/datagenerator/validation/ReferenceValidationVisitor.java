@@ -2,24 +2,31 @@ package com.github.eddranca.datagenerator.validation;
 
 import com.github.eddranca.datagenerator.ValidationError;
 import com.github.eddranca.datagenerator.node.ArrayFieldNode;
+import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
+import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
 import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
-import com.github.eddranca.datagenerator.node.ReferenceFieldNode;
+import com.github.eddranca.datagenerator.node.PickReferenceNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
+import com.github.eddranca.datagenerator.node.SelfReferenceNode;
+import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
+import com.github.eddranca.datagenerator.node.TagReferenceNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.github.eddranca.datagenerator.builder.KeyWords.THIS_PREFIX;
 
 /**
  * Validation visitor that traverses the DSL node tree and validates all references,
@@ -78,19 +85,66 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
         return null;
     }
 
-    @Override
-    public Void visitReferenceField(ReferenceFieldNode node) {
-        String reference = node.getReference();
 
-        if (reference.startsWith("this.")) {
-            validateSelfReference(reference);
+    @Override
+    public Void visitTagReference(TagReferenceNode node) {
+        // Tag references don't need additional validation beyond what was done during parsing
+        // Visit filters if present
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
         }
+        return null;
+    }
+
+    @Override
+    public Void visitIndexedReference(IndexedReferenceNode node) {
+        // Indexed references don't need additional validation beyond what was done during parsing
+        // Visit filters if present
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitArrayFieldReference(ArrayFieldReferenceNode node) {
+        // Array field references don't need additional validation beyond what was done during parsing
+        // Visit filters if present
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitSelfReference(SelfReferenceNode node) {
+        // Validate self-reference
+        validateSelfReference(THIS_PREFIX + node.getFieldName());
 
         // Visit filters if present
         for (FilterNode filter : node.getFilters()) {
             filter.accept(this);
         }
+        return null;
+    }
 
+    @Override
+    public Void visitSimpleReference(SimpleReferenceNode node) {
+        // Simple references don't need additional validation beyond what was done during parsing
+        // Visit filters if present
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitPickReference(PickReferenceNode node) {
+        // Pick references don't need additional validation beyond what was done during parsing
+        // Visit filters if present
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
         return null;
     }
 
@@ -118,13 +172,13 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
     @Override
     public Void visitReferenceSpreadField(ReferenceSpreadFieldNode node) {
         // Validate the reference in the spread field
-        String reference = node.getReference();
+        String reference = node.getReferenceNode().getReferenceString();
 
         // Validate self-references
-        if (reference.startsWith("this.")) {
-            String fieldName = reference.substring(5);
+        if (reference.startsWith(THIS_PREFIX)) {
+            String fieldName = reference.substring(THIS_PREFIX.length());
             if (currentItemFields == null || !currentItemFields.containsKey(fieldName)) {
-                addError("Self-reference 'this." + fieldName + "' refers to non-existent field in current item");
+                addSelfReferenceError(THIS_PREFIX + fieldName, "refers to non-existent field in current item");
             }
         }
 
@@ -153,28 +207,27 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitFilter(FilterNode node) {
-        if (node.getFilterExpression() instanceof ReferenceFieldNode refNode) {
-            refNode.accept(this);
-        }
+        // Filter expressions are now handled by their specific typed reference nodes
+        node.getFilterExpression().accept(this);
         return null;
     }
 
     private void validateSelfReference(String reference) {
         if (currentItemFields == null) {
-            addError("Self reference '" + reference + "' found outside of item context");
+            addSelfReferenceError(reference, "found outside of item context");
             return;
         }
 
         // Extract the field path from "this.fieldName" or "this.field.subfield"
-        String fieldPath = reference.substring(5); // Remove "this."
+        String fieldPath = reference.substring(THIS_PREFIX.length()); // Remove THIS_PREFIX
 
         if (fieldPath.isEmpty()) {
-            addError("Self reference '" + reference + "' is invalid - missing field name after 'this.'");
+            addSelfReferenceError(reference, "is invalid - missing field name after '" + THIS_PREFIX + "'");
             return;
         }
 
         if (!validateFieldPath(fieldPath, currentItemFields)) {
-            addError("Self reference '" + reference + "' references non-existent field: " + fieldPath);
+            addSelfReferenceError(reference, "references non-existent field: " + fieldPath);
         }
     }
 
@@ -206,5 +259,9 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
     private void addError(String message) {
         String path = currentCollection != null ? currentCollection : "root";
         errors.add(new ValidationError(path, message));
+    }
+
+    private void addSelfReferenceError(String reference, String message) {
+        addError("Self reference '" + reference + "' " + message);
     }
 }

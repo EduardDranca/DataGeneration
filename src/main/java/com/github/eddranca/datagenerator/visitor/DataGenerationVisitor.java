@@ -6,19 +6,24 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.defaults.ChoiceGenerator;
 import com.github.eddranca.datagenerator.node.ArrayFieldNode;
+import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
+import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
 import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
-import com.github.eddranca.datagenerator.node.ReferenceFieldNode;
+import com.github.eddranca.datagenerator.node.PickReferenceNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
+import com.github.eddranca.datagenerator.node.SelfReferenceNode;
+import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
+import com.github.eddranca.datagenerator.node.TagReferenceNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +44,6 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
 
     @Override
     public JsonNode visitRoot(RootNode node) {
-        context.clearFilteredCollectionCache();
-
         ObjectNode result = context.getMapper().createObjectNode();
 
         for (Map.Entry<String, CollectionNode> entry : node.getCollections().entrySet()) {
@@ -77,8 +80,6 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
                 context.registerPick(alias, items.get(index));
             }
         }
-
-        context.clearFilteredCollectionCache();
 
         return context.getMapper().valueToTree(items);
     }
@@ -120,16 +121,39 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
     }
 
     @Override
-    public JsonNode visitReferenceField(ReferenceFieldNode node) {
+    public JsonNode visitTagReference(TagReferenceNode node) {
         List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
+        return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
+    }
 
-        return context.resolveReferenceWithFiltering(
-                node.getReference(),
-                currentItem,
-                filterValues.isEmpty() ? null : filterValues,
-                node,
-                node.isSequential()
-        );
+    @Override
+    public JsonNode visitIndexedReference(IndexedReferenceNode node) {
+        List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
+        return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
+    }
+
+    @Override
+    public JsonNode visitArrayFieldReference(ArrayFieldReferenceNode node) {
+        List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
+        return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
+    }
+
+    @Override
+    public JsonNode visitSelfReference(SelfReferenceNode node) {
+        List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
+        return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
+    }
+
+    @Override
+    public JsonNode visitSimpleReference(SimpleReferenceNode node) {
+        List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
+        return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
+    }
+
+    @Override
+    public JsonNode visitPickReference(PickReferenceNode node) {
+        List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
+        return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
     }
 
     @Override
@@ -202,8 +226,7 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
                 if (value != null && value.isObject()) {
                     ObjectNode spreadObj = (ObjectNode) value;
                     spreadObj.fieldNames().forEachRemaining(
-                            fn -> newObject.set(fn, spreadObj.get(fn))
-                    );
+                        fn -> newObject.set(fn, spreadObj.get(fn)));
                 }
             } else {
                 newObject.set(fieldName, value);
@@ -258,13 +281,8 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
     public JsonNode visitReferenceSpreadField(ReferenceSpreadFieldNode node) {
         List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
 
-        JsonNode referencedItem = context.resolveReferenceWithFiltering(
-                node.getReference(),
-                currentItem,
-                filterValues.isEmpty() ? null : filterValues,
-                node,
-                node.isSequential()
-        );
+        // Use the typed reference node directly
+        JsonNode referencedItem = node.getReferenceNode().resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
 
         if (referencedItem == null || referencedItem.isNull()) {
             return context.getMapper().createObjectNode();
@@ -283,6 +301,7 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
     // ------------------------
     // Private helpers
     // ------------------------
+
 
     private void spreadInto(ObjectNode target, JsonNode source, List<String> fieldSpecs) {
         if (source == null || !source.isObject()) {
@@ -311,4 +330,5 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
             }
         }
     }
+
 }

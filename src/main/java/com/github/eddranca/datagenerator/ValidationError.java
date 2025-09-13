@@ -1,6 +1,8 @@
 package com.github.eddranca.datagenerator;
 
-public class ValidationError {
+import java.io.Serializable;
+
+public class ValidationError implements Serializable {
     private final String path;
     private final String message;
 
