@@ -12,13 +12,9 @@
 A powerful Java library for generating complex, realistic test data using a declarative JSON DSL. Perfect for testing, development, and data seeding scenarios.
 
 ## Why DataGeneration?
-
-**Beyond Simple Fakers** - While libraries like JavaFaker generate individual values, DataGeneration creates **complex, interconnected datasets** with relationships, filtering, and advanced constraints.
+DataGeneration creates **complex, interconnected datasets** with relationships, filtering, and advanced constraints.
 
 ```java
-// Other libraries: Disconnected data
-User user = new User(faker.name(), faker.email(), faker.company());
-
 // DataGeneration: Connected, realistic data
 String dsl = """
     {

@@ -2,6 +2,9 @@ package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Field node that generates values using a registered generator.
  * Supports dot notation for accessing specific fields (e.g., "name.firstName").
@@ -11,21 +14,13 @@ public class GeneratedFieldNode implements DslNode {
     private final String generatorName;
     private final JsonNode options;
     private final String path; // for dot notation like "name.firstName"
-    private final java.util.List<FilterNode> filters;
+    private final List<FilterNode> filters;
 
-    public GeneratedFieldNode(String generatorName, JsonNode options) {
-        this(generatorName, options, null, new java.util.ArrayList<>());
-    }
-
-    public GeneratedFieldNode(String generatorName, JsonNode options, String path) {
-        this(generatorName, options, path, new java.util.ArrayList<>());
-    }
-
-    public GeneratedFieldNode(String generatorName, JsonNode options, String path, java.util.List<FilterNode> filters) {
+    public GeneratedFieldNode(String generatorName, JsonNode options, String path, List<FilterNode> filters) {
         this.generatorName = generatorName;
         this.options = options;
         this.path = path;
-        this.filters = new java.util.ArrayList<>(filters);
+        this.filters = new ArrayList<>(filters);
     }
 
     public String getGeneratorName() {
@@ -44,7 +39,7 @@ public class GeneratedFieldNode implements DslNode {
         return path != null && !path.isEmpty();
     }
 
-    public java.util.List<FilterNode> getFilters() {
+    public List<FilterNode> getFilters() {
         return filters;
     }
 
