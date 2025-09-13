@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 
+import static com.github.eddranca.datagenerator.builder.KeyWords.THIS_PREFIX;
+
 /**
  * Context for data generation that maintains state during visitor traversal.
  * Tracks generated collections, tagged collections, and provides access to
@@ -63,7 +65,7 @@ public class GenerationContext {
     private ReferenceResolverRegistry initializeReferenceResolvers() {
         ReferenceResolverRegistry registry = new ReferenceResolverRegistry();
         registry.register(ref -> ref.startsWith("byTag["), this::resolveTagReference);
-        registry.register(ref -> ref.startsWith("this."), this::resolveThisReference);
+        registry.register(ref -> ref.startsWith(THIS_PREFIX), this::resolveThisReference);
         registry.register(ref -> ref.contains("[*]."), this::resolveArrayFieldReference);
         registry.register(ref -> ref.contains("["), this::resolveIndexedReference);
         registry.register(this::isPickReference, this::resolvePickReference);
@@ -266,8 +268,8 @@ public class GenerationContext {
     }
 
     private String resolveTagExpression(String tagExpr, JsonNode currentItem) {
-        if (tagExpr.startsWith("this.")) {
-            String localField = tagExpr.substring(5);
+        if (tagExpr.startsWith(THIS_PREFIX)) {
+            String localField = tagExpr.substring(THIS_PREFIX.length());
             JsonNode val = currentItem.path(localField);
             return (val == null || val.isNull()) ? null : val.asText();
         }
@@ -368,11 +370,11 @@ public class GenerationContext {
      * Resolves a tag expression to its actual value.
      */
     private String resolveTagValue(String tagExpr, JsonNode currentItem) {
-        if (!tagExpr.startsWith("this.")) {
+        if (!tagExpr.startsWith(THIS_PREFIX)) {
             return tagExpr;
         }
 
-        String localField = tagExpr.substring(5);
+        String localField = tagExpr.substring(THIS_PREFIX.length());
         JsonNode val = currentItem.path(localField);
         return (val == null || val.isNull()) ? null : val.asText();
     }
@@ -391,7 +393,7 @@ public class GenerationContext {
     }
 
     private JsonNode resolveThisReference(String reference, CollectionContext context, SequentialTrackable node, boolean sequential) {
-        return context.getCurrentItem().path(reference.substring(5));
+        return context.getCurrentItem().path(reference.substring(THIS_PREFIX.length()));
     }
 
     private JsonNode pickFieldFromCollection(List<JsonNode> collection, String field, SequentialTrackable node,

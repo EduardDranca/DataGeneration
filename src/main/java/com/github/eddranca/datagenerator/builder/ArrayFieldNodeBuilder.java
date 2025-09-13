@@ -9,11 +9,12 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.*;
 /**
  * Builder for array field nodes.
  */
+// TODO: Most of these classes should be package-private, we don't need to expose most of them publicly
 public class ArrayFieldNodeBuilder {
     private final NodeBuilderContext context;
-    private final FieldNodeBuilder fieldBuilder;
+    private final FieldBuilder fieldBuilder;
 
-    public ArrayFieldNodeBuilder(NodeBuilderContext context, FieldNodeBuilder fieldBuilder) {
+    public ArrayFieldNodeBuilder(NodeBuilderContext context, FieldBuilder fieldBuilder) {
         this.context = context;
         this.fieldBuilder = fieldBuilder;
     }
@@ -36,12 +37,12 @@ public class ArrayFieldNodeBuilder {
 
     private boolean validateArrayDefinition(String fieldName, JsonNode arrayDef) {
         if (!arrayDef.isObject()) {
-            context.addError("Array field '" + fieldName + "' array definition must be an object");
+            addArrayFieldError(fieldName, "array definition must be an object");
             return false;
         }
 
         if (!arrayDef.has(ITEM)) {
-            context.addError("Array field '" + fieldName + "' must have an 'item' definition");
+            addArrayFieldError(fieldName, "must have an 'item' definition");
             return false;
         }
 
@@ -50,12 +51,12 @@ public class ArrayFieldNodeBuilder {
         boolean hasMinMax = arrayDef.has(MIN_SIZE) || arrayDef.has(MAX_SIZE);
 
         if (hasSize && hasMinMax) {
-            context.addError("Array field '" + fieldName + "' cannot have both 'size' and 'minSize/maxSize'");
+            addArrayFieldError(fieldName, "cannot have both 'size' and 'minSize/maxSize'");
             return false;
         }
 
         if (!hasSize && !hasMinMax) {
-            context.addError("Array field '" + fieldName + "' must have either 'size' or 'minSize/maxSize'");
+            addArrayFieldError(fieldName, "must have either 'size' or 'minSize/maxSize'");
             return false;
         }
 
@@ -96,5 +97,9 @@ public class ArrayFieldNodeBuilder {
         }
 
         return new ArrayFieldNode(minSize, maxSize, itemNode);
+    }
+
+    private void addArrayFieldError(String fieldName, String message) {
+        context.addError("Array field '" + fieldName + "' " + message);
     }
 }

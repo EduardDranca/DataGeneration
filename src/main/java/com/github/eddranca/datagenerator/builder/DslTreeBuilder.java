@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.ValidationError;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
 import com.github.eddranca.datagenerator.node.CollectionNode;
-import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.validation.DslTreeBuildResult;
 import com.github.eddranca.datagenerator.validation.ReferenceValidationVisitor;
@@ -22,7 +21,7 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.TAGS;
 /**
  * Builder that parses JSON DSL and creates a validated node tree.
  * Performs validation during building and collects errors.
- * 
+ *
  * This class coordinates the building process and delegates to specialized builders.
  */
 public class DslTreeBuilder {

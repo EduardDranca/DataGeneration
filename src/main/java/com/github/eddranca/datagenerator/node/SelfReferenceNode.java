@@ -5,6 +5,8 @@ import com.github.eddranca.datagenerator.visitor.GenerationContext;
 
 import java.util.List;
 
+import static com.github.eddranca.datagenerator.builder.KeyWords.THIS_PREFIX;
+
 /**
  * Reference node for self-references like "this.field".
  * These references point to fields within the current item being generated.
@@ -28,7 +30,7 @@ public class SelfReferenceNode extends AbstractReferenceNode {
 
     @Override
     public String getReferenceString() {
-        return "this." + fieldName;
+        return THIS_PREFIX + fieldName;
     }
 
     @Override

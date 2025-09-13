@@ -46,11 +46,11 @@ public class CollectionNodeBuilder {
 
     private boolean validateCollectionStructure(String name, JsonNode def) {
         if (!def.isObject()) {
-            context.addError("Collection '" + name + "' must be an object");
+            addCollectionError(name, "must be an object");
             return false;
         }
         if (!def.has(ITEM)) {
-            context.addError("Collection '" + name + "' is missing required 'item' field");
+            addCollectionError(name, "is missing required 'item' field");
             return false;
         }
         return true;
@@ -59,7 +59,7 @@ public class CollectionNodeBuilder {
     private int validateAndGetCount(String name, JsonNode def) {
         int count = def.path(COUNT).asInt(1);
         if (count < 0) {
-            context.addError("Collection '" + name + "' count must be non-negative, got: " + count);
+            addCollectionError(name, "count must be non-negative, got: " + count);
             return 1; // Use default for recovery
         }
         return count;
@@ -74,7 +74,7 @@ public class CollectionNodeBuilder {
                     tags.add(tagNode.asText());
                 }
             } else {
-                context.addError("Collection '" + name + "' tags must be an array");
+                addCollectionError(name, "tags must be an array");
             }
         }
         return tags;
@@ -89,18 +89,26 @@ public class CollectionNodeBuilder {
                     Map.Entry<String, JsonNode> entry = it.next();
                     int index = entry.getValue().asInt();
                     if (index >= count) {
-                        context.addError("Collection '" + name + "' pick alias '" + entry.getKey() +
-                                "' index " + index + " is out of bounds (count: " + count + ")");
+                        addCollectionPickError(name, entry.getKey(), index, count);
                     } else {
                         context.declarePick(entry.getKey());
                         picks.put(entry.getKey(), index);
                     }
                 }
             } else {
-                context.addError("Collection '" + name + "' pick must be an object");
+                addCollectionError(name, "pick must be an object");
             }
         }
         return picks;
+    }
+
+    private void addCollectionError(String name, String message) {
+        context.addError("Collection '" + name + "' " + message);
+    }
+
+    private void addCollectionPickError(String name, String alias, int index, int count) {
+        context.addError("Collection '" + name + "' pick alias '" + alias + 
+                        "' index " + index + " is out of bounds (count: " + count + ")");
     }
 
     private ItemNode buildItem(JsonNode itemDef) {

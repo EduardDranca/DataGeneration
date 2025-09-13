@@ -5,6 +5,8 @@ import com.github.eddranca.datagenerator.visitor.GenerationContext;
 
 import java.util.List;
 
+import static com.github.eddranca.datagenerator.builder.KeyWords.THIS_PREFIX;
+
 /**
  * Reference node for tag-based references like "byTag[tag]" or "byTag[this.field]".
  * Handles both static tags and dynamic tags that reference fields in the current item.
@@ -12,20 +14,20 @@ import java.util.List;
 public class TagReferenceNode extends AbstractReferenceNode {
     private final String tagExpression;
     private final String fieldName; // Optional field to extract from the referenced item
-    private final boolean isDynamicTag; // true if tag expression starts with "this."
+    private final boolean isDynamicTag; // true if tag expression starts with THIS_PREFIX
 
     public TagReferenceNode(String tagExpression, String fieldName, boolean sequential) {
         super(sequential);
         this.tagExpression = tagExpression;
         this.fieldName = fieldName != null ? fieldName : "";
-        this.isDynamicTag = tagExpression.startsWith("this.");
+        this.isDynamicTag = tagExpression.startsWith(THIS_PREFIX);
     }
 
     public TagReferenceNode(String tagExpression, String fieldName, List<FilterNode> filters, boolean sequential) {
         super(filters, sequential);
         this.tagExpression = tagExpression;
         this.fieldName = fieldName != null ? fieldName : "";
-        this.isDynamicTag = tagExpression.startsWith("this.");
+        this.isDynamicTag = tagExpression.startsWith(THIS_PREFIX);
     }
 
     public String getTagExpression() {
@@ -45,10 +47,10 @@ public class TagReferenceNode extends AbstractReferenceNode {
     }
 
     /**
-     * Gets the local field name for dynamic tags (removes "this." prefix).
+     * Gets the local field name for dynamic tags (removes THIS_PREFIX).
      */
     public String getLocalFieldName() {
-        return isDynamicTag ? tagExpression.substring(5) : tagExpression;
+        return isDynamicTag ? tagExpression.substring(THIS_PREFIX.length()) : tagExpression;
     }
 
     @Override

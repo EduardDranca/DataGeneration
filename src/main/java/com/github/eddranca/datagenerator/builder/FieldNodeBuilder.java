@@ -14,21 +14,17 @@ import java.util.Map;
 import static com.github.eddranca.datagenerator.builder.KeyWords.*;
 
 /**
- * Builder for field nodes (literal, object, array with count syntax).
+ * Main field builder that coordinates with specialized builders.
+ * Handles basic field types (literal, object, count arrays) and delegates to specialists.
  */
-public class FieldNodeBuilder {
+public class FieldNodeBuilder implements FieldBuilder {
     private final NodeBuilderContext context;
-    private final GeneratedFieldNodeBuilder generatedFieldBuilder;
-    private final ReferenceFieldNodeBuilder referenceFieldBuilder;
-    private final ArrayFieldNodeBuilder arrayFieldBuilder;
 
     public FieldNodeBuilder(NodeBuilderContext context) {
         this.context = context;
-        this.generatedFieldBuilder = new GeneratedFieldNodeBuilder(context, this);
-        this.referenceFieldBuilder = new ReferenceFieldNodeBuilder(context, this);
-        this.arrayFieldBuilder = new ArrayFieldNodeBuilder(context, this);
     }
 
+    @Override
     public DslNode buildField(String fieldName, JsonNode fieldDef) {
         // Check for count field first - this creates arrays using the shorthand syntax
         if (fieldDef.isObject() && fieldDef.has(COUNT)) {
@@ -36,15 +32,18 @@ public class FieldNodeBuilder {
         }
 
         if (fieldDef.has(GENERATOR)) {
-            return generatedFieldBuilder.buildGeneratorBasedField(fieldName, fieldDef);
+            GeneratedFieldNodeBuilder generatedBuilder = new GeneratedFieldNodeBuilder(context, this);
+            return generatedBuilder.buildGeneratorBasedField(fieldName, fieldDef);
         }
 
         if (fieldDef.has(REFERENCE)) {
-            return referenceFieldBuilder.buildReferenceBasedField(fieldName, fieldDef);
+            ReferenceFieldNodeBuilder referenceBuilder = new ReferenceFieldNodeBuilder(context, this);
+            return referenceBuilder.buildReferenceBasedField(fieldName, fieldDef);
         }
 
         if (fieldDef.has(ARRAY)) {
-            return arrayFieldBuilder.buildArrayField(fieldName, fieldDef);
+            ArrayFieldNodeBuilder arrayBuilder = new ArrayFieldNodeBuilder(context, this);
+            return arrayBuilder.buildArrayField(fieldName, fieldDef);
         }
 
         if (fieldDef.isObject()) {
@@ -56,7 +55,7 @@ public class FieldNodeBuilder {
 
     private DslNode buildObjectField(JsonNode fieldDef) {
         Map<String, DslNode> fields = new LinkedHashMap<>();
-        for (Iterator<Map.Entry<String, JsonNode>> it = fieldDef.fields(); it.hasNext(); ) {
+        for (Iterator<Map.Entry<String, JsonNode>> it = fieldDef.fields(); it.hasNext();) {
             var field = it.next();
             DslNode fieldNode = buildField(field.getKey(), field.getValue());
             if (fieldNode != null) {
@@ -83,13 +82,13 @@ public class FieldNodeBuilder {
     private int validateCountValue(String fieldName, JsonNode fieldDef) {
         JsonNode countNode = fieldDef.get(COUNT);
         if (!countNode.isNumber()) {
-            context.addError("Field '" + fieldName + "' count must be a number");
+            addFieldError(fieldName, "count must be a number");
             return -1;
         }
 
         int count = countNode.asInt();
         if (count < 0) {
-            context.addError("Field '" + fieldName + "' count must be non-negative");
+            addFieldError(fieldName, "count must be non-negative");
             return -1;
         }
         return count;
@@ -100,7 +99,7 @@ public class FieldNodeBuilder {
         itemDef.remove(COUNT);
 
         if (itemDef.isEmpty()) {
-            context.addError("Field '" + fieldName + "' with count must have additional field definition");
+            addFieldError(fieldName, "with count must have additional field definition");
             return null;
         }
 
@@ -109,5 +108,9 @@ public class FieldNodeBuilder {
         }
 
         return buildField("item", itemDef);
+    }
+
+    private void addFieldError(String fieldName, String message) {
+        context.addError("Field '" + fieldName + "' " + message);
     }
 }

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.defaults.ChoiceGenerator;
-import com.github.eddranca.datagenerator.node.AbstractReferenceNode;
+
 import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
@@ -141,39 +141,36 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
 
     @Override
     public JsonNode visitTagReference(TagReferenceNode node) {
-        return handleSpecializedReference(node);
+        List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
+        return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
     }
 
     @Override
     public JsonNode visitIndexedReference(IndexedReferenceNode node) {
-        return handleSpecializedReference(node);
+        List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
+        return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
     }
 
     @Override
     public JsonNode visitArrayFieldReference(ArrayFieldReferenceNode node) {
-        return handleSpecializedReference(node);
+        List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
+        return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
     }
 
     @Override
     public JsonNode visitSelfReference(SelfReferenceNode node) {
-        return handleSpecializedReference(node);
+        List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
+        return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
     }
 
     @Override
     public JsonNode visitSimpleReference(SimpleReferenceNode node) {
-        return handleSpecializedReference(node);
+        List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
+        return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
     }
 
     @Override
     public JsonNode visitPickReference(PickReferenceNode node) {
-        return handleSpecializedReference(node);
-    }
-
-    /**
-     * Common handler for all specialized reference nodes.
-     * Uses the node's own resolve method for type-safe resolution.
-     */
-    private JsonNode handleSpecializedReference(AbstractReferenceNode node) {
         List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
         return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
     }

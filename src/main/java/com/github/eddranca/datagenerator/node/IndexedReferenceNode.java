@@ -82,37 +82,45 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
         List<JsonNode> collection = context.getCollection(collectionName);
         
         if (isWildcardIndex()) {
-            // Apply filtering for wildcard index
-            if (filterValues != null && !filterValues.isEmpty()) {
-                collection = context.applyFiltering(collection, hasFieldName() ? fieldName : "", filterValues);
-                if (collection.isEmpty()) {
-                    return context.handleFilteringFailure("Indexed reference '" + getReferenceString() + "' has no valid values after filtering");
-                }
-            }
-            
-            if (collection.isEmpty()) {
-                return context.getMapper().nullNode();
-            }
-            
-            // Select an element
-            JsonNode selected = context.getElementFromCollection(collection, this, sequential);
-            return hasFieldName() ? selected.path(fieldName) : selected;
+            return resolveWildcardIndex(context, collection, filterValues);
         } else {
-            // Numeric index - direct access
-            if (numericIndex >= collection.size()) {
-                return context.getMapper().nullNode();
-            }
-            
-            JsonNode selected = collection.get(numericIndex);
-            JsonNode value = hasFieldName() ? selected.path(fieldName) : selected;
-            
-            // Check filtering for numeric index
-            if (filterValues != null && !filterValues.isEmpty() && filterValues.contains(value)) {
-                return context.handleFilteringFailure("Indexed reference '" + getReferenceString() + "' value matches filter");
-            }
-            
-            return value;
+            return resolveNumericIndex(context, collection, filterValues);
         }
+    }
+
+    private JsonNode resolveWildcardIndex(GenerationContext context, List<JsonNode> collection, List<JsonNode> filterValues) {
+        // Apply filtering for wildcard index
+        if (filterValues != null && !filterValues.isEmpty()) {
+            collection = context.applyFiltering(collection, hasFieldName() ? fieldName : "", filterValues);
+            if (collection.isEmpty()) {
+                return context.handleFilteringFailure("Indexed reference '" + getReferenceString() + "' has no valid values after filtering");
+            }
+        }
+        
+        if (collection.isEmpty()) {
+            return context.getMapper().nullNode();
+        }
+        
+        // Select an element
+        JsonNode selected = context.getElementFromCollection(collection, this, sequential);
+        return hasFieldName() ? selected.path(fieldName) : selected;
+    }
+
+    private JsonNode resolveNumericIndex(GenerationContext context, List<JsonNode> collection, List<JsonNode> filterValues) {
+        // Numeric index - direct access
+        if (numericIndex >= collection.size()) {
+            return context.getMapper().nullNode();
+        }
+        
+        JsonNode selected = collection.get(numericIndex);
+        JsonNode value = hasFieldName() ? selected.path(fieldName) : selected;
+        
+        // Check filtering for numeric index
+        if (filterValues != null && !filterValues.isEmpty() && filterValues.contains(value)) {
+            return context.handleFilteringFailure("Indexed reference '" + getReferenceString() + "' value matches filter");
+        }
+        
+        return value;
     }
 
     @Override

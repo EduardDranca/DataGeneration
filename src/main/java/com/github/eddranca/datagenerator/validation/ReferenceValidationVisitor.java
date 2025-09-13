@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.github.eddranca.datagenerator.builder.KeyWords.THIS_PREFIX;
+
 /**
  * Validation visitor that traverses the DSL node tree and validates all references,
  * particularly self-references (this.*) in their proper context.
@@ -88,7 +90,7 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
     public Void visitReferenceField(ReferenceFieldNode node) {
         String reference = node.getReference();
 
-        if (reference.startsWith("this.")) {
+        if (reference.startsWith(THIS_PREFIX)) {
             validateSelfReference(reference);
         }
 
@@ -133,7 +135,7 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
     @Override
     public Void visitSelfReference(SelfReferenceNode node) {
         // Validate self-reference
-        validateSelfReference("this." + node.getFieldName());
+        validateSelfReference(THIS_PREFIX + node.getFieldName());
         
         // Visit filters if present
         for (FilterNode filter : node.getFilters()) {
@@ -189,10 +191,10 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
         String reference = node.getReference();
 
         // Validate self-references
-        if (reference.startsWith("this.")) {
-            String fieldName = reference.substring(5);
+        if (reference.startsWith(THIS_PREFIX)) {
+            String fieldName = reference.substring(THIS_PREFIX.length());
             if (currentItemFields == null || !currentItemFields.containsKey(fieldName)) {
-                addError("Self-reference 'this." + fieldName + "' refers to non-existent field in current item");
+                addSelfReferenceError(THIS_PREFIX + fieldName, "refers to non-existent field in current item");
             }
         }
 
@@ -229,20 +231,20 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
 
     private void validateSelfReference(String reference) {
         if (currentItemFields == null) {
-            addError("Self reference '" + reference + "' found outside of item context");
+            addSelfReferenceError(reference, "found outside of item context");
             return;
         }
 
         // Extract the field path from "this.fieldName" or "this.field.subfield"
-        String fieldPath = reference.substring(5); // Remove "this."
+        String fieldPath = reference.substring(THIS_PREFIX.length()); // Remove THIS_PREFIX
 
         if (fieldPath.isEmpty()) {
-            addError("Self reference '" + reference + "' is invalid - missing field name after 'this.'");
+            addSelfReferenceError(reference, "is invalid - missing field name after '" + THIS_PREFIX + "'");
             return;
         }
 
         if (!validateFieldPath(fieldPath, currentItemFields)) {
-            addError("Self reference '" + reference + "' references non-existent field: " + fieldPath);
+            addSelfReferenceError(reference, "references non-existent field: " + fieldPath);
         }
     }
 
@@ -274,5 +276,9 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
     private void addError(String message) {
         String path = currentCollection != null ? currentCollection : "root";
         errors.add(new ValidationError(path, message));
+    }
+
+    private void addSelfReferenceError(String reference, String message) {
+        addError("Self reference '" + reference + "' " + message);
     }
 }
