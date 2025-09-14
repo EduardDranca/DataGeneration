@@ -6,9 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.exception.SerializationException;
+import com.github.eddranca.datagenerator.visitor.LazyItemProxy;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,11 +42,31 @@ public class Generation {
     }
 
     public JsonNode asJsonNode() {
-        return mapper.valueToTree(collections);
+        // Ensure all lazy items are fully materialized before JSON conversion
+        Map<String, List<JsonNode>> materializedCollections = new HashMap<>();
+        
+        for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
+            List<JsonNode> collection = entry.getValue();
+            List<JsonNode> materializedCollection = new ArrayList<>();
+            
+            for (JsonNode item : collection) {
+                if (item instanceof LazyItemProxy) {
+                    // Get a materialized copy without modifying the original proxy
+                    materializedCollection.add(((LazyItemProxy) item).getMaterializedCopy());
+                } else {
+                    materializedCollection.add(item);
+                }
+            }
+            
+            materializedCollections.put(entry.getKey(), materializedCollection);
+        }
+        
+        return mapper.valueToTree(materializedCollections);
     }
 
     public String asJson() throws JsonProcessingException {
-        return mapper.writeValueAsString(collections);
+        // Use the materialized collections from asJsonNode() for consistency
+        return mapper.writeValueAsString(asJsonNode());
     }
 
     /**
@@ -109,7 +131,12 @@ public class Generation {
             StringBuilder collectionInserts = new StringBuilder();
 
             for (JsonNode row : rows) {
-                collectionInserts.append(generateSqlInsert(tableName, row)).append("\n");
+                // Get materialized copy without modifying the original proxy
+                JsonNode materializedRow = row;
+                if (row instanceof LazyItemProxy) {
+                    materializedRow = ((LazyItemProxy) row).getMaterializedCopy();
+                }
+                collectionInserts.append(generateSqlInsert(tableName, materializedRow)).append("\n");
             }
             sqlInserts.put(tableName, collectionInserts.toString());
         }
@@ -124,6 +151,10 @@ public class Generation {
      * <p><strong>Important:</strong> Collections that are referenced by the target collection
      * must be fully generated first and kept in memory for reference resolution.</p>
      *
+     * <p><strong>Note:</strong> For very large datasets (millions of items), consider using
+     * {@link #iterateSqlInserts(String)} instead, as Java Streams can have memory overhead
+     * for extremely large datasets.</p>
+     *
      * @param collectionName the name of the collection to stream
      * @return a stream of SQL INSERT statements
      * @throws IllegalArgumentException if the collection doesn't exist
@@ -135,7 +166,61 @@ public class Generation {
         }
 
         return collection.stream()
-            .map(item -> generateSqlInsert(collectionName, item));
+            .map(item -> {
+                // Get materialized copy for each item independently during streaming
+                JsonNode materializedItem = item;
+                if (item instanceof LazyItemProxy) {
+                    materializedItem = ((LazyItemProxy) item).getMaterializedCopy();
+                }
+                return generateSqlInsert(collectionName, materializedItem);
+            });
+    }
+
+    /**
+     * Returns an iterator that generates SQL INSERT statements on-demand for the specified collection.
+     * This method is the most memory-efficient approach for very large datasets (millions of items)
+     * as it avoids any Stream API overhead and generates items one at a time.
+     *
+     * <p><strong>Usage example:</strong></p>
+     * <pre>{@code
+     * var iterator = generation.iterateSqlInserts("users");
+     * while (iterator.hasNext()) {
+     *     String sqlInsert = iterator.next();
+     *     // Process the SQL insert immediately
+     * }
+     * }</pre>
+     *
+     * @param collectionName the name of the collection to iterate
+     * @return an iterator of SQL INSERT statements
+     * @throws IllegalArgumentException if the collection doesn't exist
+     */
+    public Iterator<String> iterateSqlInserts(String collectionName) {
+        List<JsonNode> collection = collections.get(collectionName);
+        if (collection == null) {
+            throw new IllegalArgumentException("Collection '" + collectionName + "' not found");
+        }
+
+        return new Iterator<String>() {
+            private final Iterator<JsonNode> itemIterator = collection.iterator();
+
+            @Override
+            public boolean hasNext() {
+                return itemIterator.hasNext();
+            }
+
+            @Override
+            public String next() {
+                JsonNode item = itemIterator.next();
+                
+                // Get materialized copy for each item independently
+                JsonNode materializedItem = item;
+                if (item instanceof LazyItemProxy) {
+                    materializedItem = ((LazyItemProxy) item).getMaterializedCopy();
+                }
+                
+                return generateSqlInsert(collectionName, materializedItem);
+            }
+        };
     }
 
     /**

@@ -46,6 +46,17 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
 
     @Override
     public JsonNode visitRoot(RootNode node) {
+        // If memory optimization is enabled, analyze dependencies for the entire root
+        if (context.isMemoryOptimizationEnabled()) {
+            PathDependencyAnalyzer analyzer = new PathDependencyAnalyzer();
+            Map<String, Set<String>> allReferencedPaths = analyzer.analyzeRoot(node);
+            
+            // Set the referenced paths for all collections
+            for (Map.Entry<String, Set<String>> entry : allReferencedPaths.entrySet()) {
+                context.setReferencedPaths(entry.getKey(), entry.getValue());
+            }
+        }
+        
         ObjectNode result = context.getMapper().createObjectNode();
 
         for (Map.Entry<String, CollectionNode> entry : node.getCollections().entrySet()) {
@@ -58,37 +69,70 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
 
     @Override
     public JsonNode visitCollection(CollectionNode node) {
-        List<JsonNode> items = new ArrayList<>();
-        
         // Set collection context for lazy generation
         String previousCollectionName = this.currentCollectionName;
         this.currentCollectionName = node.getCollectionName();
         
         try {
-            for (int i = 0; i < node.getCount(); i++) {
-                JsonNode item = node.getItem().accept(this);
-                items.add(item);
-            }
+            // If memory optimization is enabled, create a lazy collection
+            if (context.isMemoryOptimizationEnabled()) {
+                // System.out.println("DataGenerationVisitor: Memory optimization enabled for collection: " + node.getCollectionName());
+                Set<String> referencedPaths = context.getReferencedPaths(node.getCollectionName());
+                // System.out.println("DataGenerationVisitor: Referenced paths: " + referencedPaths);
+                LazyCollection lazyCollection = new LazyCollection(node, this, node.getCollectionName(), referencedPaths);
+                
+                // Register the lazy collection
+                context.registerLazyCollection(node.getCollectionName(), lazyCollection);
 
-            context.registerCollection(node.getCollectionName(), items);
-
-            if (!node.getName().equals(node.getCollectionName())) {
-                context.registerReferenceCollection(node.getName(), items);
-            }
-
-            for (String tag : node.getTags()) {
-                context.registerTaggedCollection(tag, items);
-            }
-
-            for (Map.Entry<String, Integer> pick : node.getPicks().entrySet()) {
-                String alias = pick.getKey();
-                int index = pick.getValue();
-                if (index < items.size()) {
-                    context.registerPick(alias, items.get(index));
+                if (!node.getName().equals(node.getCollectionName())) {
+                    context.registerLazyReferenceCollection(node.getName(), lazyCollection);
                 }
-            }
 
-            return context.getMapper().valueToTree(items);
+                for (String tag : node.getTags()) {
+                    context.registerLazyTaggedCollection(tag, lazyCollection);
+                }
+
+                // For picks, we need to materialize the specific item
+                for (Map.Entry<String, Integer> pick : node.getPicks().entrySet()) {
+                    String alias = pick.getKey();
+                    int index = pick.getValue();
+                    if (index < lazyCollection.size()) {
+                        JsonNode pickedItem = lazyCollection.get(index);
+                        context.registerPick(alias, pickedItem);
+                    }
+                }
+
+                // Return a placeholder - the actual streaming will happen later
+                return context.getMapper().createArrayNode();
+            } else {
+                // Standard eager generation
+                List<JsonNode> items = new ArrayList<>();
+                
+                for (int i = 0; i < node.getCount(); i++) {
+                    JsonNode item = node.getItem().accept(this);
+                    items.add(item);
+                }
+
+                context.registerCollection(node.getCollectionName(), items);
+
+                if (!node.getName().equals(node.getCollectionName())) {
+                    context.registerReferenceCollection(node.getName(), items);
+                }
+
+                for (String tag : node.getTags()) {
+                    context.registerTaggedCollection(tag, items);
+                }
+
+                for (Map.Entry<String, Integer> pick : node.getPicks().entrySet()) {
+                    String alias = pick.getKey();
+                    int index = pick.getValue();
+                    if (index < items.size()) {
+                        context.registerPick(alias, items.get(index));
+                    }
+                }
+
+                return context.getMapper().valueToTree(items);
+            }
         } finally {
             // Restore previous collection context
             this.currentCollectionName = previousCollectionName;
@@ -100,77 +144,16 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
         ObjectNode previousItem = this.currentItem;
         
         try {
-            // Check if memory optimization is enabled and we're in a collection context
-            if (context.isMemoryOptimizationEnabled() && isInCollectionContext()) {
-                return createLazyItem(node);
-            } else {
-                // Standard generation
-                ObjectNode item = context.getMapper().createObjectNode();
-                this.currentItem = item;
-                return visitObjectLikeNode(node.getFields(), item);
-            }
+            // Standard item generation - lazy generation is now handled at collection level
+            ObjectNode item = context.getMapper().createObjectNode();
+            this.currentItem = item;
+            return visitObjectLikeNode(node.getFields(), item);
         } finally {
             this.currentItem = previousItem; // Restore previous item context
         }
     }
     
-    /**
-     * Creates a lazy item proxy that only materializes referenced fields.
-     */
-    private JsonNode createLazyItem(ItemNode node) {
-        // We need to determine which collection this item belongs to
-        // For now, we'll use a simple approach - this could be enhanced
-        String collectionName = getCurrentCollectionName();
-        Set<String> referencedPaths = context.getReferencedPaths(collectionName);
-        
-        // Record statistics
-        int totalFields = node.getFields().size();
-        int referencedFieldCount = calculateReferencedFieldCount(node.getFields().keySet(), referencedPaths);
-        context.recordFieldGeneration(totalFields, referencedFieldCount);
-        
-        // Create the lazy proxy
-        LazyItemProxy lazyItem = new LazyItemProxy(collectionName, node.getFields(), referencedPaths, this);
-        this.currentItem = lazyItem;
-        
-        return lazyItem;
-    }
-    
-    /**
-     * Calculates how many fields will be materialized based on referenced paths.
-     */
-    private int calculateReferencedFieldCount(Set<String> fieldNames, Set<String> referencedPaths) {
-        if (referencedPaths.contains("*")) {
-            return fieldNames.size();
-        }
-        
-        int count = 0;
-        for (String fieldName : fieldNames) {
-            for (String referencedPath : referencedPaths) {
-                if (referencedPath.equals(fieldName) || referencedPath.startsWith(fieldName + ".")) {
-                    count++;
-                    break;
-                }
-            }
-        }
-        return count;
-    }
-    
-    /**
-     * Determines if we're currently generating items within a collection.
-     * This is a simplified implementation - could be enhanced with a context stack.
-     */
-    private boolean isInCollectionContext() {
-        // For now, assume we're in collection context if we have referenced paths
-        // This could be improved with proper context tracking
-        return true;
-    }
-    
-    /**
-     * Gets the current collection name for lazy item generation.
-     */
-    private String getCurrentCollectionName() {
-        return currentCollectionName != null ? currentCollectionName : "unknown";
-    }
+
 
     @Override
     public JsonNode visitGeneratedField(GeneratedFieldNode node) {
@@ -372,6 +355,25 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
     @Override
     public JsonNode visitFilter(FilterNode node) {
         return node.getFilterExpression().accept(this);
+    }
+
+    // ------------------------
+    // Public methods for lazy materialization
+    // ------------------------
+    
+    /**
+     * Generates a field value for lazy materialization.
+     * This method is used by LazyMaterializer to generate individual fields on demand.
+     */
+    public JsonNode generateFieldValue(String fieldName, DslNode fieldNode) {
+        return fieldNode.accept(this);
+    }
+    
+    /**
+     * Gets the current generation context.
+     */
+    public GenerationContext getContext() {
+        return context;
     }
 
     // ------------------------

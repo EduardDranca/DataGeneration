@@ -25,12 +25,14 @@ public class DslDataGenerator {
     private final Random random;
     private final int maxFilteringRetries;
     private final FilteringBehavior filteringBehavior;
+    private final boolean memoryOptimizationEnabled;
 
     private DslDataGenerator(Builder builder) {
         this.random = new Random(builder.seed);
         this.mapper = new ObjectMapper();
         this.maxFilteringRetries = builder.maxFilteringRetries;
         this.filteringBehavior = builder.filteringBehavior;
+        this.memoryOptimizationEnabled = builder.memoryOptimizationEnabled;
         this.generatorRegistry = builder.generatorRegistry != null ? builder.generatorRegistry
             : GeneratorRegistry.withDefaultGenerators(new Faker(random));
 
@@ -50,6 +52,8 @@ public class DslDataGenerator {
     public static Builder create() {
         return new Builder();
     }
+
+
 
     /**
      * Internal generation method used by the fluent API for files.
@@ -101,6 +105,13 @@ public class DslDataGenerator {
         // Generate data using the visitor
         GenerationContext context = new GenerationContext(generatorRegistry, random, maxFilteringRetries,
             filteringBehavior);
+
+        // Enable memory optimization if requested
+        if (memoryOptimizationEnabled) {
+            // Initialize with empty referenced paths - they will be populated during analysis
+            context.enableMemoryOptimization(new HashMap<>());
+        }
+
         DataGenerationVisitor visitor = new DataGenerationVisitor(context);
 
         rootNode.accept(visitor);
@@ -118,6 +129,7 @@ public class DslDataGenerator {
         private Map<String, Generator> customGenerators;
         private int maxFilteringRetries = 100;
         private FilteringBehavior filteringBehavior = FilteringBehavior.RETURN_NULL;
+        private boolean memoryOptimizationEnabled = false;
 
         private Builder() {
         }
@@ -187,6 +199,18 @@ public class DslDataGenerator {
          */
         public Builder withFilteringBehavior(FilteringBehavior behavior) {
             this.filteringBehavior = behavior != null ? behavior : FilteringBehavior.RETURN_NULL;
+            return this;
+        }
+
+        /**
+         * Enables memory optimization for lazy field materialization.
+         * This can significantly reduce memory usage when generating large datasets
+         * where only some fields are referenced by other collections.
+         *
+         * @return this builder for method chaining
+         */
+        public Builder withMemoryOptimization() {
+            this.memoryOptimizationEnabled = true;
             return this;
         }
 

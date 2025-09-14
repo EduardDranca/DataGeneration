@@ -48,15 +48,18 @@ public class GenerationContext {
     // DSL keys)
     private final Map<String, List<JsonNode>> taggedCollections;
     private final Map<String, JsonNode> namedPicks;
+
+    // Lazy collection support for memory optimization
+    private final Map<String, LazyCollection> lazyNamedCollections;
+    private final Map<String, LazyCollection> lazyReferenceCollections;
+    private final Map<String, LazyCollection> lazyTaggedCollections;
     private final Map<Sequential, Integer> sequentialCounters;
     private final int maxFilteringRetries;
     private final FilteringBehavior filteringBehavior;
-    
+
     // Memory optimization fields
     private Map<String, Set<String>> referencedPaths;
     private boolean memoryOptimizationEnabled = false;
-    private int totalFieldsPossible = 0;
-    private int totalFieldsGenerated = 0;
 
     public GenerationContext(GeneratorRegistry generatorRegistry, Random random, int maxFilteringRetries,
                              FilteringBehavior filteringBehavior) {
@@ -67,6 +70,9 @@ public class GenerationContext {
         this.referenceCollections = new HashMap<>();
         this.taggedCollections = new HashMap<>();
         this.namedPicks = new HashMap<>();
+        this.lazyNamedCollections = new HashMap<>();
+        this.lazyReferenceCollections = new HashMap<>();
+        this.lazyTaggedCollections = new HashMap<>();
         this.sequentialCounters = new IdentityHashMap<>();
         this.maxFilteringRetries = maxFilteringRetries;
         this.filteringBehavior = filteringBehavior;
@@ -117,8 +123,33 @@ public class GenerationContext {
         }
     }
 
+    // Lazy collection registration methods for memory optimization
+    public void registerLazyCollection(String name, LazyCollection collection) {
+        lazyNamedCollections.put(name, collection);
+    }
+
+    public void registerLazyReferenceCollection(String name, LazyCollection collection) {
+        lazyReferenceCollections.put(name, collection);
+    }
+
+    public void registerLazyTaggedCollection(String tag, LazyCollection collection) {
+        lazyTaggedCollections.put(tag, collection);
+    }
+
     public List<JsonNode> getCollection(String name) {
-        // First check reference collections (includes DSL keys), then named collections
+        // First check lazy collections if memory optimization is enabled
+        if (memoryOptimizationEnabled) {
+            LazyCollection lazyCollection = lazyReferenceCollections.get(name);
+            if (lazyCollection != null) {
+                return lazyCollection;
+            }
+            lazyCollection = lazyNamedCollections.get(name);
+            if (lazyCollection != null) {
+                return lazyCollection;
+            }
+        }
+
+        // Fall back to eager collections
         List<JsonNode> collection = referenceCollections.get(name);
         if (collection != null) {
             return collection;
@@ -128,11 +159,24 @@ public class GenerationContext {
     }
 
     public List<JsonNode> getTaggedCollection(String tag) {
+        // First check lazy collections if memory optimization is enabled
+        if (memoryOptimizationEnabled) {
+            LazyCollection lazyCollection = lazyTaggedCollections.get(tag);
+            if (lazyCollection != null) {
+                return lazyCollection;
+            }
+        }
+
+        // Fall back to eager collections
         List<JsonNode> collection = taggedCollections.get(tag);
         return collection != null ? collection : List.of();
     }
 
     public Map<String, List<JsonNode>> getNamedCollections() {
+        if (memoryOptimizationEnabled && !lazyNamedCollections.isEmpty()) {
+            // Return lazy collections for memory-optimized generation
+            return new HashMap<>(lazyNamedCollections);
+        }
         return new HashMap<>(namedCollections);
     }
 
@@ -254,24 +298,22 @@ public class GenerationContext {
             return handleFilteringFailure(e.getMessage());
         }
     }
-    
+
     /**
      * Enables memory optimization with the given referenced paths.
      */
     public void enableMemoryOptimization(Map<String, Set<String>> referencedPaths) {
         this.referencedPaths = new HashMap<>(referencedPaths);
         this.memoryOptimizationEnabled = true;
-        this.totalFieldsPossible = 0;
-        this.totalFieldsGenerated = 0;
     }
-    
+
     /**
      * Returns true if memory optimization is enabled.
      */
     public boolean isMemoryOptimizationEnabled() {
         return memoryOptimizationEnabled;
     }
-    
+
     /**
      * Gets the referenced paths for a collection.
      */
@@ -281,46 +323,14 @@ public class GenerationContext {
         }
         return referencedPaths.getOrDefault(collection, Set.of());
     }
-    
+
     /**
-     * Records field generation statistics for memory optimization tracking.
+     * Sets the referenced paths for a collection.
      */
-    public void recordFieldGeneration(int possibleFields, int generatedFields) {
-        this.totalFieldsPossible += possibleFields;
-        this.totalFieldsGenerated += generatedFields;
-    }
-    
-    /**
-     * Gets memory optimization statistics.
-     */
-    public MemoryOptimizationStats getMemoryOptimizationStats() {
-        return new MemoryOptimizationStats(totalFieldsPossible, totalFieldsGenerated);
-    }
-    
-    /**
-     * Memory optimization statistics.
-     */
-    public static class MemoryOptimizationStats {
-        private final int totalFieldsPossible;
-        private final int totalFieldsGenerated;
-        private final double memorySavingsPercentage;
-        
-        public MemoryOptimizationStats(int totalFieldsPossible, int totalFieldsGenerated) {
-            this.totalFieldsPossible = totalFieldsPossible;
-            this.totalFieldsGenerated = totalFieldsGenerated;
-            this.memorySavingsPercentage = totalFieldsPossible > 0 ? 
-                ((double)(totalFieldsPossible - totalFieldsGenerated) / totalFieldsPossible) * 100.0 : 0.0;
+    public void setReferencedPaths(String collection, Set<String> paths) {
+        if (referencedPaths == null) {
+            referencedPaths = new HashMap<>();
         }
-        
-        public int getTotalFieldsPossible() { return totalFieldsPossible; }
-        public int getTotalFieldsGenerated() { return totalFieldsGenerated; }
-        public double getMemorySavingsPercentage() { return memorySavingsPercentage; }
-        
-        @Override
-        public String toString() {
-            return String.format("MemoryStats{possible=%d, generated=%d, saved=%d, savings=%.1f%%}",
-                totalFieldsPossible, totalFieldsGenerated, 
-                totalFieldsPossible - totalFieldsGenerated, memorySavingsPercentage);
-        }
+        referencedPaths.put(collection, paths);
     }
 }
