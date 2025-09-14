@@ -15,6 +15,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 
 /**
@@ -50,6 +51,12 @@ public class GenerationContext {
     private final Map<Sequential, Integer> sequentialCounters;
     private final int maxFilteringRetries;
     private final FilteringBehavior filteringBehavior;
+    
+    // Memory optimization fields
+    private Map<String, Set<String>> referencedPaths;
+    private boolean memoryOptimizationEnabled = false;
+    private int totalFieldsPossible = 0;
+    private int totalFieldsGenerated = 0;
 
     public GenerationContext(GeneratorRegistry generatorRegistry, Random random, int maxFilteringRetries,
                              FilteringBehavior filteringBehavior) {
@@ -245,6 +252,75 @@ public class GenerationContext {
             }
         } catch (FilteringException e) {
             return handleFilteringFailure(e.getMessage());
+        }
+    }
+    
+    /**
+     * Enables memory optimization with the given referenced paths.
+     */
+    public void enableMemoryOptimization(Map<String, Set<String>> referencedPaths) {
+        this.referencedPaths = new HashMap<>(referencedPaths);
+        this.memoryOptimizationEnabled = true;
+        this.totalFieldsPossible = 0;
+        this.totalFieldsGenerated = 0;
+    }
+    
+    /**
+     * Returns true if memory optimization is enabled.
+     */
+    public boolean isMemoryOptimizationEnabled() {
+        return memoryOptimizationEnabled;
+    }
+    
+    /**
+     * Gets the referenced paths for a collection.
+     */
+    public Set<String> getReferencedPaths(String collection) {
+        if (!memoryOptimizationEnabled || referencedPaths == null) {
+            return Set.of();
+        }
+        return referencedPaths.getOrDefault(collection, Set.of());
+    }
+    
+    /**
+     * Records field generation statistics for memory optimization tracking.
+     */
+    public void recordFieldGeneration(int possibleFields, int generatedFields) {
+        this.totalFieldsPossible += possibleFields;
+        this.totalFieldsGenerated += generatedFields;
+    }
+    
+    /**
+     * Gets memory optimization statistics.
+     */
+    public MemoryOptimizationStats getMemoryOptimizationStats() {
+        return new MemoryOptimizationStats(totalFieldsPossible, totalFieldsGenerated);
+    }
+    
+    /**
+     * Memory optimization statistics.
+     */
+    public static class MemoryOptimizationStats {
+        private final int totalFieldsPossible;
+        private final int totalFieldsGenerated;
+        private final double memorySavingsPercentage;
+        
+        public MemoryOptimizationStats(int totalFieldsPossible, int totalFieldsGenerated) {
+            this.totalFieldsPossible = totalFieldsPossible;
+            this.totalFieldsGenerated = totalFieldsGenerated;
+            this.memorySavingsPercentage = totalFieldsPossible > 0 ? 
+                ((double)(totalFieldsPossible - totalFieldsGenerated) / totalFieldsPossible) * 100.0 : 0.0;
+        }
+        
+        public int getTotalFieldsPossible() { return totalFieldsPossible; }
+        public int getTotalFieldsGenerated() { return totalFieldsGenerated; }
+        public double getMemorySavingsPercentage() { return memorySavingsPercentage; }
+        
+        @Override
+        public String toString() {
+            return String.format("MemoryStats{possible=%d, generated=%d, saved=%d, savings=%.1f%%}",
+                totalFieldsPossible, totalFieldsGenerated, 
+                totalFieldsPossible - totalFieldsGenerated, memorySavingsPercentage);
         }
     }
 }

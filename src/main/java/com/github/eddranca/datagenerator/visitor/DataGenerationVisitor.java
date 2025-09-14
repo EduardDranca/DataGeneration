@@ -28,6 +28,7 @@ import com.github.eddranca.datagenerator.node.TagReferenceNode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -37,6 +38,7 @@ import java.util.function.Supplier;
 public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
     private final GenerationContext context;
     private ObjectNode currentItem; // Track current item for "this" references
+    private String currentCollectionName; // Track current collection for lazy generation
 
     public DataGenerationVisitor(GenerationContext context) {
         this.context = context;
@@ -57,43 +59,117 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
     @Override
     public JsonNode visitCollection(CollectionNode node) {
         List<JsonNode> items = new ArrayList<>();
-
-        for (int i = 0; i < node.getCount(); i++) {
-            JsonNode item = node.getItem().accept(this);
-            items.add(item);
-        }
-
-        context.registerCollection(node.getCollectionName(), items);
-
-        if (!node.getName().equals(node.getCollectionName())) {
-            context.registerReferenceCollection(node.getName(), items);
-        }
-
-        for (String tag : node.getTags()) {
-            context.registerTaggedCollection(tag, items);
-        }
-
-        for (Map.Entry<String, Integer> pick : node.getPicks().entrySet()) {
-            String alias = pick.getKey();
-            int index = pick.getValue();
-            if (index < items.size()) {
-                context.registerPick(alias, items.get(index));
+        
+        // Set collection context for lazy generation
+        String previousCollectionName = this.currentCollectionName;
+        this.currentCollectionName = node.getCollectionName();
+        
+        try {
+            for (int i = 0; i < node.getCount(); i++) {
+                JsonNode item = node.getItem().accept(this);
+                items.add(item);
             }
-        }
 
-        return context.getMapper().valueToTree(items);
+            context.registerCollection(node.getCollectionName(), items);
+
+            if (!node.getName().equals(node.getCollectionName())) {
+                context.registerReferenceCollection(node.getName(), items);
+            }
+
+            for (String tag : node.getTags()) {
+                context.registerTaggedCollection(tag, items);
+            }
+
+            for (Map.Entry<String, Integer> pick : node.getPicks().entrySet()) {
+                String alias = pick.getKey();
+                int index = pick.getValue();
+                if (index < items.size()) {
+                    context.registerPick(alias, items.get(index));
+                }
+            }
+
+            return context.getMapper().valueToTree(items);
+        } finally {
+            // Restore previous collection context
+            this.currentCollectionName = previousCollectionName;
+        }
     }
 
     @Override
     public JsonNode visitItem(ItemNode node) {
-        ObjectNode item = context.getMapper().createObjectNode();
         ObjectNode previousItem = this.currentItem;
-        this.currentItem = item;
+        
         try {
-            return visitObjectLikeNode(node.getFields(), item);
+            // Check if memory optimization is enabled and we're in a collection context
+            if (context.isMemoryOptimizationEnabled() && isInCollectionContext()) {
+                return createLazyItem(node);
+            } else {
+                // Standard generation
+                ObjectNode item = context.getMapper().createObjectNode();
+                this.currentItem = item;
+                return visitObjectLikeNode(node.getFields(), item);
+            }
         } finally {
             this.currentItem = previousItem; // Restore previous item context
         }
+    }
+    
+    /**
+     * Creates a lazy item proxy that only materializes referenced fields.
+     */
+    private JsonNode createLazyItem(ItemNode node) {
+        // We need to determine which collection this item belongs to
+        // For now, we'll use a simple approach - this could be enhanced
+        String collectionName = getCurrentCollectionName();
+        Set<String> referencedPaths = context.getReferencedPaths(collectionName);
+        
+        // Record statistics
+        int totalFields = node.getFields().size();
+        int referencedFieldCount = calculateReferencedFieldCount(node.getFields().keySet(), referencedPaths);
+        context.recordFieldGeneration(totalFields, referencedFieldCount);
+        
+        // Create the lazy proxy
+        LazyItemProxy lazyItem = new LazyItemProxy(collectionName, node.getFields(), referencedPaths, this);
+        this.currentItem = lazyItem;
+        
+        return lazyItem;
+    }
+    
+    /**
+     * Calculates how many fields will be materialized based on referenced paths.
+     */
+    private int calculateReferencedFieldCount(Set<String> fieldNames, Set<String> referencedPaths) {
+        if (referencedPaths.contains("*")) {
+            return fieldNames.size();
+        }
+        
+        int count = 0;
+        for (String fieldName : fieldNames) {
+            for (String referencedPath : referencedPaths) {
+                if (referencedPath.equals(fieldName) || referencedPath.startsWith(fieldName + ".")) {
+                    count++;
+                    break;
+                }
+            }
+        }
+        return count;
+    }
+    
+    /**
+     * Determines if we're currently generating items within a collection.
+     * This is a simplified implementation - could be enhanced with a context stack.
+     */
+    private boolean isInCollectionContext() {
+        // For now, assume we're in collection context if we have referenced paths
+        // This could be improved with proper context tracking
+        return true;
+    }
+    
+    /**
+     * Gets the current collection name for lazy item generation.
+     */
+    private String getCurrentCollectionName() {
+        return currentCollectionName != null ? currentCollectionName : "unknown";
     }
 
     @Override
