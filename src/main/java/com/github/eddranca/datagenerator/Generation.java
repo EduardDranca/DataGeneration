@@ -44,11 +44,11 @@ public class Generation {
     public JsonNode asJsonNode() {
         // Ensure all lazy items are fully materialized before JSON conversion
         Map<String, List<JsonNode>> materializedCollections = new HashMap<>();
-        
+
         for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
             List<JsonNode> collection = entry.getValue();
             List<JsonNode> materializedCollection = new ArrayList<>();
-            
+
             for (JsonNode item : collection) {
                 if (item instanceof LazyItemProxy) {
                     // Get a materialized copy without modifying the original proxy
@@ -57,10 +57,10 @@ public class Generation {
                     materializedCollection.add(item);
                 }
             }
-            
+
             materializedCollections.put(entry.getKey(), materializedCollection);
         }
-        
+
         return mapper.valueToTree(materializedCollections);
     }
 
@@ -174,53 +174,6 @@ public class Generation {
                 }
                 return generateSqlInsert(collectionName, materializedItem);
             });
-    }
-
-    /**
-     * Returns an iterator that generates SQL INSERT statements on-demand for the specified collection.
-     * This method is the most memory-efficient approach for very large datasets (millions of items)
-     * as it avoids any Stream API overhead and generates items one at a time.
-     *
-     * <p><strong>Usage example:</strong></p>
-     * <pre>{@code
-     * var iterator = generation.iterateSqlInserts("users");
-     * while (iterator.hasNext()) {
-     *     String sqlInsert = iterator.next();
-     *     // Process the SQL insert immediately
-     * }
-     * }</pre>
-     *
-     * @param collectionName the name of the collection to iterate
-     * @return an iterator of SQL INSERT statements
-     * @throws IllegalArgumentException if the collection doesn't exist
-     */
-    public Iterator<String> iterateSqlInserts(String collectionName) {
-        List<JsonNode> collection = collections.get(collectionName);
-        if (collection == null) {
-            throw new IllegalArgumentException("Collection '" + collectionName + "' not found");
-        }
-
-        return new Iterator<String>() {
-            private final Iterator<JsonNode> itemIterator = collection.iterator();
-
-            @Override
-            public boolean hasNext() {
-                return itemIterator.hasNext();
-            }
-
-            @Override
-            public String next() {
-                JsonNode item = itemIterator.next();
-                
-                // Get materialized copy for each item independently
-                JsonNode materializedItem = item;
-                if (item instanceof LazyItemProxy) {
-                    materializedItem = ((LazyItemProxy) item).getMaterializedCopy();
-                }
-                
-                return generateSqlInsert(collectionName, materializedItem);
-            }
-        };
     }
 
     /**

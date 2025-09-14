@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * A lazy proxy for JsonNode that only materializes fields on-demand.
@@ -19,7 +18,7 @@ import java.util.function.Supplier;
  * Supports nested path materialization for complex object hierarchies.
  */
 public class LazyItemProxy extends ObjectNode {
-    private final Map<String, Supplier<JsonNode>> fieldSuppliers;
+    private final Map<String, DslNode> fieldNodes;
     private final Set<String> referencedPaths;
     private final String collectionName;
     private final DataGenerationVisitor visitor;
@@ -27,42 +26,24 @@ public class LazyItemProxy extends ObjectNode {
     private boolean fullyMaterialized = false;
 
     public LazyItemProxy(String collectionName,
-                        Map<String, DslNode> fieldNodes,
-                        Set<String> referencedPaths,
-                        DataGenerationVisitor visitor) {
+            Map<String, DslNode> fieldNodes,
+            Set<String> referencedPaths,
+            DataGenerationVisitor visitor) {
         super(JsonNodeFactory.instance);
         this.collectionName = collectionName;
         this.referencedPaths = referencedPaths;
         this.visitor = visitor;
-        this.fieldSuppliers = createFieldSuppliers(fieldNodes);
+        this.fieldNodes = new HashMap<>(fieldNodes);
 
         // Generate only referenced fields immediately
         materializeReferencedFields();
     }
 
     /**
-     * Creates suppliers for all fields in the item.
-     */
-    private Map<String, Supplier<JsonNode>> createFieldSuppliers(Map<String, DslNode> fieldNodes) {
-        Map<String, Supplier<JsonNode>> suppliers = new HashMap<>();
-
-        for (Map.Entry<String, DslNode> entry : fieldNodes.entrySet()) {
-            String fieldName = entry.getKey();
-            DslNode fieldNode = entry.getValue();
-
-            // Create lazy supplier that will generate the field when called
-            suppliers.put(fieldName, () -> fieldNode.accept(visitor));
-        }
-
-        return suppliers;
-    }
-
-    /**
      * Materializes only the fields that are referenced by other collections.
      */
     private void materializeReferencedFields() {
-
-        for (String fieldName : fieldSuppliers.keySet()) {
+        for (String fieldName : fieldNodes.keySet()) {
             if (shouldMaterializeField(fieldName)) {
                 materializeField(fieldName);
             }
@@ -94,13 +75,60 @@ public class LazyItemProxy extends ObjectNode {
     private void materializeField(String fieldName) {
         // Check if already materialized using our own tracking
         if (!materializedFieldNames.contains(fieldName)) {
-            Supplier<JsonNode> supplier = fieldSuppliers.get(fieldName);
-            if (supplier != null) {
-                JsonNode value = supplier.get();
+            DslNode fieldNode = fieldNodes.get(fieldName);
+            if (fieldNode != null) {
+                JsonNode value;
+
+                // If this is an ObjectFieldNode and has nested references, create a
+                // LazyObjectProxy
+                if (fieldNode instanceof com.github.eddranca.datagenerator.node.ObjectFieldNode
+                        && hasNestedReferences(fieldName)) {
+                    var objectFieldNode = (com.github.eddranca.datagenerator.node.ObjectFieldNode) fieldNode;
+                    Set<String> nestedReferences = getNestedReferences(fieldName);
+
+                    value = new LazyObjectProxy(
+                            objectFieldNode.getFields(),
+                            nestedReferences,
+                            visitor,
+                            fieldName);
+                } else {
+                    // Generate normally for simple fields or non-referenced nested objects
+                    value = fieldNode.accept(visitor);
+                }
+
                 super.set(fieldName, value);
                 materializedFieldNames.add(fieldName);
             }
         }
+    }
+
+    /**
+     * Checks if there are any referenced paths that go deeper into this field.
+     */
+    private boolean hasNestedReferences(String fieldName) {
+        String prefix = fieldName + ".";
+        for (String referencedPath : referencedPaths) {
+            if (referencedPath.startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Gets all referenced paths that start with the given field name.
+     */
+    private Set<String> getNestedReferences(String fieldName) {
+        Set<String> nestedRefs = new HashSet<>();
+        String prefix = fieldName + ".";
+
+        for (String referencedPath : referencedPaths) {
+            if (referencedPath.startsWith(prefix)) {
+                nestedRefs.add(referencedPath);
+            }
+        }
+
+        return nestedRefs;
     }
 
     @Override
@@ -110,8 +138,8 @@ public class LazyItemProxy extends ObjectNode {
             return super.get(fieldName);
         }
 
-        // If not materialized and we have a supplier, materialize it now
-        if (fieldSuppliers.containsKey(fieldName)) {
+        // If not materialized and we have a field node, materialize it now
+        if (fieldNodes.containsKey(fieldName)) {
             materializeField(fieldName);
             return super.get(fieldName);
         }
@@ -128,23 +156,10 @@ public class LazyItemProxy extends ObjectNode {
     }
 
     /**
-     * Materializes all remaining fields for complete object generation.
-     * This should be called during output generation (JSON/SQL).
-     */
-    public JsonNode materializeAll() {
-        if (!fullyMaterialized) {
-            // Generate any remaining fields
-            for (String fieldName : fieldSuppliers.keySet()) {
-                materializeField(fieldName);
-            }
-            fullyMaterialized = true;
-        }
-        return this;
-    }
-
-    /**
-     * Returns a new ObjectNode with all fields materialized, leaving this proxy unchanged.
-     * This is memory-efficient for streaming operations where you need a materialized copy
+     * Returns a new ObjectNode with all fields materialized, leaving this proxy
+     * unchanged.
+     * This is memory-efficient for streaming operations where you need a
+     * materialized copy
      * but want to keep the original proxy intact for potential reuse.
      *
      * @return a new ObjectNode with all fields materialized
@@ -152,11 +167,20 @@ public class LazyItemProxy extends ObjectNode {
     public ObjectNode getMaterializedCopy() {
         ObjectNode materializedCopy = JsonNodeFactory.instance.objectNode();
 
-        // Materialize all fields into the new node
-        for (String fieldName : fieldSuppliers.keySet()) {
-            Supplier<JsonNode> supplier = fieldSuppliers.get(fieldName);
-            if (supplier != null) {
-                JsonNode value = supplier.get();
+        // First, ensure all fields are materialized in this proxy
+        if (!fullyMaterialized) {
+            for (String fieldName : fieldNodes.keySet()) {
+                materializeField(fieldName);
+            }
+            fullyMaterialized = true;
+        }
+
+        // Copy the already-materialized values to the new node
+        // For streaming efficiency, we'll use the materialized values directly
+        // instead of creating deep copies of LazyObjectProxy instances
+        for (String fieldName : fieldNodes.keySet()) {
+            JsonNode value = super.get(fieldName);
+            if (value != null) {
                 materializedCopy.set(fieldName, value);
             }
         }
@@ -168,7 +192,7 @@ public class LazyItemProxy extends ObjectNode {
      * Returns memory usage statistics for this item.
      */
     public MemoryStats getMemoryStats() {
-        int totalFields = fieldSuppliers.size();
+        int totalFields = fieldNodes.size();
         int materializedFields = super.size();
         double efficiency = totalFields > 0 ? (double) materializedFields / totalFields : 1.0;
 
@@ -181,7 +205,7 @@ public class LazyItemProxy extends ObjectNode {
             return super.toString();
         } else {
             return String.format("LazyItemProxy{collection=%s, materialized=%d/%d fields}",
-                collectionName, super.size(), fieldSuppliers.size());
+                    collectionName, super.size(), fieldNodes.size());
         }
     }
 
@@ -195,31 +219,43 @@ public class LazyItemProxy extends ObjectNode {
         private final boolean fullyMaterialized;
 
         public MemoryStats(int totalFields, int materializedFields,
-                          double efficiencyRatio, boolean fullyMaterialized) {
+                double efficiencyRatio, boolean fullyMaterialized) {
             this.totalFields = totalFields;
             this.materializedFields = materializedFields;
             this.efficiencyRatio = efficiencyRatio;
             this.fullyMaterialized = fullyMaterialized;
         }
 
-        public int getTotalFields() { return totalFields; }
-        public int getMaterializedFields() { return materializedFields; }
-        public double getEfficiencyRatio() { return efficiencyRatio; }
-        public boolean isFullyMaterialized() { return fullyMaterialized; }
+        public int getTotalFields() {
+            return totalFields;
+        }
+
+        public int getMaterializedFields() {
+            return materializedFields;
+        }
+
+        public double getEfficiencyRatio() {
+            return efficiencyRatio;
+        }
+
+        public boolean isFullyMaterialized() {
+            return fullyMaterialized;
+        }
 
         public int getSavedFields() {
             return totalFields - materializedFields;
         }
 
         public double getMemorySavingsPercentage() {
-            if (totalFields == 0) return 0.0;
+            if (totalFields == 0)
+                return 0.0;
             return (1.0 - efficiencyRatio) * 100.0;
         }
 
         @Override
         public String toString() {
             return String.format("MemoryStats{total=%d, materialized=%d, saved=%d, savings=%.1f%%}",
-                totalFields, materializedFields, getSavedFields(), getMemorySavingsPercentage());
+                    totalFields, materializedFields, getSavedFields(), getMemorySavingsPercentage());
         }
     }
 }
