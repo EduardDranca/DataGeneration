@@ -50,9 +50,9 @@ public class GenerationContext {
     private final Map<String, JsonNode> namedPicks;
 
     // Lazy collection support for memory optimization
-    private final Map<String, LazyCollection> lazyNamedCollections;
-    private final Map<String, LazyCollection> lazyReferenceCollections;
-    private final Map<String, LazyCollection> lazyTaggedCollections;
+    private final Map<String, LazyItemCollection> lazyNamedCollections;
+    private final Map<String, LazyItemCollection> lazyReferenceCollections;
+    private final Map<String, LazyItemCollection> lazyTaggedCollections;
     private final Map<Sequential, Integer> sequentialCounters;
     private final int maxFilteringRetries;
     private final FilteringBehavior filteringBehavior;
@@ -124,28 +124,28 @@ public class GenerationContext {
     }
 
     // Lazy collection registration methods for memory optimization
-    public void registerLazyCollection(String name, LazyCollection collection) {
+    public void registerLazyCollection(String name, LazyItemCollection collection) {
         lazyNamedCollections.put(name, collection);
     }
 
-    public void registerLazyReferenceCollection(String name, LazyCollection collection) {
+    public void registerLazyReferenceCollection(String name, LazyItemCollection collection) {
         lazyReferenceCollections.put(name, collection);
     }
 
-    public void registerLazyTaggedCollection(String tag, LazyCollection collection) {
+    public void registerLazyTaggedCollection(String tag, LazyItemCollection collection) {
         lazyTaggedCollections.put(tag, collection);
     }
 
     public List<JsonNode> getCollection(String name) {
         // First check lazy collections if memory optimization is enabled
         if (memoryOptimizationEnabled) {
-            LazyCollection lazyCollection = lazyReferenceCollections.get(name);
+            LazyItemCollection lazyCollection = lazyReferenceCollections.get(name);
             if (lazyCollection != null) {
-                return lazyCollection;
+                return new LazyItemCollectionAdapter(lazyCollection);
             }
             lazyCollection = lazyNamedCollections.get(name);
             if (lazyCollection != null) {
-                return lazyCollection;
+                return new LazyItemCollectionAdapter(lazyCollection);
             }
         }
 
@@ -161,9 +161,9 @@ public class GenerationContext {
     public List<JsonNode> getTaggedCollection(String tag) {
         // First check lazy collections if memory optimization is enabled
         if (memoryOptimizationEnabled) {
-            LazyCollection lazyCollection = lazyTaggedCollections.get(tag);
+            LazyItemCollection lazyCollection = lazyTaggedCollections.get(tag);
             if (lazyCollection != null) {
-                return lazyCollection;
+                return new LazyItemCollectionAdapter(lazyCollection);
             }
         }
 
@@ -173,11 +173,18 @@ public class GenerationContext {
     }
 
     public Map<String, List<JsonNode>> getNamedCollections() {
-        if (memoryOptimizationEnabled && !lazyNamedCollections.isEmpty()) {
-            // Return lazy collections for memory-optimized generation
-            return new HashMap<>(lazyNamedCollections);
-        }
         return new HashMap<>(namedCollections);
+    }
+
+    /**
+     * Gets the lazy collections for memory-optimized generation.
+     * This method should only be called when memory optimization is enabled.
+     */
+    public Map<String, LazyItemCollection> getLazyNamedCollections() {
+        if (!memoryOptimizationEnabled) {
+            throw new IllegalStateException("Lazy collections are only available when memory optimization is enabled");
+        }
+        return new HashMap<>(lazyNamedCollections);
     }
 
     public JsonNode getNamedPick(String name) {

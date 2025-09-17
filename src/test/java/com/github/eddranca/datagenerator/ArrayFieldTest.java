@@ -40,7 +40,7 @@ class ArrayFieldTest {
                 }
                 """;
 
-        Generation generation = DslDataGenerator.create().fromJsonString(dsl).generate();
+        IGeneration generation = DslDataGenerator.create().fromJsonString(dsl).generate();
         JsonNode result = generation.asJsonNode();
 
         assertThat(result.has("users")).isTrue();
@@ -80,7 +80,7 @@ class ArrayFieldTest {
                 }
                 """;
 
-        Generation generation = DslDataGenerator.create().fromJsonString(dsl).generate();
+        IGeneration generation = DslDataGenerator.create().fromJsonString(dsl).generate();
         JsonNode result = generation.asJsonNode();
 
         assertThat(result.has("users")).isTrue();
@@ -120,7 +120,7 @@ class ArrayFieldTest {
                 }
                 """;
 
-        Generation generation = DslDataGenerator.create().fromJsonString(dsl).generate();
+        IGeneration generation = DslDataGenerator.create().fromJsonString(dsl).generate();
         JsonNode result = generation.asJsonNode();
 
         JsonNode user = result.get("users").get(0);
@@ -159,7 +159,7 @@ class ArrayFieldTest {
                 }
                 """;
 
-        Generation generation = DslDataGenerator.create().fromJsonString(dsl).generate();
+        IGeneration generation = DslDataGenerator.create().fromJsonString(dsl).generate();
         JsonNode result = generation.asJsonNode();
 
         JsonNode user = result.get("users").get(0);
@@ -196,7 +196,7 @@ class ArrayFieldTest {
                 }
                 """;
 
-        Generation generation = DslDataGenerator.create().fromJsonString(dsl).generate();
+        IGeneration generation = DslDataGenerator.create().fromJsonString(dsl).generate();
         JsonNode result = generation.asJsonNode();
 
         JsonNode user = result.get("users").get(0);

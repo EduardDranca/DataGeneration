@@ -1,6 +1,5 @@
 package com.github.eddranca.datagenerator.visitor;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
 
 import java.util.*;
@@ -8,20 +7,20 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * A lazy collection that generates items on-demand during streaming.
+ * A lazy collection that generates LazyItemProxy objects on-demand during streaming.
  * This allows for memory-efficient generation where items are only created
  * when they're actually needed (during JSON serialization or SQL generation).
  */
-public class LazyCollection implements List<JsonNode> {
+public class LazyItemCollection implements List<LazyItemProxy> {
     private final CollectionNode collectionNode;
     private final DataGenerationVisitor visitor;
     private final String collectionName;
     private final Set<String> referencedPaths;
-    private final List<JsonNode> materializedItems;
+    private final List<LazyItemProxy> materializedItems;
     private boolean fullyMaterialized = false;
 
-    public LazyCollection(CollectionNode collectionNode, DataGenerationVisitor visitor,
-                         String collectionName, Set<String> referencedPaths) {
+    public LazyItemCollection(CollectionNode collectionNode, DataGenerationVisitor visitor, 
+                             String collectionName, Set<String> referencedPaths) {
         this.collectionNode = collectionNode;
         this.visitor = visitor;
         this.collectionName = collectionName;
@@ -40,7 +39,7 @@ public class LazyCollection implements List<JsonNode> {
     }
 
     @Override
-    public JsonNode get(int index) {
+    public LazyItemProxy get(int index) {
         if (index < 0 || index >= size()) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size());
         }
@@ -55,25 +54,21 @@ public class LazyCollection implements List<JsonNode> {
      */
     private void materializeUpTo(int index) {
         while (materializedItems.size() <= index) {
-            JsonNode item = generateItem();
+            LazyItemProxy item = generateItem();
             materializedItems.add(item);
         }
     }
 
     /**
-     * Generates a single item using the visitor.
-     * This creates a LazyItemProxy that only materializes referenced fields initially.
+     * Generates a single LazyItemProxy.
      */
-    private JsonNode generateItem() {
-        // Create a LazyItemProxy that only generates referenced fields initially
-        LazyItemProxy lazyItem = new LazyItemProxy(
-            collectionName,
-            collectionNode.getItem().getFields(),
-            referencedPaths,
+    private LazyItemProxy generateItem() {
+        return new LazyItemProxy(
+            collectionName, 
+            collectionNode.getItem().getFields(), 
+            referencedPaths, 
             visitor
         );
-
-        return lazyItem;
     }
 
     /**
@@ -81,7 +76,7 @@ public class LazyCollection implements List<JsonNode> {
      * This is the key method for memory-efficient streaming.
      */
     @Override
-    public Stream<JsonNode> stream() {
+    public Stream<LazyItemProxy> stream() {
         return StreamSupport.stream(
             Spliterators.spliterator(streamingIterator(), size(), Spliterator.ORDERED | Spliterator.SIZED),
             false
@@ -89,7 +84,7 @@ public class LazyCollection implements List<JsonNode> {
     }
 
     @Override
-    public Iterator<JsonNode> iterator() {
+    public Iterator<LazyItemProxy> iterator() {
         return new LazyIterator();
     }
 
@@ -97,14 +92,14 @@ public class LazyCollection implements List<JsonNode> {
      * Returns a streaming iterator that doesn't cache items.
      * This is used by stream() for true memory efficiency.
      */
-    private Iterator<JsonNode> streamingIterator() {
+    private Iterator<LazyItemProxy> streamingIterator() {
         return new StreamingIterator();
     }
 
     /**
      * Iterator that generates items on-demand and caches them for indexed access.
      */
-    private class LazyIterator implements Iterator<JsonNode> {
+    private class LazyIterator implements Iterator<LazyItemProxy> {
         private int currentIndex = 0;
 
         @Override
@@ -113,7 +108,7 @@ public class LazyCollection implements List<JsonNode> {
         }
 
         @Override
-        public JsonNode next() {
+        public LazyItemProxy next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
@@ -125,7 +120,7 @@ public class LazyCollection implements List<JsonNode> {
      * Iterator that generates items on-demand WITHOUT caching them.
      * This is used for streaming operations to maintain memory efficiency.
      */
-    private class StreamingIterator implements Iterator<JsonNode> {
+    private class StreamingIterator implements Iterator<LazyItemProxy> {
         private int currentIndex = 0;
 
         @Override
@@ -134,7 +129,7 @@ public class LazyCollection implements List<JsonNode> {
         }
 
         @Override
-        public JsonNode next() {
+        public LazyItemProxy next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
@@ -146,7 +141,7 @@ public class LazyCollection implements List<JsonNode> {
 
     /**
      * Forces full materialization of all items.
-     * This should only be called when absolutely necessary (e.g., for JSON serialization).
+     * This should only be called when absolutely necessary.
      */
     public void materializeAll() {
         if (!fullyMaterialized) {
@@ -155,50 +150,63 @@ public class LazyCollection implements List<JsonNode> {
         }
     }
 
+    /**
+     * Gets the referenced paths for this collection.
+     */
+    public Set<String> getReferencedPaths() {
+        return referencedPaths;
+    }
+
+    /**
+     * Checks if this collection has any referenced paths.
+     */
+    public boolean hasReferencedPaths() {
+        return !referencedPaths.isEmpty();
+    }
+
     // Unsupported operations for a read-only lazy collection
     @Override
-    public boolean add(JsonNode jsonNode) {
-        throw new UnsupportedOperationException("LazyCollection is read-only");
+    public boolean add(LazyItemProxy lazyItemProxy) {
+        throw new UnsupportedOperationException("LazyItemCollection is read-only");
     }
 
     @Override
-    public void add(int index, JsonNode element) {
-        throw new UnsupportedOperationException("LazyCollection is read-only");
+    public void add(int index, LazyItemProxy element) {
+        throw new UnsupportedOperationException("LazyItemCollection is read-only");
     }
 
     @Override
     public boolean remove(Object o) {
-        throw new UnsupportedOperationException("LazyCollection is read-only");
+        throw new UnsupportedOperationException("LazyItemCollection is read-only");
     }
 
     @Override
-    public JsonNode remove(int index) {
-        throw new UnsupportedOperationException("LazyCollection is read-only");
+    public LazyItemProxy remove(int index) {
+        throw new UnsupportedOperationException("LazyItemCollection is read-only");
     }
 
     @Override
-    public boolean addAll(Collection<? extends JsonNode> c) {
-        throw new UnsupportedOperationException("LazyCollection is read-only");
+    public boolean addAll(Collection<? extends LazyItemProxy> c) {
+        throw new UnsupportedOperationException("LazyItemCollection is read-only");
     }
 
     @Override
-    public boolean addAll(int index, Collection<? extends JsonNode> c) {
-        throw new UnsupportedOperationException("LazyCollection is read-only");
+    public boolean addAll(int index, Collection<? extends LazyItemProxy> c) {
+        throw new UnsupportedOperationException("LazyItemCollection is read-only");
     }
 
     @Override
     public void clear() {
-        throw new UnsupportedOperationException("LazyCollection is read-only");
+        throw new UnsupportedOperationException("LazyItemCollection is read-only");
     }
 
     @Override
-    public JsonNode set(int index, JsonNode element) {
-        throw new UnsupportedOperationException("LazyCollection is read-only");
+    public LazyItemProxy set(int index, LazyItemProxy element) {
+        throw new UnsupportedOperationException("LazyItemCollection is read-only");
     }
 
     @Override
     public boolean contains(Object o) {
-        // This would require full materialization, which we want to avoid
         throw new UnsupportedOperationException("Contains check would require full materialization");
     }
 
@@ -221,12 +229,12 @@ public class LazyCollection implements List<JsonNode> {
 
     @Override
     public boolean removeAll(Collection<?> c) {
-        throw new UnsupportedOperationException("LazyCollection is read-only");
+        throw new UnsupportedOperationException("LazyItemCollection is read-only");
     }
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        throw new UnsupportedOperationException("LazyCollection is read-only");
+        throw new UnsupportedOperationException("LazyItemCollection is read-only");
     }
 
     @Override
@@ -240,17 +248,17 @@ public class LazyCollection implements List<JsonNode> {
     }
 
     @Override
-    public ListIterator<JsonNode> listIterator() {
+    public ListIterator<LazyItemProxy> listIterator() {
         throw new UnsupportedOperationException("ListIterator not supported for lazy collections");
     }
 
     @Override
-    public ListIterator<JsonNode> listIterator(int index) {
+    public ListIterator<LazyItemProxy> listIterator(int index) {
         throw new UnsupportedOperationException("ListIterator not supported for lazy collections");
     }
 
     @Override
-    public List<JsonNode> subList(int fromIndex, int toIndex) {
+    public List<LazyItemProxy> subList(int fromIndex, int toIndex) {
         throw new UnsupportedOperationException("SubList not supported for lazy collections");
     }
 }

@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator.integration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.DslDataGenerator;
+import com.github.eddranca.datagenerator.IGeneration;
 import com.github.eddranca.datagenerator.Generation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,7 @@ class SequenceGeneratorIntegrationTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dsl)
             .generate();
@@ -66,7 +67,7 @@ class SequenceGeneratorIntegrationTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(456L)
             .fromJsonNode(dsl)
             .generate();
@@ -106,7 +107,7 @@ class SequenceGeneratorIntegrationTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(789L)
             .fromJsonNode(dsl)
             .generate();
@@ -134,7 +135,7 @@ class SequenceGeneratorIntegrationTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(999L)
             .fromJsonNode(dsl)
             .generate();

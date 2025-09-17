@@ -72,12 +72,12 @@ class DslDataGeneratorTest {
                             }
                             """);
 
-            Generation generation1 = DslDataGenerator.create()
+            IGeneration generation1 = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
 
-            Generation generation2 = DslDataGenerator.create()
+            IGeneration generation2 = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -102,13 +102,13 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation1 = DslDataGenerator.create()
+            IGeneration generation1 = DslDataGenerator.create()
                 .withSeed(456L)
                 .withCustomGenerator("customTest", customGenerator)
                 .fromJsonNode(dslNode)
                 .generate();
 
-            Generation generation2 = DslDataGenerator.create()
+            IGeneration generation2 = DslDataGenerator.create()
                 .withSeed(456L)
                 .withCustomGenerator("customTest", customGenerator)
                 .fromJsonNode(dslNode)
@@ -132,12 +132,12 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation1 = DslDataGenerator.create()
+            IGeneration generation1 = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
 
-            Generation generation2 = DslDataGenerator.create()
+            IGeneration generation2 = DslDataGenerator.create()
                 .withSeed(456L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -187,12 +187,12 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation1 = DslDataGenerator.create()
+            IGeneration generation1 = DslDataGenerator.create()
                 .withSeed(999L)
                 .fromJsonNode(dslNode)
                 .generate();
 
-            Generation generation2 = DslDataGenerator.create()
+            IGeneration generation2 = DslDataGenerator.create()
                 .withSeed(999L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -263,7 +263,7 @@ class DslDataGeneratorTest {
                             }
                             """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -310,7 +310,7 @@ class DslDataGeneratorTest {
                             }
                             """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -390,7 +390,7 @@ class DslDataGeneratorTest {
                     """);
 
             // This should work without validation errors
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(validDsl)
                 .generate();
@@ -484,7 +484,7 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -528,7 +528,7 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(456L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -586,7 +586,7 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -619,7 +619,7 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(789L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -664,7 +664,7 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -714,7 +714,7 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -748,7 +748,7 @@ class DslDataGeneratorTest {
                     }
                     """, csvPath));
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -797,7 +797,7 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -843,7 +843,7 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -896,7 +896,7 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -930,7 +930,7 @@ class DslDataGeneratorTest {
                             }
                             """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -967,7 +967,7 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -1003,7 +1003,7 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -1039,7 +1039,7 @@ class DslDataGeneratorTest {
                             }
                             """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -1071,7 +1071,7 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -1102,7 +1102,7 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -1326,7 +1326,7 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -1369,7 +1369,7 @@ class DslDataGeneratorTest {
             Files.writeString(tempFile, jsonContent);
 
             // Test fromFile(File)
-            Generation generation1 = DslDataGenerator.create()
+            IGeneration generation1 = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromFile(tempFile.toFile())
                 .generate();
@@ -1380,7 +1380,7 @@ class DslDataGeneratorTest {
                 .contains("users");
 
             // Test fromFile(String)
-            Generation generation2 = DslDataGenerator.create()
+            IGeneration generation2 = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromFile(tempFile.toString())
                 .generate();
@@ -1391,7 +1391,7 @@ class DslDataGeneratorTest {
                 .isEqualTo(generation1.asJson());
 
             // Test fromFile(Path)
-            Generation generation3 = DslDataGenerator.create()
+            IGeneration generation3 = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromFile(tempFile)
                 .generate();
@@ -1417,12 +1417,12 @@ class DslDataGeneratorTest {
                     }
                     """;
 
-            Generation generation1 = DslDataGenerator.create()
+            IGeneration generation1 = DslDataGenerator.create()
                 .withSeed(456L)
                 .fromJsonString(jsonString)
                 .generate();
 
-            Generation generation2 = DslDataGenerator.create()
+            IGeneration generation2 = DslDataGenerator.create()
                 .withSeed(456L)
                 .fromJsonString(jsonString)
                 .generate();
@@ -1468,7 +1468,7 @@ class DslDataGeneratorTest {
             Path tempFile = tempDir.resolve("complex.json");
             Files.writeString(tempFile, complexJson);
 
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(789L)
                 .fromFile(tempFile)
                 .generate();

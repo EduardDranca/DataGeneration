@@ -77,7 +77,7 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
             // If memory optimization is enabled, create a lazy collection
             if (context.isMemoryOptimizationEnabled()) {
                 Set<String> referencedPaths = context.getReferencedPaths(node.getCollectionName());
-                LazyCollection lazyCollection = new LazyCollection(node, this, node.getCollectionName(), referencedPaths);
+                LazyItemCollection lazyCollection = new LazyItemCollection(node, this, node.getCollectionName(), referencedPaths);
 
                 // Register the lazy collection
                 context.registerLazyCollection(node.getCollectionName(), lazyCollection);
@@ -95,7 +95,8 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
                     String alias = pick.getKey();
                     int index = pick.getValue();
                     if (index < lazyCollection.size()) {
-                        JsonNode pickedItem = lazyCollection.get(index);
+                        LazyItemProxy lazyItem = lazyCollection.get(index);
+                        JsonNode pickedItem = lazyItem.getMaterializedCopy();
                         context.registerPick(alias, pickedItem);
                     }
                 }

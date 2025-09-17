@@ -35,7 +35,7 @@ class StaticValueTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();
@@ -93,7 +93,7 @@ class StaticValueTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();
@@ -153,7 +153,7 @@ class StaticValueTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();

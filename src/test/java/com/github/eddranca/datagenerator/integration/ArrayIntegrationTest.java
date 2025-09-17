@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator.integration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.DslDataGenerator;
+import com.github.eddranca.datagenerator.IGeneration;
 import com.github.eddranca.datagenerator.Generation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -52,7 +53,7 @@ class ArrayIntegrationTest {
                 }
                 """;
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(12345L) // For deterministic testing
             .fromJsonString(dsl)
             .generate();
@@ -129,7 +130,7 @@ class ArrayIntegrationTest {
                 }
                 """;
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(54321L)
             .fromJsonString(dsl)
             .generate();
@@ -190,7 +191,7 @@ class ArrayIntegrationTest {
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -233,7 +234,7 @@ class ArrayIntegrationTest {
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -280,7 +281,7 @@ class ArrayIntegrationTest {
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -326,7 +327,7 @@ class ArrayIntegrationTest {
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();
@@ -367,7 +368,7 @@ class ArrayIntegrationTest {
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            Generation generation = DslDataGenerator.create()
+            IGeneration generation = DslDataGenerator.create()
                 .withSeed(123L)
                 .fromJsonNode(dslNode)
                 .generate();

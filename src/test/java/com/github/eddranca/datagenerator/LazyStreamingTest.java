@@ -40,7 +40,7 @@ class LazyStreamingTest {
         """;
 
     // Test with memory optimization enabled
-    Generation generation = DslDataGenerator.create()
+    IGeneration generation = DslDataGenerator.create()
         .withMemoryOptimization()
         .fromJsonString(dsl)
         .generate();
@@ -68,7 +68,7 @@ class LazyStreamingTest {
         """;
 
     // Test without memory optimization (default)
-    Generation generation = DslDataGenerator.create()
+    IGeneration generation = DslDataGenerator.create()
         .fromJsonString(dsl)
         .generate();
 
@@ -118,7 +118,7 @@ class LazyStreamingTest {
 
     // Test with memory optimization - demonstrates streaming capability with large
     // datasets
-    Generation optimizedGeneration = DslDataGenerator.create()
+    IGeneration optimizedGeneration = DslDataGenerator.create()
         .withMemoryOptimization()
         .fromJsonString(dsl)
         .generate();
@@ -128,13 +128,10 @@ class LazyStreamingTest {
 
     optimizedGeneration.streamSqlInserts("posts")
         .forEach(sql -> {
-            System.out.println(sql);
           assertTrue(sql.contains("INSERT INTO posts"));
           assertTrue(sql.contains("authorId"));
           assertTrue(sql.contains("authorName"));
         });
-
-    System.out.println("hello");
   }
 
   @Test
@@ -178,13 +175,13 @@ class LazyStreamingTest {
 
     // Test with memory optimization - only referenced nested fields should be
     // generated
-    Generation optimizedGeneration = DslDataGenerator.create()
+    IGeneration optimizedGeneration = DslDataGenerator.create()
         .withMemoryOptimization()
         .fromJsonString(dsl)
         .generate();
 
     // Test without memory optimization for comparison
-    Generation fullGeneration = DslDataGenerator.create()
+    IGeneration fullGeneration = DslDataGenerator.create()
         .fromJsonString(dsl)
         .generate();
 

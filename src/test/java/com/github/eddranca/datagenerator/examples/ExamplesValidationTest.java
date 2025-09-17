@@ -2,6 +2,7 @@ package com.github.eddranca.datagenerator.examples;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.DslDataGenerator;
+import com.github.eddranca.datagenerator.IGeneration;
 import com.github.eddranca.datagenerator.Generation;
 import com.github.eddranca.datagenerator.generator.Generator;
 import net.datafaker.Faker;
@@ -34,7 +35,7 @@ class ExamplesValidationTest {
 
 
         // When
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(12345L)
             .fromFile(dslFile)
             .generate();
@@ -53,7 +54,7 @@ class ExamplesValidationTest {
         File dslFile = dslPath.toFile();
 
         // When
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(12345L)
             .fromFile(dslFile)
             .generate();
@@ -69,7 +70,7 @@ class ExamplesValidationTest {
         File dslFile = dslPath.toFile();
 
         // When
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(12345L)
             .fromFile(dslFile)
             .generate();
@@ -90,7 +91,7 @@ class ExamplesValidationTest {
         File dslFile = dslPath.toFile();
 
         // When
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(12345L)
             .fromFile(dslFile)
             .generate();
@@ -112,7 +113,7 @@ class ExamplesValidationTest {
         File dslFile = dslPath.toFile();
 
         // When
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(12345L)
             .fromFile(dslFile)
             .generate();
@@ -134,7 +135,7 @@ class ExamplesValidationTest {
         File dslFile = dslPath.toFile();
 
         // When
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(12345L)
             .fromFile(dslFile)
             .generate();
@@ -182,7 +183,7 @@ class ExamplesValidationTest {
         };
 
         // When
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(12345L)
             .withCustomGenerator("employeeId", employeeIdGenerator)
             .withCustomGenerator("jobLevelInfo", jobLevelInfoGenerator)

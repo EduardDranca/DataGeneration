@@ -38,7 +38,7 @@ class TagValidationTest {
                 """);
 
         // Should succeed because both collections have the same final name "users"
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();
@@ -105,7 +105,7 @@ class TagValidationTest {
                 """);
 
         // Should succeed because both collections have the same final name "people"
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();
@@ -198,7 +198,7 @@ class TagValidationTest {
                 """);
 
         // Should succeed - single collection can have multiple tags
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();

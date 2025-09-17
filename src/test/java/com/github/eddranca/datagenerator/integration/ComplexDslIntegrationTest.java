@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator.integration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.DslDataGenerator;
+import com.github.eddranca.datagenerator.IGeneration;
 import com.github.eddranca.datagenerator.Generation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -78,7 +79,7 @@ class ComplexDslIntegrationTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dsl)
             .generate();
@@ -175,7 +176,7 @@ class ComplexDslIntegrationTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(789L)
             .fromJsonNode(dsl)
             .generate();
@@ -255,7 +256,7 @@ class ComplexDslIntegrationTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(999L)
             .fromJsonNode(dsl)
             .generate();
@@ -344,7 +345,7 @@ class ComplexDslIntegrationTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(111L)
             .fromJsonNode(dsl)
             .generate();
@@ -405,12 +406,12 @@ class ComplexDslIntegrationTest {
                 """);
 
         // Generate with same seed twice
-        Generation generation1 = DslDataGenerator.create()
+        IGeneration generation1 = DslDataGenerator.create()
             .withSeed(222L)
             .fromJsonNode(dsl)
             .generate();
 
-        Generation generation2 = DslDataGenerator.create()
+        IGeneration generation2 = DslDataGenerator.create()
             .withSeed(222L)
             .fromJsonNode(dsl)
             .generate();
@@ -443,7 +444,7 @@ class ComplexDslIntegrationTest {
                 }
                 """, csvPath));
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(42L)
             .fromJsonNode(dslNode)
             .generate();
@@ -488,7 +489,7 @@ class ComplexDslIntegrationTest {
                 }
                 """, csvPath));
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(42L)
             .fromJsonNode(dslNode)
             .generate();

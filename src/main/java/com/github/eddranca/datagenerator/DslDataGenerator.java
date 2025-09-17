@@ -10,7 +10,12 @@ import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.validation.DslTreeBuildResult;
 import com.github.eddranca.datagenerator.visitor.DataGenerationVisitor;
 import com.github.eddranca.datagenerator.visitor.GenerationContext;
+import com.github.eddranca.datagenerator.visitor.LazyItemCollection;
+import com.github.eddranca.datagenerator.visitor.LazyItemProxy;
 import net.datafaker.Faker;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,7 +63,7 @@ public class DslDataGenerator {
     /**
      * Internal generation method used by the fluent API for files.
      */
-    Generation generateInternal(File file) throws IOException {
+    IGeneration generateInternal(File file) throws IOException {
         if (!file.exists() || !file.isFile()) {
             throw new IllegalArgumentException("File not found: " + file.getPath());
         }
@@ -70,7 +75,7 @@ public class DslDataGenerator {
     /**
      * Internal generation method used by the fluent API for JSON strings.
      */
-    Generation generateInternal(String jsonString) throws IOException {
+    IGeneration generateInternal(String jsonString) throws IOException {
         JsonNode root = mapper.readTree(jsonString);
         return generateFromJsonNode(root);
     }
@@ -78,7 +83,7 @@ public class DslDataGenerator {
     /**
      * Internal generation method used by the fluent API for JsonNodes.
      */
-    Generation generateInternal(JsonNode jsonNode) {
+    IGeneration generateInternal(JsonNode jsonNode) {
         return generateFromJsonNode(jsonNode);
     }
 
@@ -86,7 +91,7 @@ public class DslDataGenerator {
      * Common generation logic for all input types using the new visitor
      * architecture.
      */
-    private Generation generateFromJsonNode(JsonNode root) {
+    private IGeneration generateFromJsonNode(JsonNode root) {
         // Build and validate the DSL tree
         DslTreeBuilder treeBuilder = new DslTreeBuilder(generatorRegistry);
         DslTreeBuildResult buildResult = treeBuilder.build(root);
@@ -116,8 +121,20 @@ public class DslDataGenerator {
 
         rootNode.accept(visitor);
 
-        // Convert the result to the expected format for Generation
-        return new Generation(context.getNamedCollections());
+        // Return the appropriate Generation implementation based on memory optimization
+        if (memoryOptimizationEnabled) {
+            // For memory optimization, use the lazy collections directly
+            Map<String, List<LazyItemProxy>> lazyCollections = new HashMap<>();
+            
+            for (Map.Entry<String, LazyItemCollection> entry : context.getLazyNamedCollections().entrySet()) {
+                lazyCollections.put(entry.getKey(), entry.getValue());
+            }
+            
+            return new LazyGeneration(lazyCollections);
+        } else {
+            // Normal generation
+            return new Generation(context.getNamedCollections());
+        }
     }
 
     /**

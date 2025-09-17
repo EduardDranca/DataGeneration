@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator.integration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.DslDataGenerator;
+import com.github.eddranca.datagenerator.IGeneration;
 import com.github.eddranca.datagenerator.Generation;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +40,7 @@ class GeneratorIntegrationTest {
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();
@@ -111,7 +112,7 @@ class GeneratorIntegrationTest {
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(456L)
             .fromJsonNode(dslNode)
             .generate();
@@ -159,7 +160,7 @@ class GeneratorIntegrationTest {
 
         JsonNode dslNode = mapper.readTree(simpleDsl);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(789L)
             .fromJsonNode(dslNode)
             .generate();
@@ -207,7 +208,7 @@ class GeneratorIntegrationTest {
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(999L)
             .fromJsonNode(dslNode)
             .generate();

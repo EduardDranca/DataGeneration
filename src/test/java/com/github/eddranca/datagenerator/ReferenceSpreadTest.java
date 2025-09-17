@@ -40,7 +40,7 @@ class ReferenceSpreadTest {
                         }
                         """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();
@@ -91,7 +91,7 @@ class ReferenceSpreadTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();
@@ -138,7 +138,7 @@ class ReferenceSpreadTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();
@@ -185,7 +185,7 @@ class ReferenceSpreadTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();

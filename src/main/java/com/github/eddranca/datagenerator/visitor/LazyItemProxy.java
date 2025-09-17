@@ -12,29 +12,31 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A lazy proxy for JsonNode that only materializes fields on-demand.
+ * A lazy proxy that only materializes fields on-demand.
  * This allows us to keep only referenced fields in memory during generation
  * and generate the rest when needed for output.
  *
  * Supports nested path materialization for complex object hierarchies.
+ * This is a simple POJO that doesn't implement JsonNode for cleaner design.
  */
-public class LazyItemProxy extends ObjectNode {
+public class LazyItemProxy {
     private final Map<String, DslNode> fieldNodes;
     private final Set<String> referencedPaths;
     private final String collectionName;
     private final DataGenerationVisitor visitor;
     private final Set<String> materializedFieldNames = new HashSet<>();
+    private final ObjectNode delegate;
     private boolean fullyMaterialized = false;
 
     public LazyItemProxy(String collectionName,
             Map<String, DslNode> fieldNodes,
             Set<String> referencedPaths,
             DataGenerationVisitor visitor) {
-        super(JsonNodeFactory.instance);
         this.collectionName = collectionName;
         this.referencedPaths = referencedPaths;
         this.visitor = visitor;
         this.fieldNodes = new HashMap<>(fieldNodes);
+        this.delegate = JsonNodeFactory.instance.objectNode();
 
         // Generate only referenced fields immediately
         materializeReferencedFields();
@@ -81,21 +83,24 @@ public class LazyItemProxy extends ObjectNode {
                 JsonNode value;
 
                 // If this is an ObjectFieldNode and has nested references, create a
-                // LazyObjectProxy
+                // LazyObjectProxy and get its materialized copy
                 if (fieldNode instanceof ObjectFieldNode objectFieldNode && hasNestedReferences(fieldName)) {
                     Set<String> nestedReferences = getNestedReferences(fieldName);
 
-                    value = new LazyObjectProxy(
+                    LazyObjectProxy lazyObjectProxy = new LazyObjectProxy(
                             objectFieldNode.getFields(),
                             nestedReferences,
                             visitor,
                             fieldName);
+                    
+                    // Get the materialized copy for storage in the delegate
+                    value = lazyObjectProxy.getMaterializedCopy();
                 } else {
                     // Generate normally for simple fields or non-referenced nested objects
                     value = fieldNode.accept(visitor);
                 }
 
-                super.set(fieldName, value);
+                delegate.set(fieldName, value);
                 materializedFieldNames.add(fieldName);
             }
         }
@@ -130,28 +135,26 @@ public class LazyItemProxy extends ObjectNode {
         return nestedRefs;
     }
 
-    @Override
     public JsonNode get(String fieldName) {
         // If field is already materialized, return it
         if (materializedFieldNames.contains(fieldName)) {
-            return super.get(fieldName);
+            return delegate.get(fieldName);
         }
 
         // If not materialized and we have a field node, materialize it now
         if (fieldNodes.containsKey(fieldName)) {
             materializeField(fieldName);
-            return super.get(fieldName);
+            return delegate.get(fieldName);
         }
 
         // Field doesn't exist
         return null;
     }
 
-    @Override
     public JsonNode path(String fieldName) {
         // Similar to get() but returns missing node instead of null
         JsonNode result = get(fieldName);
-        return result != null ? result : missingNode();
+        return result != null ? result : delegate.missingNode();
     }
 
     /**
@@ -178,7 +181,7 @@ public class LazyItemProxy extends ObjectNode {
         // For streaming efficiency, we'll use the materialized values directly
         // instead of creating deep copies of LazyObjectProxy instances
         for (String fieldName : fieldNodes.keySet()) {
-            JsonNode value = super.get(fieldName);
+            JsonNode value = delegate.get(fieldName);
             if (value != null) {
                 materializedCopy.set(fieldName, value);
             }
@@ -190,10 +193,31 @@ public class LazyItemProxy extends ObjectNode {
     @Override
     public String toString() {
         if (fullyMaterialized) {
-            return super.toString();
+            return delegate.toString();
         } else {
             return String.format("LazyItemProxy{collection=%s, materialized=%d/%d fields}",
-                    collectionName, super.size(), fieldNodes.size());
+                    collectionName, delegate.size(), fieldNodes.size());
         }
+    }
+
+    /**
+     * Checks if a field exists (either materialized or available to materialize).
+     */
+    public boolean has(String fieldName) {
+        return fieldNodes.containsKey(fieldName) || delegate.has(fieldName);
+    }
+
+    /**
+     * Returns the number of materialized fields.
+     */
+    public int size() {
+        return delegate.size();
+    }
+
+    /**
+     * Returns true if no fields are materialized yet.
+     */
+    public boolean isEmpty() {
+        return delegate.isEmpty();
     }
 }

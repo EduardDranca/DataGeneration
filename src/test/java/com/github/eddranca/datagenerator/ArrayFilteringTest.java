@@ -51,7 +51,7 @@ class ArrayFilteringTest {
                 """;
 
         JsonNode dslNode = objectMapper.readTree(dsl);
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();
@@ -105,7 +105,7 @@ class ArrayFilteringTest {
                 """;
 
         JsonNode dslNode = objectMapper.readTree(dsl);
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(789L)
             .fromJsonNode(dslNode)
             .generate();
@@ -167,7 +167,7 @@ class ArrayFilteringTest {
                 """;
 
         JsonNode dslNode = objectMapper.readTree(dsl);
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(456L)
             .fromJsonNode(dslNode)
             .generate();
@@ -228,7 +228,7 @@ class ArrayFilteringTest {
                 """;
 
         JsonNode dslNode = objectMapper.readTree(dsl);
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(111L)
             .fromJsonNode(dslNode)
             .generate();
@@ -295,7 +295,7 @@ class ArrayFilteringTest {
                 """;
 
         JsonNode dslNode = objectMapper.readTree(dsl);
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(999L)
             .fromJsonNode(dslNode)
             .generate();

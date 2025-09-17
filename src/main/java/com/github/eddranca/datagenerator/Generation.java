@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.exception.SerializationException;
-import com.github.eddranca.datagenerator.visitor.LazyItemProxy;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-public class Generation {
+public class Generation implements IGeneration {
     private static final Logger logger = Logger.getLogger(Generation.class.getName());
     private final Map<String, List<JsonNode>> collections;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -42,26 +42,8 @@ public class Generation {
     }
 
     public JsonNode asJsonNode() {
-        // Ensure all lazy items are fully materialized before JSON conversion
-        Map<String, List<JsonNode>> materializedCollections = new HashMap<>();
-
-        for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
-            List<JsonNode> collection = entry.getValue();
-            List<JsonNode> materializedCollection = new ArrayList<>();
-
-            for (JsonNode item : collection) {
-                if (item instanceof LazyItemProxy) {
-                    // Get a materialized copy without modifying the original proxy
-                    materializedCollection.add(((LazyItemProxy) item).getMaterializedCopy());
-                } else {
-                    materializedCollection.add(item);
-                }
-            }
-
-            materializedCollections.put(entry.getKey(), materializedCollection);
-        }
-
-        return mapper.valueToTree(materializedCollections);
+        // For normal generation, collections already contain regular JsonNode objects
+        return mapper.valueToTree(collections);
     }
 
     public String asJson() throws JsonProcessingException {
@@ -131,12 +113,8 @@ public class Generation {
             StringBuilder collectionInserts = new StringBuilder();
 
             for (JsonNode row : rows) {
-                // Get materialized copy without modifying the original proxy
-                JsonNode materializedRow = row;
-                if (row instanceof LazyItemProxy) {
-                    materializedRow = ((LazyItemProxy) row).getMaterializedCopy();
-                }
-                collectionInserts.append(generateSqlInsert(tableName, materializedRow)).append("\n");
+                // For normal generation, rows are already regular JsonNode objects
+                collectionInserts.append(generateSqlInsert(tableName, row)).append("\n");
             }
             sqlInserts.put(tableName, collectionInserts.toString());
         }
@@ -159,14 +137,7 @@ public class Generation {
         }
 
         return collection.stream()
-            .map(item -> {
-                // Get materialized copy for each item independently during streaming
-                JsonNode materializedItem = item;
-                if (item instanceof LazyItemProxy) {
-                    materializedItem = ((LazyItemProxy) item).getMaterializedCopy();
-                }
-                return generateSqlInsert(collectionName, materializedItem);
-            });
+            .map(item -> generateSqlInsert(collectionName, item));
     }
 
     /**
@@ -264,7 +235,7 @@ public class Generation {
          * @throws IOException                                                        if file reading fails or JSON parsing fails
          * @throws com.github.eddranca.datagenerator.exception.DslValidationException if DSL validation fails
          */
-        public Generation generate() throws IOException {
+        public IGeneration generate() throws IOException {
             if (file != null) {
                 return generator.generateInternal(file);
             } else if (jsonString != null) {

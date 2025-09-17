@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class GenerationTest {
 
-    private Generation generation;
+    private IGeneration generation;
     private ObjectMapper mapper;
 
     @BeforeEach
@@ -200,7 +200,7 @@ class GenerationTest {
                 }
                 """);
 
-        Generation complexGeneration = DslDataGenerator.create()
+        IGeneration complexGeneration = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();
@@ -221,7 +221,7 @@ class GenerationTest {
     void testEmptyGeneration() throws Exception {
         JsonNode emptyDsl = mapper.readTree("{}");
 
-        Generation emptyGeneration = DslDataGenerator.create()
+        IGeneration emptyGeneration = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(emptyDsl)
             .generate();
@@ -253,7 +253,7 @@ class GenerationTest {
                 }
                 """);
 
-        Generation singleGeneration = DslDataGenerator.create()
+        IGeneration singleGeneration = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(singleItemDsl)
             .generate();

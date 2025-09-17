@@ -51,7 +51,7 @@ class GeneratorFilteringTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();
@@ -131,7 +131,7 @@ class GeneratorFilteringTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(456L)
             .fromJsonNode(dslNode)
             .generate();
@@ -204,7 +204,7 @@ class GeneratorFilteringTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(789L)
             .fromJsonNode(dslNode)
             .generate();
@@ -264,7 +264,7 @@ class GeneratorFilteringTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(999L)
             .fromJsonNode(dslNode)
             .generate();
@@ -325,7 +325,7 @@ class GeneratorFilteringTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(111L)
             .withCustomGenerator("customFiltering", customFilteringGenerator)
             .fromJsonNode(dslNode)

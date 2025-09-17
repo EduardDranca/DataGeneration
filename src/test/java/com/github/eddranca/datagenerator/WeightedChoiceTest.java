@@ -30,7 +30,7 @@ class WeightedChoiceTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(1993L)
             .fromJsonNode(dslNode)
             .generate();
@@ -79,7 +79,7 @@ class WeightedChoiceTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(456L)
             .fromJsonNode(dslNode)
             .generate();
@@ -137,7 +137,7 @@ class WeightedChoiceTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(789L)
             .fromJsonNode(dslNode)
             .generate();
@@ -189,7 +189,7 @@ class WeightedChoiceTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(999L)
             .fromJsonNode(dslNode)
             .generate();
@@ -235,7 +235,7 @@ class WeightedChoiceTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(111L)
             .fromJsonNode(dslNode)
             .generate();

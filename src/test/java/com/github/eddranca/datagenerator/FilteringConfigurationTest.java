@@ -33,7 +33,7 @@ class FilteringConfigurationTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .fromJsonNode(dslNode)
             .generate();
@@ -129,7 +129,7 @@ class FilteringConfigurationTest {
 
         // With only 2 possible values (1, 2) and filtering out 1,
         // we should be able to generate 2 consistently
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .withMaxFilteringRetries(10) // Lower retry count
             .fromJsonNode(dslNode)
@@ -189,7 +189,7 @@ class FilteringConfigurationTest {
                 }
                 """);
 
-        Generation generation = DslDataGenerator.create()
+        IGeneration generation = DslDataGenerator.create()
             .withSeed(123L)
             .withMaxFilteringRetries(200) // Higher retry count
             .withFilteringBehavior(FilteringBehavior.RETURN_NULL)
