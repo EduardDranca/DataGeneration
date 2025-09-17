@@ -148,13 +148,6 @@ public class Generation {
      * This method is memory-efficient for large datasets as it generates and processes
      * items one at a time instead of loading everything into memory.
      *
-     * <p><strong>Important:</strong> Collections that are referenced by the target collection
-     * must be fully generated first and kept in memory for reference resolution.</p>
-     *
-     * <p><strong>Note:</strong> For very large datasets (millions of items), consider using
-     * {@link #iterateSqlInserts(String)} instead, as Java Streams can have memory overhead
-     * for extremely large datasets.</p>
-     *
      * @param collectionName the name of the collection to stream
      * @return a stream of SQL INSERT statements
      * @throws IllegalArgumentException if the collection doesn't exist

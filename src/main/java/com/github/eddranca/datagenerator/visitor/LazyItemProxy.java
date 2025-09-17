@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.node.DslNode;
+import com.github.eddranca.datagenerator.node.ObjectFieldNode;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,9 +82,7 @@ public class LazyItemProxy extends ObjectNode {
 
                 // If this is an ObjectFieldNode and has nested references, create a
                 // LazyObjectProxy
-                if (fieldNode instanceof com.github.eddranca.datagenerator.node.ObjectFieldNode
-                        && hasNestedReferences(fieldName)) {
-                    var objectFieldNode = (com.github.eddranca.datagenerator.node.ObjectFieldNode) fieldNode;
+                if (fieldNode instanceof ObjectFieldNode objectFieldNode && hasNestedReferences(fieldName)) {
                     Set<String> nestedReferences = getNestedReferences(fieldName);
 
                     value = new LazyObjectProxy(
@@ -188,17 +187,6 @@ public class LazyItemProxy extends ObjectNode {
         return materializedCopy;
     }
 
-    /**
-     * Returns memory usage statistics for this item.
-     */
-    public MemoryStats getMemoryStats() {
-        int totalFields = fieldNodes.size();
-        int materializedFields = super.size();
-        double efficiency = totalFields > 0 ? (double) materializedFields / totalFields : 1.0;
-
-        return new MemoryStats(totalFields, materializedFields, efficiency, fullyMaterialized);
-    }
-
     @Override
     public String toString() {
         if (fullyMaterialized) {
@@ -206,56 +194,6 @@ public class LazyItemProxy extends ObjectNode {
         } else {
             return String.format("LazyItemProxy{collection=%s, materialized=%d/%d fields}",
                     collectionName, super.size(), fieldNodes.size());
-        }
-    }
-
-    /**
-     * Memory usage statistics for a lazy item.
-     */
-    public static class MemoryStats {
-        private final int totalFields;
-        private final int materializedFields;
-        private final double efficiencyRatio;
-        private final boolean fullyMaterialized;
-
-        public MemoryStats(int totalFields, int materializedFields,
-                double efficiencyRatio, boolean fullyMaterialized) {
-            this.totalFields = totalFields;
-            this.materializedFields = materializedFields;
-            this.efficiencyRatio = efficiencyRatio;
-            this.fullyMaterialized = fullyMaterialized;
-        }
-
-        public int getTotalFields() {
-            return totalFields;
-        }
-
-        public int getMaterializedFields() {
-            return materializedFields;
-        }
-
-        public double getEfficiencyRatio() {
-            return efficiencyRatio;
-        }
-
-        public boolean isFullyMaterialized() {
-            return fullyMaterialized;
-        }
-
-        public int getSavedFields() {
-            return totalFields - materializedFields;
-        }
-
-        public double getMemorySavingsPercentage() {
-            if (totalFields == 0)
-                return 0.0;
-            return (1.0 - efficiencyRatio) * 100.0;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("MemoryStats{total=%d, materialized=%d, saved=%d, savings=%.1f%%}",
-                    totalFields, materializedFields, getSavedFields(), getMemorySavingsPercentage());
         }
     }
 }

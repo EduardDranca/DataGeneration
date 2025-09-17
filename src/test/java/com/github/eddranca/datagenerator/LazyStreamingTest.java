@@ -45,13 +45,11 @@ class LazyStreamingTest {
         .fromJsonString(dsl)
         .generate();
 
-    System.out.println(Runtime.getRuntime().totalMemory() / 1024 / 1024.f + " MB");
-
     // Verify structure
     assertTrue(generation.getCollections().containsKey("users"));
     assertTrue(generation.getCollections().containsKey("posts"));
-    // assertEquals(5, generation.getCollections().get("users").size());
-    // assertEquals(3, generation.getCollections().get("posts").size());
+    assertEquals(50, generation.getCollections().get("users").size());
+    assertEquals(30, generation.getCollections().get("posts").size());
   }
 
   @Test
@@ -96,7 +94,7 @@ class LazyStreamingTest {
     String dsl = """
         {
           "users": {
-            "count": 30000000,
+            "count": 5,
             "item": {
               "id": {"gen": "uuid"},
               "name": {"gen": "name.firstName"},
@@ -106,7 +104,7 @@ class LazyStreamingTest {
             }
           },
           "posts": {
-            "count": 2,
+            "count": 20,
             "item": {
               "id": {"gen": "uuid"},
               "title": {"gen": "lorem", "options": {"length": 50}},
@@ -118,52 +116,25 @@ class LazyStreamingTest {
         }
         """;
 
-    // Test with memory optimization - only id and name should be generated for
-    // users
+    // Test with memory optimization - demonstrates streaming capability with large
+    // datasets
     Generation optimizedGeneration = DslDataGenerator.create()
         .withMemoryOptimization()
         .fromJsonString(dsl)
         .generate();
 
-    // Test without memory optimization - all fields should be generated
-//    Generation fullGeneration = DslDataGenerator.create()
-//        .fromJsonString(dsl)
-//        .generate();
-      final long[] i = {0};
-    optimizedGeneration.streamSqlInserts("users")
-        .map(String::length)
-        .forEach(s -> i[0] += s);
+    // Verify basic structure
+    assertEquals(20, optimizedGeneration.getCollections().get("posts").size());
 
-//        .iterator();
-//    int i = 0;
-//    while (iterator.hasNext()) {
-//        i += iterator.next().length();
-//    }
+    optimizedGeneration.streamSqlInserts("posts")
+        .forEach(sql -> {
+            System.out.println(sql);
+          assertTrue(sql.contains("INSERT INTO posts"));
+          assertTrue(sql.contains("authorId"));
+          assertTrue(sql.contains("authorName"));
+        });
 
-    System.out.println(i[0]);
-
-    // Both should have the same structure
-//    assertEquals(3, optimizedGeneration.getCollections().get("users").size());
-//    assertEquals(2, optimizedGeneration.getCollections().get("posts").size());
-//    assertEquals(3, fullGeneration.getCollections().get("users").size());
-//    assertEquals(2, fullGeneration.getCollections().get("posts").size());
-//
-//    // Verify that posts reference users correctly in both cases
-//    JsonNode optimizedJson = optimizedGeneration.asJsonNode();
-//    JsonNode fullJson = fullGeneration.asJsonNode();
-//
-//    JsonNode optimizedFirstPost = optimizedJson.get("posts").get(0);
-//    JsonNode fullFirstPost = fullJson.get("posts").get(0);
-//
-//    assertTrue(optimizedFirstPost.has("authorId"));
-//    assertTrue(optimizedFirstPost.has("authorName"));
-//    assertTrue(fullFirstPost.has("authorId"));
-//    assertTrue(fullFirstPost.has("authorName"));
-//
-//    assertNotNull(optimizedFirstPost.get("authorId").asText());
-//    assertNotNull(optimizedFirstPost.get("authorName").asText());
-//    assertNotNull(fullFirstPost.get("authorId").asText());
-//    assertNotNull(fullFirstPost.get("authorName").asText());
+    System.out.println("hello");
   }
 
   @Test
@@ -241,8 +212,7 @@ class LazyStreamingTest {
     assertNotNull(optimizedFirstOrder.get("customerName").asText());
     assertNotNull(optimizedFirstOrder.get("socialHandle").asText());
 
-    // Verify the values are not null and have reasonable content (different seeds =
-    // different values)
+    // Verify the values are not null and have reasonable content
     assertFalse(optimizedFirstOrder.get("userId").asText().isEmpty());
     assertFalse(optimizedFirstOrder.get("shippingStreet").asText().isEmpty());
     assertFalse(optimizedFirstOrder.get("customerName").asText().isEmpty());
@@ -254,7 +224,6 @@ class LazyStreamingTest {
 
     for (int i = 0; i < optimizedUsers.size(); i++) {
       JsonNode optimizedUser = optimizedUsers.get(i);
-      JsonNode fullUser = fullUsers.get(i);
 
       // These fields should be materialized in optimized version because they're
       // referenced
@@ -266,16 +235,12 @@ class LazyStreamingTest {
       assertTrue(optimizedUser.get("profile").has("social"));
       assertTrue(optimizedUser.get("profile").get("social").has("twitter"));
 
-      // Verify the nested values are not null and have content (different seeds =
-      // different values)
+      // Verify the nested values are not null and have content
       assertFalse(optimizedUser.get("id").asText().isEmpty());
       assertFalse(optimizedUser.get("name").asText().isEmpty());
       assertFalse(optimizedUser.get("address").get("street").asText().isEmpty());
       assertFalse(optimizedUser.get("profile").get("social").get("twitter").asText().isEmpty());
     }
 
-    System.out.println("Nested path references test completed successfully!");
-    System.out.println("Sample optimized user: " + optimizedUsers.get(0).toPrettyString());
-    System.out.println("Sample order: " + optimizedFirstOrder.toPrettyString());
   }
 }

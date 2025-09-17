@@ -13,7 +13,6 @@ import java.util.List;
 public class ChoiceFieldNode implements DslNode {
     private final List<DslNode> options;
     private final List<Double> weights;
-    private final double totalWeight;
     private final List<FilterNode> filters;
 
     /**
@@ -38,20 +37,6 @@ public class ChoiceFieldNode implements DslNode {
         this.options = new ArrayList<>(options);
         this.weights = weights != null ? new ArrayList<>(weights) : null;
         this.filters = new ArrayList<>(filters);
-
-        // Calculate total weight and validate weights
-        if (weights != null) {
-            double total = 0.0;
-            for (Double weight : weights) {
-                if (weight == null || weight <= 0) {
-                    throw new IllegalArgumentException("All weights must be positive numbers");
-                }
-                total += weight;
-            }
-            this.totalWeight = total;
-        } else {
-            this.totalWeight = options.size();
-        }
     }
 
     /**

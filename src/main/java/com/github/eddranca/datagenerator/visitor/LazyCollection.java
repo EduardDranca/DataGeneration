@@ -20,7 +20,7 @@ public class LazyCollection implements List<JsonNode> {
     private final List<JsonNode> materializedItems;
     private boolean fullyMaterialized = false;
 
-    public LazyCollection(CollectionNode collectionNode, DataGenerationVisitor visitor, 
+    public LazyCollection(CollectionNode collectionNode, DataGenerationVisitor visitor,
                          String collectionName, Set<String> referencedPaths) {
         this.collectionNode = collectionNode;
         this.visitor = visitor;
@@ -65,17 +65,14 @@ public class LazyCollection implements List<JsonNode> {
      * This creates a LazyItemProxy that only materializes referenced fields initially.
      */
     private JsonNode generateItem() {
-        // System.out.println("LazyCollection: Generating item for collection: " + collectionName + 
-        //                   " with referenced paths: " + referencedPaths);
-        
         // Create a LazyItemProxy that only generates referenced fields initially
         LazyItemProxy lazyItem = new LazyItemProxy(
-            collectionName, 
-            collectionNode.getItem().getFields(), 
-            referencedPaths, 
+            collectionName,
+            collectionNode.getItem().getFields(),
+            referencedPaths,
             visitor
         );
-        
+
         return lazyItem;
     }
 
@@ -156,20 +153,6 @@ public class LazyCollection implements List<JsonNode> {
             materializeUpTo(size() - 1);
             fullyMaterialized = true;
         }
-    }
-
-    /**
-     * Gets the referenced paths for this collection.
-     */
-    public Set<String> getReferencedPaths() {
-        return referencedPaths;
-    }
-
-    /**
-     * Checks if this collection has any referenced paths.
-     */
-    public boolean hasReferencedPaths() {
-        return !referencedPaths.isEmpty();
     }
 
     // Unsupported operations for a read-only lazy collection

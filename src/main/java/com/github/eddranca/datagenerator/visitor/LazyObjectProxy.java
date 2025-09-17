@@ -57,7 +57,7 @@ public class LazyObjectProxy extends ObjectNode {
 
         // Check if this field or any nested path is referenced
         String currentPath = objectPath.isEmpty() ? fieldName : objectPath + "." + fieldName;
-        
+
         for (String referencedPath : referencedPaths) {
             if (referencedPath.equals(currentPath) || referencedPath.startsWith(currentPath + ".")) {
                 return true;
@@ -75,13 +75,13 @@ public class LazyObjectProxy extends ObjectNode {
             DslNode fieldNode = fieldNodes.get(fieldName);
             if (fieldNode != null) {
                 JsonNode value;
-                
+
                 // If this field node represents a nested object and has sub-references,
                 // create another LazyObjectProxy for it
                 if (fieldNode instanceof com.github.eddranca.datagenerator.node.ObjectFieldNode) {
                     String nestedPath = objectPath.isEmpty() ? fieldName : objectPath + "." + fieldName;
                     Set<String> nestedReferences = getNestedReferences(nestedPath);
-                    
+
                     if (!nestedReferences.isEmpty()) {
                         // Create a lazy proxy for the nested object
                         var objectFieldNode = (com.github.eddranca.datagenerator.node.ObjectFieldNode) fieldNode;
@@ -99,7 +99,7 @@ public class LazyObjectProxy extends ObjectNode {
                     // Simple field, generate normally
                     value = fieldNode.accept(visitor);
                 }
-                
+
                 super.set(fieldName, value);
                 materializedFieldNames.add(fieldName);
             }
@@ -112,13 +112,13 @@ public class LazyObjectProxy extends ObjectNode {
     private Set<String> getNestedReferences(String nestedPath) {
         Set<String> nestedRefs = new HashSet<>();
         String prefix = nestedPath + ".";
-        
+
         for (String referencedPath : referencedPaths) {
             if (referencedPath.startsWith(prefix)) {
                 nestedRefs.add(referencedPath);
             }
         }
-        
+
         return nestedRefs;
     }
 
@@ -143,40 +143,6 @@ public class LazyObjectProxy extends ObjectNode {
     public JsonNode path(String fieldName) {
         JsonNode result = get(fieldName);
         return result != null ? result : missingNode();
-    }
-
-    /**
-     * Materializes all remaining fields for complete object generation.
-     */
-    public void materializeAll() {
-        for (String fieldName : fieldNodes.keySet()) {
-            materializeField(fieldName);
-        }
-    }
-
-    /**
-     * Returns a new ObjectNode with all fields materialized.
-     */
-    public ObjectNode getMaterializedCopy() {
-        ObjectNode materializedCopy = JsonNodeFactory.instance.objectNode();
-
-        // Ensure all fields are materialized first
-        materializeAll();
-
-        // Copy all materialized values
-        for (String fieldName : fieldNodes.keySet()) {
-            JsonNode value = super.get(fieldName);
-            if (value != null) {
-                // If the value is also a LazyObjectProxy, get its materialized copy
-                if (value instanceof LazyObjectProxy) {
-                    materializedCopy.set(fieldName, ((LazyObjectProxy) value).getMaterializedCopy());
-                } else {
-                    materializedCopy.set(fieldName, value);
-                }
-            }
-        }
-
-        return materializedCopy;
     }
 
     @Override

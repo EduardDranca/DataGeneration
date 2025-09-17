@@ -50,13 +50,13 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
         if (context.isMemoryOptimizationEnabled()) {
             PathDependencyAnalyzer analyzer = new PathDependencyAnalyzer();
             Map<String, Set<String>> allReferencedPaths = analyzer.analyzeRoot(node);
-            
+
             // Set the referenced paths for all collections
             for (Map.Entry<String, Set<String>> entry : allReferencedPaths.entrySet()) {
                 context.setReferencedPaths(entry.getKey(), entry.getValue());
             }
         }
-        
+
         ObjectNode result = context.getMapper().createObjectNode();
 
         for (Map.Entry<String, CollectionNode> entry : node.getCollections().entrySet()) {
@@ -72,15 +72,13 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
         // Set collection context for lazy generation
         String previousCollectionName = this.currentCollectionName;
         this.currentCollectionName = node.getCollectionName();
-        
+
         try {
             // If memory optimization is enabled, create a lazy collection
             if (context.isMemoryOptimizationEnabled()) {
-                // System.out.println("DataGenerationVisitor: Memory optimization enabled for collection: " + node.getCollectionName());
                 Set<String> referencedPaths = context.getReferencedPaths(node.getCollectionName());
-                // System.out.println("DataGenerationVisitor: Referenced paths: " + referencedPaths);
                 LazyCollection lazyCollection = new LazyCollection(node, this, node.getCollectionName(), referencedPaths);
-                
+
                 // Register the lazy collection
                 context.registerLazyCollection(node.getCollectionName(), lazyCollection);
 
@@ -107,7 +105,7 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
             } else {
                 // Standard eager generation
                 List<JsonNode> items = new ArrayList<>();
-                
+
                 for (int i = 0; i < node.getCount(); i++) {
                     JsonNode item = node.getItem().accept(this);
                     items.add(item);
@@ -142,7 +140,7 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
     @Override
     public JsonNode visitItem(ItemNode node) {
         ObjectNode previousItem = this.currentItem;
-        
+
         try {
             // Standard item generation - lazy generation is now handled at collection level
             ObjectNode item = context.getMapper().createObjectNode();
@@ -152,7 +150,7 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
             this.currentItem = previousItem; // Restore previous item context
         }
     }
-    
+
 
 
     @Override
@@ -356,29 +354,6 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
     public JsonNode visitFilter(FilterNode node) {
         return node.getFilterExpression().accept(this);
     }
-
-    // ------------------------
-    // Public methods for lazy materialization
-    // ------------------------
-    
-    /**
-     * Generates a field value for lazy materialization.
-     * This method is used by LazyMaterializer to generate individual fields on demand.
-     */
-    public JsonNode generateFieldValue(String fieldName, DslNode fieldNode) {
-        return fieldNode.accept(this);
-    }
-    
-    /**
-     * Gets the current generation context.
-     */
-    public GenerationContext getContext() {
-        return context;
-    }
-
-    // ------------------------
-    // Private helpers
-    // ------------------------
 
 
     private void spreadInto(ObjectNode target, JsonNode source, List<String> fieldSpecs) {
