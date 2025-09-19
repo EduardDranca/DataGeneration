@@ -62,6 +62,28 @@ public abstract class ParameterizedGenerationTest {
     }
 
     /**
+     * Generates data from DSL JsonNode with a custom seed and memory optimization setting.
+     */
+    protected IGeneration generateFromDslWithSeed(JsonNode dslNode, long seed, boolean memoryOptimized) throws IOException {
+        DslDataGenerator.Builder builder = DslDataGenerator.create().withSeed(seed);
+        if (memoryOptimized) {
+            builder = builder.withMemoryOptimization();
+        }
+        return builder.fromJsonNode(dslNode).generate();
+    }
+
+    /**
+     * Generates data from DSL string with a custom seed and memory optimization setting.
+     */
+    protected IGeneration generateFromDslWithSeed(String dsl, long seed, boolean memoryOptimized) throws IOException {
+        DslDataGenerator.Builder builder = DslDataGenerator.create().withSeed(seed);
+        if (memoryOptimized) {
+            builder = builder.withMemoryOptimization();
+        }
+        return builder.fromJsonString(dsl).generate();
+    }
+
+    /**
      * Utility method to convert streaming API to old format for easier test migration.
      * Collects all JSON node streams into a Map<String, List<JsonNode>> format.
      * This helps tests that were written for the old API to work with minimal changes.

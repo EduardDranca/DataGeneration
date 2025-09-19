@@ -13,12 +13,13 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
+import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.*;
 
 /**
  * Integration tests for complex DSL scenarios including picks, filtering,
  * multiple collections, and advanced reference patterns.
  */
-class ComplexDslIntegrationTest {
+class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.ParameterizedGenerationTest {
 
     private ObjectMapper mapper;
 
@@ -79,12 +80,9 @@ class ComplexDslIntegrationTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dsl)
-            .generate();
+        IGeneration generation = generateFromDslWithSeed(dsl, 123L, false);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Verify all collections exist
         assertThat(collections).containsKeys("countries", "cities", "companies", "users");
@@ -176,12 +174,9 @@ class ComplexDslIntegrationTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(789L)
-            .fromJsonNode(dsl)
-            .generate();
+        IGeneration generation = generateFromDslWithSeed(dsl, 789L, false);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Verify all collections have correct sizes
         assertThat(collections.get("regions")).hasSize(5);
@@ -203,7 +198,7 @@ class ComplexDslIntegrationTest {
             });
 
         // Verify JSON serialization works for large datasets
-        String json = generation.asJson();
+        String json = asJson(generation);
         assertThat(json)
             .isNotNull()
             .hasSizeGreaterThan(100000); // Should be substantial JSON
@@ -417,10 +412,10 @@ class ComplexDslIntegrationTest {
             .generate();
 
         // Results should be identical
-        assertThat(generation1.asJson()).isEqualTo(generation2.asJson());
+        assertThat(asJson(generation1)).isEqualTo(asJson(generation2));
 
         // Verify structure is correct
-        Map<String, List<JsonNode>> collections1 = generation1.getCollections();
+        Map<String, List<JsonNode>> collections1 = collectAllJsonNodes(generation1);
         assertThat(collections1.get("base_data")).hasSize(5);
         assertThat(collections1.get("derived_data")).hasSize(10);
     }

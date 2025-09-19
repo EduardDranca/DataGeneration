@@ -42,8 +42,8 @@ class ExamplesValidationTest {
 
         // Then
 
-        assertThat(generation.getCollections()).containsKey("users");
-        assertThat(generation.getCollections().get("users")).isNotEmpty();
+        assertThat(generation.getCollectionNames()).contains("users");
+        assertThat(generation.getCollectionSize("users")).isGreaterThan(0);
     }
 
     @Test
@@ -59,7 +59,7 @@ class ExamplesValidationTest {
             .fromFile(dslFile)
             .generate();
         // Then
-        assertThat(generation.getCollections()).isNotEmpty();
+        assertThat(generation.getCollectionNames()).isNotEmpty();
     }
 
     @Test
@@ -77,10 +77,10 @@ class ExamplesValidationTest {
 
         // Then
 
-        assertThat(generation.getCollections()).isNotEmpty();
-        assertThat(generation.getCollections()).containsKey("departments");
-        assertThat(generation.getCollections()).containsKey("employees");
-        assertThat(generation.getCollections()).containsKey("projects");
+        assertThat(generation.getCollectionNames()).isNotEmpty();
+        assertThat(generation.getCollectionNames()).contains("departments");
+        assertThat(generation.getCollectionNames()).contains("employees");
+        assertThat(generation.getCollectionNames()).contains("projects");
     }
 
     @Test
@@ -98,11 +98,11 @@ class ExamplesValidationTest {
 
         // Then
 
-        assertThat(generation.getCollections()).isNotEmpty();
-        assertThat(generation.getCollections()).containsKey("users");
-        assertThat(generation.getCollections()).containsKey("posts");
-        assertThat(generation.getCollections()).containsKey("comments");
-        assertThat(generation.getCollections()).containsKey("follows");
+        assertThat(generation.getCollectionNames()).isNotEmpty();
+        assertThat(generation.getCollectionNames()).contains("users");
+        assertThat(generation.getCollectionNames()).contains("posts");
+        assertThat(generation.getCollectionNames()).contains("comments");
+        assertThat(generation.getCollectionNames()).contains("follows");
     }
 
     @Test
@@ -120,11 +120,11 @@ class ExamplesValidationTest {
 
         // Then
 
-        assertThat(generation.getCollections()).isNotEmpty();
-        assertThat(generation.getCollections()).containsKey("banks");
-        assertThat(generation.getCollections()).containsKey("accounts");
-        assertThat(generation.getCollections()).containsKey("merchants");
-        assertThat(generation.getCollections()).containsKey("transactions");
+        assertThat(generation.getCollectionNames()).isNotEmpty();
+        assertThat(generation.getCollectionNames()).contains("banks");
+        assertThat(generation.getCollectionNames()).contains("accounts");
+        assertThat(generation.getCollectionNames()).contains("merchants");
+        assertThat(generation.getCollectionNames()).contains("transactions");
     }
 
     @Test
@@ -142,11 +142,11 @@ class ExamplesValidationTest {
 
         // Then
 
-        assertThat(generation.getCollections()).isNotEmpty();
-        assertThat(generation.getCollections()).containsKey("schools");
-        assertThat(generation.getCollections()).containsKey("courses");
-        assertThat(generation.getCollections()).containsKey("students");
-        assertThat(generation.getCollections()).containsKey("enrollments");
+        assertThat(generation.getCollectionNames()).isNotEmpty();
+        assertThat(generation.getCollectionNames()).contains("schools");
+        assertThat(generation.getCollectionNames()).contains("courses");
+        assertThat(generation.getCollectionNames()).contains("students");
+        assertThat(generation.getCollectionNames()).contains("enrollments");
     }
 
     @Test
@@ -192,9 +192,9 @@ class ExamplesValidationTest {
 
         // Then
 
-        assertThat(generation.getCollections()).isNotEmpty();
-        assertThat(generation.getCollections()).containsKey("departments");
-        assertThat(generation.getCollections()).containsKey("job_levels");
-        assertThat(generation.getCollections()).containsKey("employees");
+        assertThat(generation.getCollectionNames()).isNotEmpty();
+        assertThat(generation.getCollectionNames()).contains("departments");
+        assertThat(generation.getCollectionNames()).contains("job_levels");
+        assertThat(generation.getCollectionNames()).contains("employees");
     }
 }

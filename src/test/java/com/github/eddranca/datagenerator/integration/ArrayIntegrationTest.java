@@ -12,8 +12,9 @@ import org.junit.jupiter.api.Test;
 import java.util.stream.StreamSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.*;
 
-class ArrayIntegrationTest {
+class ArrayIntegrationTest extends com.github.eddranca.datagenerator.ParameterizedGenerationTest {
 
     @Test
     void testComplexArrayScenario() throws Exception {
@@ -53,12 +54,9 @@ class ArrayIntegrationTest {
                 }
                 """;
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(12345L) // For deterministic testing
-            .fromJsonString(dsl)
-            .generate();
+        IGeneration generation = generateFromDslWithSeed(dsl, 12345L, false);
 
-        JsonNode result = generation.asJsonNode();
+        JsonNode result = asJsonNode(generation);
 
         // Verify structure
         assertThat(result.has("users")).isTrue();
@@ -130,12 +128,9 @@ class ArrayIntegrationTest {
                 }
                 """;
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(54321L)
-            .fromJsonString(dsl)
-            .generate();
+        IGeneration generation = generateFromDslWithSeed(dsl, 54321L, false);
 
-        JsonNode result = generation.asJsonNode();
+        JsonNode result = asJsonNode(generation);
 
         // Extract category IDs for validation
         JsonNode categories = result.get("categories");
@@ -191,12 +186,9 @@ class ArrayIntegrationTest {
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+            IGeneration generation = generateFromDslWithSeed(dslNode, 123L, false);
 
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode usersArray = collectionsNode.get("users");
 
             assertThat(usersArray)
@@ -234,12 +226,9 @@ class ArrayIntegrationTest {
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+            IGeneration generation = generateFromDslWithSeed(dslNode, 123L, false);
 
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode messagesArray = collectionsNode.get("messages");
 
             assertThat(messagesArray).hasSize(1);
@@ -281,12 +270,9 @@ class ArrayIntegrationTest {
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+            IGeneration generation = generateFromDslWithSeed(dslNode, 123L, false);
 
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode companiesArray = collectionsNode.get("companies");
 
             assertThat(companiesArray).hasSize(1);
@@ -327,12 +313,9 @@ class ArrayIntegrationTest {
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+            IGeneration generation = generateFromDslWithSeed(dslNode, 123L, false);
 
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode usersArray = collectionsNode.get("users");
 
             assertThat(usersArray).hasSize(1);
@@ -369,11 +352,9 @@ class ArrayIntegrationTest {
 
             JsonNode dslNode = objectMapper.readTree(dsl);
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+            IGeneration generation = generateFromDslWithSeed(dslNode, 123L, false);
 
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode projectsArray = collectionsNode.get("projects");
 
             assertThat(projectsArray).hasSize(1);
