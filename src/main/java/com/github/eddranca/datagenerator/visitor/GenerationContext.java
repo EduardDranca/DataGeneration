@@ -54,6 +54,9 @@ public class GenerationContext {
     private final Map<String, LazyItemCollection> lazyReferenceCollections;
     private final Map<String, LazyItemCollection> lazyTaggedCollections;
     private final Map<Sequential, Integer> sequentialCounters;
+    
+    // Cache for materialized lazy collections to ensure consistency
+    private final Map<String, List<JsonNode>> materializedCollectionCache;
     private final int maxFilteringRetries;
     private final FilteringBehavior filteringBehavior;
 
@@ -74,6 +77,7 @@ public class GenerationContext {
         this.lazyReferenceCollections = new HashMap<>();
         this.lazyTaggedCollections = new HashMap<>();
         this.sequentialCounters = new IdentityHashMap<>();
+        this.materializedCollectionCache = new HashMap<>();
         this.maxFilteringRetries = maxFilteringRetries;
         this.filteringBehavior = filteringBehavior;
 
@@ -139,13 +143,23 @@ public class GenerationContext {
     public List<JsonNode> getCollection(String name) {
         // First check lazy collections if memory optimization is enabled
         if (memoryOptimizationEnabled) {
+            // Check cache first to ensure consistency
+            List<JsonNode> cached = materializedCollectionCache.get(name);
+            if (cached != null) {
+                return cached;
+            }
+            
             LazyItemCollection lazyCollection = lazyReferenceCollections.get(name);
             if (lazyCollection != null) {
-                return materializeLazyCollection(lazyCollection);
+                List<JsonNode> materialized = materializeLazyCollection(lazyCollection);
+                materializedCollectionCache.put(name, materialized);
+                return materialized;
             }
             lazyCollection = lazyNamedCollections.get(name);
             if (lazyCollection != null) {
-                return materializeLazyCollection(lazyCollection);
+                List<JsonNode> materialized = materializeLazyCollection(lazyCollection);
+                materializedCollectionCache.put(name, materialized);
+                return materialized;
             }
         }
 
@@ -161,9 +175,18 @@ public class GenerationContext {
     public List<JsonNode> getTaggedCollection(String tag) {
         // First check lazy collections if memory optimization is enabled
         if (memoryOptimizationEnabled) {
+            // Check cache first to ensure consistency
+            String cacheKey = "tag:" + tag;
+            List<JsonNode> cached = materializedCollectionCache.get(cacheKey);
+            if (cached != null) {
+                return cached;
+            }
+            
             LazyItemCollection lazyCollection = lazyTaggedCollections.get(tag);
             if (lazyCollection != null) {
-                return materializeLazyCollection(lazyCollection);
+                List<JsonNode> materialized = materializeLazyCollection(lazyCollection);
+                materializedCollectionCache.put(cacheKey, materialized);
+                return materialized;
             }
         }
 

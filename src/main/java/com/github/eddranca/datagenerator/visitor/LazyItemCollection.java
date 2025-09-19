@@ -81,12 +81,14 @@ public class LazyItemCollection implements List<LazyItemProxy> {
     }
 
     /**
-     * Returns a stream that generates items lazily without caching.
-     * This is the key method for memory-efficient streaming.
+     * Returns a stream that uses cached items to ensure consistency with indexed access.
+     * This ensures that reference resolution and output use the same data.
      */
     @Override
     public Stream<LazyItemProxy> stream() {
-        return Stream.generate(this::generateItem).limit(size());
+        // Materialize all items first to ensure consistency
+        materializeUpTo(size() - 1);
+        return materializedItems.stream();
     }
 
     @Override
