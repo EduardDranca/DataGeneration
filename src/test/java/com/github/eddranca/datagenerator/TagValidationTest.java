@@ -1,7 +1,6 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.exception.DslValidationException;
 import org.junit.jupiter.api.Test;
 
@@ -10,11 +9,10 @@ import java.io.IOException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class TagValidationTest {
-    private final ObjectMapper mapper = new ObjectMapper();
+class TagValidationTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testValidTagSharing() throws IOException {
+    @BothImplementations
+    void testValidTagSharing(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -38,10 +36,7 @@ class TagValidationTest {
                 """);
 
         // Should succeed because both collections have the same final name "users"
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
         assertThat(generation).isNotNull();
     }
@@ -79,8 +74,8 @@ class TagValidationTest {
             .hasMessageContaining("cannot be redeclared by collection 'products'");
     }
 
-    @Test
-    void testValidTagSharingWithCustomNames() throws IOException {
+    @BothImplementations
+    void testValidTagSharingWithCustomNames(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "user_data": {
@@ -105,10 +100,7 @@ class TagValidationTest {
                 """);
 
         // Should succeed because both collections have the same final name "people"
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
         assertThat(generation).isNotNull();
     }
@@ -181,8 +173,8 @@ class TagValidationTest {
             .hasMessageContaining("cannot be redeclared by collection 'products'");
     }
 
-    @Test
-    void testSingleCollectionMultipleTags() throws IOException {
+    @BothImplementations
+    void testSingleCollectionMultipleTags(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -198,12 +190,9 @@ class TagValidationTest {
                 """);
 
         // Should succeed - single collection can have multiple tags
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
         assertThat(generation).isNotNull();
-        assertThat(generation.getCollections().get("users")).hasSize(5);
+        assertThat(generation.getCollectionSize("users")).isEqualTo(5);
     }
 }
