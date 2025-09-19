@@ -40,30 +40,30 @@ class StaticValueTest {
             .fromJsonNode(dslNode)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        List<JsonNode> products = collections.get("products");
+        JsonNode collectionsNode = generation.asJsonNode();
+        JsonNode products = collectionsNode.get("products");
 
-        assertThat(products)
-            .as("All products should have consistent static values")
-            .hasSize(3)
-            .allSatisfy(product -> {
-                // Dynamic fields should be present and different
-                assertThat(product.get("id")).isNotNull();
-                assertThat(product.get("name")).isNotNull();
+        assertThat(products).isNotNull();
+        assertThat(products.size()).isEqualTo(3);
+        
+        for (JsonNode product : products) {
+            // Dynamic fields should be present and different
+            assertThat(product.get("id")).isNotNull();
+            assertThat(product.get("name")).isNotNull();
 
-                // Static fields should be exactly as specified
-                assertThat(product.get("status").asText()).isEqualTo("active");
-                assertThat(product.get("version").asDouble()).isEqualTo(1.0);
-                assertThat(product.get("enabled").asBoolean()).isTrue();
-                assertThat(product.get("category").isNull()).isTrue();
+            // Static fields should be exactly as specified
+            assertThat(product.get("status").asText()).isEqualTo("active");
+            assertThat(product.get("version").asDouble()).isEqualTo(1.0);
+            assertThat(product.get("enabled").asBoolean()).isTrue();
+            assertThat(product.get("category").isNull()).isTrue();
 
-                // Array should be preserved
-                ArrayNode tags = (ArrayNode) product.get("tags");
-                assertThat(tags).hasSize(2);
-                List<String> tagList = new ArrayList<>();
-                tags.forEach(tag -> tagList.add(tag.asText()));
-                assertThat(tagList).containsExactly("electronics", "gadget");
-            });
+            // Array should be preserved
+            ArrayNode tags = (ArrayNode) product.get("tags");
+            assertThat(tags).hasSize(2);
+            List<String> tagList = new ArrayList<>();
+            tags.forEach(tag -> tagList.add(tag.asText()));
+            assertThat(tagList).containsExactly("electronics", "gadget");
+        }
     }
 
     @Test
@@ -98,37 +98,37 @@ class StaticValueTest {
             .fromJsonNode(dslNode)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        List<JsonNode> orders = collections.get("orders");
+        JsonNode collectionsNode = generation.asJsonNode();
+        JsonNode orders = collectionsNode.get("orders");
 
-        assertThat(orders)
-            .as("All orders should have consistent static nested objects")
-            .hasSize(2)
-            .allSatisfy(order -> {
-                // Dynamic field
-                assertThat(order.get("id")).isNotNull();
+        assertThat(orders).isNotNull();
+        assertThat(orders.size()).isEqualTo(2);
+        
+        for (JsonNode order : orders) {
+            // Dynamic field
+            assertThat(order.get("id")).isNotNull();
 
-                // Complex nested static object
-                ObjectNode metadata = (ObjectNode) order.get("metadata");
-                assertThat(metadata.get("source").asText()).isEqualTo("api");
-                assertThat(metadata.get("version").asInt()).isEqualTo(2);
+            // Complex nested static object
+            ObjectNode metadata = (ObjectNode) order.get("metadata");
+            assertThat(metadata.get("source").asText()).isEqualTo("api");
+            assertThat(metadata.get("version").asInt()).isEqualTo(2);
 
-                ArrayNode features = (ArrayNode) metadata.get("features");
-                assertThat(features).hasSize(2);
-                List<String> featureList = new ArrayList<>();
-                features.forEach(feature -> featureList.add(feature.asText()));
-                assertThat(featureList).containsExactly("tracking", "notifications");
+            ArrayNode features = (ArrayNode) metadata.get("features");
+            assertThat(features).hasSize(2);
+            List<String> featureList = new ArrayList<>();
+            features.forEach(feature -> featureList.add(feature.asText()));
+            assertThat(featureList).containsExactly("tracking", "notifications");
 
-                ObjectNode config = (ObjectNode) metadata.get("config");
-                assertThat(config.get("timeout").asInt()).isEqualTo(30);
-                assertThat(config.get("retries").asInt()).isEqualTo(3);
+            ObjectNode config = (ObjectNode) metadata.get("config");
+            assertThat(config.get("timeout").asInt()).isEqualTo(30);
+            assertThat(config.get("retries").asInt()).isEqualTo(3);
 
-                // Another nested static object
-                ObjectNode constants = (ObjectNode) order.get("constants");
-                assertThat(constants.get("pi").asDouble()).isEqualTo(3.14159);
-                assertThat(constants.get("enabled").asBoolean()).isTrue();
-                assertThat(constants.get("description").isNull()).isTrue();
-            });
+            // Another nested static object
+            ObjectNode constants = (ObjectNode) order.get("constants");
+            assertThat(constants.get("pi").asDouble()).isEqualTo(3.14159);
+            assertThat(constants.get("enabled").asBoolean()).isTrue();
+            assertThat(constants.get("description").isNull()).isTrue();
+        }
     }
 
     @Test
@@ -158,31 +158,31 @@ class StaticValueTest {
             .fromJsonNode(dslNode)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        List<JsonNode> users = collections.get("users");
+        JsonNode collectionsNode = generation.asJsonNode();
+        JsonNode users = collectionsNode.get("users");
 
-        assertThat(users)
-            .as("All users should have consistent static fields with varying dynamic fields")
-            .hasSize(3)
-            .allSatisfy(user -> {
-                // Dynamic fields should vary
-                assertThat(user.get("id")).isNotNull();
-                assertThat(user.get("name")).isNotNull();
-                assertThat(user.get("email")).isNotNull();
+        assertThat(users).isNotNull();
+        assertThat(users.size()).isEqualTo(3);
+        
+        for (JsonNode user : users) {
+            // Dynamic fields should vary
+            assertThat(user.get("id")).isNotNull();
+            assertThat(user.get("name")).isNotNull();
+            assertThat(user.get("email")).isNotNull();
 
-                // Static fields should be identical across all users
-                assertThat(user.get("role").asText()).isEqualTo("user");
+            // Static fields should be identical across all users
+            assertThat(user.get("role").asText()).isEqualTo("user");
 
-                ArrayNode permissions = (ArrayNode) user.get("permissions");
-                assertThat(permissions).hasSize(2);
-                List<String> permList = new ArrayList<>();
-                permissions.forEach(perm -> permList.add(perm.asText()));
-                assertThat(permList).containsExactly("read", "write");
+            ArrayNode permissions = (ArrayNode) user.get("permissions");
+            assertThat(permissions).hasSize(2);
+            List<String> permList = new ArrayList<>();
+            permissions.forEach(perm -> permList.add(perm.asText()));
+            assertThat(permList).containsExactly("read", "write");
 
-                JsonNode settings = user.get("settings");
-                assertThat(settings.get("theme").asText()).isEqualTo("dark");
-                assertThat(settings.get("notifications").asBoolean()).isTrue();
-                assertThat(settings.get("language").asText()).isEqualTo("en");
-            });
+            JsonNode settings = user.get("settings");
+            assertThat(settings.get("theme").asText()).isEqualTo("dark");
+            assertThat(settings.get("notifications").asBoolean()).isTrue();
+            assertThat(settings.get("language").asText()).isEqualTo("en");
+        }
     }
 }

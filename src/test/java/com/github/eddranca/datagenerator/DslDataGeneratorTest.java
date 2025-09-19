@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -343,15 +344,15 @@ class DslDataGeneratorTest {
 
             // Verify that regular location reference (without filtering) can be any
             // location
-            Set<String> allLocationNames = locations.stream()
-                .map(loc -> loc.get("name").asText())
-                .collect(Collectors.toSet());
+            Set<String> allLocationNames = new HashSet<>();
+            for (JsonNode loc : locations) {
+                allLocationNames.add(loc.get("name").asText());
+            }
 
-            Set<String> eventLocationNames = events.stream()
-                .map(event -> {
-                    return event.get("location").get("name").asText();
-                })
-                .collect(java.util.stream.Collectors.toSet());
+            Set<String> eventLocationNames = new HashSet<>();
+            for (JsonNode event : events) {
+                eventLocationNames.add(event.get("location").get("name").asText());
+            }
 
             // Regular location references should potentially include all locations
             assertThat(eventLocationNames)
@@ -624,28 +625,28 @@ class DslDataGeneratorTest {
                 .fromJsonNode(dslNode)
                 .generate();
 
-            Map<String, List<JsonNode>> collections = generation.getCollections();
-            List<JsonNode> users = collections.get("users");
+            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode users = collectionsNode.get("users");
 
-            assertThat(users)
-                .as("All users should have spread fields and regular fields with non-null values")
-                .hasSize(2)
-                .allSatisfy(user -> {
-                    // From name spread and internet spread with mapping, plus regular fields
-                    assertThat(user.has("firstName")).isTrue();
-                    assertThat(user.has("lastName")).isTrue();
-                    assertThat(user.has("email")).isTrue();
-                    assertThat(user.has("id")).isTrue();
-                    assertThat(user.has("age")).isTrue();
-                    assertThat(user.has("emailAddress")).isFalse(); // Should not contain original field name
+            assertThat(users).isNotNull();
+            assertThat(users.size()).isEqualTo(2);
+            
+            for (JsonNode user : users) {
+                // From name spread and internet spread with mapping, plus regular fields
+                assertThat(user.has("firstName")).isTrue();
+                assertThat(user.has("lastName")).isTrue();
+                assertThat(user.has("email")).isTrue();
+                assertThat(user.has("id")).isTrue();
+                assertThat(user.has("age")).isTrue();
+                assertThat(user.has("emailAddress")).isFalse(); // Should not contain original field name
 
-                    // Verify all values are not null
-                    assertThat(user.get("firstName")).isNotNull();
-                    assertThat(user.get("lastName")).isNotNull();
-                    assertThat(user.get("email")).isNotNull();
-                    assertThat(user.get("id")).isNotNull();
-                    assertThat(user.get("age")).isNotNull();
-                });
+                // Verify all values are not null
+                assertThat(user.get("firstName")).isNotNull();
+                assertThat(user.get("lastName")).isNotNull();
+                assertThat(user.get("email")).isNotNull();
+                assertThat(user.get("id")).isNotNull();
+                assertThat(user.get("age")).isNotNull();
+            }
         }
 
         @Test
@@ -669,31 +670,31 @@ class DslDataGeneratorTest {
                 .fromJsonNode(dslNode)
                 .generate();
 
-            Map<String, List<JsonNode>> collections = generation.getCollections();
-            List<JsonNode> users = collections.get("users");
+            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode users = collectionsNode.get("users");
 
-            assertThat(users)
-                .as("All users should have all name generator fields plus regular fields with non-null values")
-                .hasSize(2)
-                .allSatisfy(user -> {
-                    // These are the fields that the name generator provides plus regular field
-                    assertThat(user.has("firstName")).isTrue();
-                    assertThat(user.has("lastName")).isTrue();
-                    assertThat(user.has("fullName")).isTrue();
-                    assertThat(user.has("title")).isTrue();
-                    assertThat(user.has("prefix")).isTrue();
-                    assertThat(user.has("suffix")).isTrue();
-                    assertThat(user.has("id")).isTrue();
+            assertThat(users).isNotNull();
+            assertThat(users.size()).isEqualTo(2);
+            
+            for (JsonNode user : users) {
+                // These are the fields that the name generator provides plus regular field
+                assertThat(user.has("firstName")).isTrue();
+                assertThat(user.has("lastName")).isTrue();
+                assertThat(user.has("fullName")).isTrue();
+                assertThat(user.has("title")).isTrue();
+                assertThat(user.has("prefix")).isTrue();
+                assertThat(user.has("suffix")).isTrue();
+                assertThat(user.has("id")).isTrue();
 
-                    // Verify all values are not null
-                    assertThat(user.get("firstName")).isNotNull();
-                    assertThat(user.get("lastName")).isNotNull();
-                    assertThat(user.get("fullName")).isNotNull();
-                    assertThat(user.get("title")).isNotNull();
-                    assertThat(user.get("prefix")).isNotNull();
-                    assertThat(user.get("suffix")).isNotNull();
-                    assertThat(user.get("id")).isNotNull();
-                });
+                // Verify all values are not null
+                assertThat(user.get("firstName")).isNotNull();
+                assertThat(user.get("lastName")).isNotNull();
+                assertThat(user.get("fullName")).isNotNull();
+                assertThat(user.get("title")).isNotNull();
+                assertThat(user.get("prefix")).isNotNull();
+                assertThat(user.get("suffix")).isNotNull();
+                assertThat(user.get("id")).isNotNull();
+            }
         }
 
         @Test
@@ -753,12 +754,11 @@ class DslDataGeneratorTest {
                 .fromJsonNode(dslNode)
                 .generate();
 
-            Map<String, List<JsonNode>> collections = generation.getCollections();
-            List<JsonNode> rows = collections.get("rows");
+            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode rows = collectionsNode.get("rows");
 
-            assertThat(rows)
-                .isNotNull()
-                .hasSize(3);
+            assertThat(rows).isNotNull();
+            assertThat(rows.size()).isEqualTo(3);
 
             // Validate first two CSV rows match test.csv content and that sequential wraps
             assertThat(rows.get(0).get("header1").asText()).isEqualTo("value1");
@@ -1473,20 +1473,20 @@ class DslDataGeneratorTest {
                 .generate();
 
             assertThat(generation).isNotNull();
-            Map<String, List<JsonNode>> collections = generation.getCollections();
+            JsonNode collectionsNode = generation.asJsonNode();
 
-            assertThat(collections)
-                .containsKeys("countries", "companies");
-            assertThat(collections.get("countries")).hasSize(2);
-            assertThat(collections.get("companies")).hasSize(5);
+            assertThat(collectionsNode.has("countries")).isTrue();
+            assertThat(collectionsNode.has("companies")).isTrue();
+            assertThat(collectionsNode.get("countries").size()).isEqualTo(2);
+            assertThat(collectionsNode.get("companies").size()).isEqualTo(5);
 
-            List<JsonNode> companies = collections.get("companies");
-            assertThat(companies)
-                .as("All companies should have non-null countryCode references")
-                .isNotEmpty()
-                .allSatisfy(company ->
-                    assertThat(company.get("countryCode")).isNotNull()
-                );
+            JsonNode companies = collectionsNode.get("companies");
+            assertThat(companies).isNotNull();
+            assertThat(companies.size()).isGreaterThan(0);
+            
+            for (JsonNode company : companies) {
+                assertThat(company.get("countryCode")).isNotNull();
+            }
         }
     }
 

@@ -51,18 +51,20 @@ class GenerationTest {
     }
 
     @Test
-    void testGetCollections() {
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+    void testAsJsonNode() {
+        JsonNode collectionsNode = generation.asJsonNode();
 
-        assertThat(collections)
-            .isNotNull()
-            .containsKeys("companies", "countries");
+        assertThat(collectionsNode).isNotNull();
+        assertThat(collectionsNode.has("companies")).isTrue();
+        assertThat(collectionsNode.has("countries")).isTrue();
 
-        List<JsonNode> companies = collections.get("companies");
-        List<JsonNode> countries = collections.get("countries");
+        JsonNode companies = collectionsNode.get("companies");
+        JsonNode countries = collectionsNode.get("countries");
 
-        assertThat(companies).isNotNull().isNotEmpty();
-        assertThat(countries).isNotNull().isNotEmpty();
+        assertThat(companies).isNotNull();
+        assertThat(companies.size()).isGreaterThan(0);
+        assertThat(countries).isNotNull();
+        assertThat(countries.size()).isGreaterThan(0);
     }
 
     @Test
@@ -163,21 +165,7 @@ class GenerationTest {
         }).doesNotThrowAnyException();
     }
 
-    @Test
-    void testCollectionsAndJsonNodeConsistency() {
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        JsonNode collectionsNode = generation.asJsonNode();
 
-        assertThat(collections).isNotNull();
-        assertThat(collectionsNode).isNotNull();
-
-        assertThat(collections.keySet())
-            .as("Collections and collectionsNode should have same keys")
-            .allSatisfy(key -> {
-                assertThat(collectionsNode.has(key)).isTrue();
-                assertThat(collectionsNode.get(key).size()).isEqualTo(collections.get(key).size());
-            });
-    }
 
     @Test
     void testSqlGenerationWithComplexObjects() throws Exception {
@@ -226,12 +214,11 @@ class GenerationTest {
             .fromJsonNode(emptyDsl)
             .generate();
 
-        Map<String, List<JsonNode>> collections = emptyGeneration.getCollections();
         JsonNode jsonNode = emptyGeneration.asJsonNode();
         String json = emptyGeneration.asJson();
         Map<String, String> sqlMap = emptyGeneration.asSqlInserts();
 
-        assertThat(collections).isNotNull().isEmpty();
+        assertThat(emptyGeneration.getCollectionNames()).isNotNull().isEmpty();
         assertThat(jsonNode).isNotNull();
         assertThat(json).isNotNull();
         assertThat(sqlMap).isNotNull().isEmpty();
@@ -258,14 +245,13 @@ class GenerationTest {
             .fromJsonNode(singleItemDsl)
             .generate();
 
-        Map<String, List<JsonNode>> collections = singleGeneration.getCollections();
+        JsonNode collectionsNode = singleGeneration.asJsonNode();
 
-        assertThat(collections)
-            .isNotNull()
-            .containsKey("items");
-        assertThat(collections.get("items"))
-            .hasSize(1);
-        JsonNode firstItem = collections.get("items").get(0);
+        assertThat(collectionsNode).isNotNull();
+        assertThat(collectionsNode.has("items")).isTrue();
+        assertThat(collectionsNode.get("items").size()).isEqualTo(1);
+        
+        JsonNode firstItem = collectionsNode.get("items").get(0);
         assertThat(firstItem.has("id")).isTrue();
         assertThat(firstItem.has("value")).isTrue();
         assertThat(firstItem.size()).isBetween(0, 50);
