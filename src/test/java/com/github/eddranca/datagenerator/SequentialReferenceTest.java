@@ -1,8 +1,6 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -11,11 +9,10 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SequentialReferenceTest {
-    private final ObjectMapper mapper = new ObjectMapper();
+class SequentialReferenceTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testBasicSequentialReference() throws IOException {
+    @BothImplementations
+    void testBasicSequentialReference(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -38,12 +35,9 @@ class SequentialReferenceTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
         List<JsonNode> orders = collections.get("orders");
 
@@ -66,8 +60,8 @@ class SequentialReferenceTest {
             );
     }
 
-    @Test
-    void testSequentialReferenceWithFiltering() throws IOException {
+    @BothImplementations
+    void testSequentialReferenceWithFiltering(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -94,12 +88,9 @@ class SequentialReferenceTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
         List<JsonNode> orders = collections.get("orders");
 
@@ -133,8 +124,8 @@ class SequentialReferenceTest {
             .doesNotContain(bannedUserId);
     }
 
-    @Test
-    void testRandomVsSequentialReference() throws IOException {
+    @BothImplementations
+    void testRandomVsSequentialReference(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -160,12 +151,9 @@ class SequentialReferenceTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
         List<JsonNode> orders = collections.get("orders");
 
@@ -202,8 +190,8 @@ class SequentialReferenceTest {
             .allSatisfy(randomId -> assertThat(validUserIdsList).contains(randomId));
     }
 
-    @Test
-    void testSequentialReferenceWithTaggedCollections() throws IOException {
+    @BothImplementations
+    void testSequentialReferenceWithTaggedCollections(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "staff_admins": {
@@ -237,12 +225,9 @@ class SequentialReferenceTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> tasks = collections.get("tasks");
 
         assertThat(tasks).hasSize(8);
@@ -253,8 +238,8 @@ class SequentialReferenceTest {
             .allSatisfy(assignedTo -> assertThat(assignedTo).isBetween(1, 4));
     }
 
-    @Test
-    void testSequentialReferenceDefaultBehavior() throws IOException {
+    @BothImplementations
+    void testSequentialReferenceDefaultBehavior(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -275,12 +260,9 @@ class SequentialReferenceTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> orders = collections.get("orders");
 
         assertThat(orders).hasSize(4);

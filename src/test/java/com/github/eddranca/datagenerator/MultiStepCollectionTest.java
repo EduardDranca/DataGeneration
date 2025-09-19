@@ -1,8 +1,6 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,11 +8,10 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class MultiStepCollectionTest {
-    private final ObjectMapper mapper = new ObjectMapper();
+class MultiStepCollectionTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testMultiStepCollectionGeneration() throws IOException {
+    @BothImplementations
+    void testMultiStepCollectionGeneration(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "admin_users": {
@@ -50,12 +47,9 @@ class MultiStepCollectionTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Should have only one collection named "users"
         assertThat(collections)
@@ -108,8 +102,8 @@ class MultiStepCollectionTest {
             });
     }
 
-    @Test
-    void testMultiStepCollectionWithReferences() throws IOException {
+    @BothImplementations
+    void testMultiStepCollectionWithReferences(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "premium_products": {
@@ -144,12 +138,9 @@ class MultiStepCollectionTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(456L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Should have products and orders collections
         assertThat(collections)
@@ -195,8 +186,8 @@ class MultiStepCollectionTest {
             });
     }
 
-    @Test
-    void testMultiStepCollectionWithTags() throws IOException {
+    @BothImplementations
+    void testMultiStepCollectionWithTags(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "us_locations": {
@@ -230,12 +221,9 @@ class MultiStepCollectionTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(789L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Should have locations and events collections
         assertThat(collections)
@@ -268,8 +256,8 @@ class MultiStepCollectionTest {
             });
     }
 
-    @Test
-    void testReferenceIndividualCollectionSteps() throws IOException {
+    @BothImplementations
+    void testReferenceIndividualCollectionSteps(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "us_users": {
@@ -315,12 +303,9 @@ class MultiStepCollectionTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(999L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Should have users, orders collections
         assertThat(collections)
