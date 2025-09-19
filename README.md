@@ -85,9 +85,9 @@ Generation result = DslDataGenerator.create()
     .generate();
 
 // Multiple output formats
-Map<String, List<JsonNode>> collections = result.getCollections();
-JsonNode json = result.asJsonNode();
-Map<String, String> sqlInserts = result.asSqlInserts();
+List<JsonNode> users = result.getCollection("users");  // Get specific collection
+JsonNode json = result.asJsonNode();                   // Full JSON structure
+Map<String, String> sqlInserts = result.asSqlInserts(); // SQL inserts
 ```
 
 ## Key Features
@@ -196,7 +196,9 @@ Reference collections by tags for flexible relationships:
 Generation result = DslDataGenerator.create().fromJsonString(dsl).generate();
 
 // Java Collections
-Map<String, List<JsonNode>> data = result.getCollections();
+List<JsonNode> users = result.getCollection("users");
+boolean hasUsers = result.hasCollection("users");
+int userCount = result.getCollectionSize("users");
 
 // JSON
 JsonNode json = result.asJsonNode();

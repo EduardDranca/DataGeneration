@@ -145,7 +145,7 @@ void shouldGenerateArrayWithFiltering() {
         .generate();
     
     // Then
-    assertThat(result.getCollections().get("users"))
+    assertThat(result.getCollection("users"))
         .hasSize(10)
         .allSatisfy(user -> {
             List<String> skills = (List<String>) user.get("skills");

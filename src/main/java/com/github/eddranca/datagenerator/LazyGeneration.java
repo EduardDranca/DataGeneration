@@ -80,11 +80,9 @@ public class LazyGeneration implements IGeneration {
         return collection.size();
     }
 
-    @Override
-    @Deprecated
-    public Map<String, List<JsonNode>> getCollections() {
-        return materializeAllCollections();
-    }
+
+    
+
 
     @Override
     public JsonNode asJsonNode() {

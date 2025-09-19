@@ -268,20 +268,20 @@ class DslDataGeneratorTest {
                 .fromJsonNode(dslNode)
                 .generate();
 
-            Map<String, List<JsonNode>> collections = generation.getCollections();
-            List<JsonNode> countries = collections.get("countries");
-            List<JsonNode> companies = collections.get("companies");
+            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode countries = collectionsNode.get("countries");
+            JsonNode companies = collectionsNode.get("companies");
 
             assertThat(countries).isNotNull();
             assertThat(companies).isNotNull();
-            assertThat(countries).isNotEmpty();
+            assertThat(countries.size()).isGreaterThan(0);
 
             String firstCountryCode = countries.get(0).get("isoCode").asText();
-            assertThat(companies).allSatisfy(comp ->
+            for (JsonNode comp : companies) {
                 assertThat(comp.get("countryCode").asText())
                     .as("Company countryCode should not match the filtered first country isoCode")
-                    .isNotEqualTo(firstCountryCode)
-            );
+                    .isNotEqualTo(firstCountryCode);
+            }
         }
 
         @Test
@@ -315,9 +315,9 @@ class DslDataGeneratorTest {
                 .fromJsonNode(dslNode)
                 .generate();
 
-            Map<String, List<JsonNode>> collections = generation.getCollections();
-            List<JsonNode> locations = collections.get("locations");
-            List<JsonNode> events = collections.get("events");
+            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode locations = collectionsNode.get("locations");
+            JsonNode events = collectionsNode.get("events");
 
             assertThat(locations)
                 .isNotNull()
@@ -396,17 +396,17 @@ class DslDataGeneratorTest {
                 .generate();
 
             assertThat(generation).isNotNull();
-            Map<String, List<JsonNode>> collections = generation.getCollections();
-            List<JsonNode> users = collections.get("users");
+            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode users = collectionsNode.get("users");
 
-            assertThat(users)
-                .as("All users should have displayName matching name via self-reference")
-                .hasSize(2)
-                .allSatisfy(user ->
-                    assertThat(user.get("displayName"))
-                        .as("displayName should match name via self-reference")
-                        .isEqualTo(user.get("name"))
-                );
+            assertThat(users).isNotNull();
+            assertThat(users.size()).isEqualTo(2);
+            
+            for (JsonNode user : users) {
+                assertThat(user.get("displayName"))
+                    .as("displayName should match name via self-reference")
+                    .isEqualTo(user.get("name"));
+            }
         }
 
         @Test
@@ -493,21 +493,21 @@ class DslDataGeneratorTest {
                 .isNotNull()
                 .contains("countries");
 
-            Map<String, List<JsonNode>> collections = generation.getCollections();
-            List<JsonNode> countries = collections.get("countries");
+            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode countries = collectionsNode.get("countries");
 
             // Verify spread fields are present
-            assertThat(countries)
-                .as("All countries should have required fields with non-null values")
-                .hasSize(3)
-                .allSatisfy(country -> {
-                    assertThat(country.has("name")).isTrue();
-                    assertThat(country.has("countryCode")).isTrue();
-                    assertThat(country.has("id")).isTrue();
-                    assertThat(country.get("name")).isNotNull();
-                    assertThat(country.get("countryCode")).isNotNull();
-                    assertThat(country.get("id")).isNotNull();
-                });
+            assertThat(countries).isNotNull();
+            assertThat(countries.size()).isEqualTo(3);
+            
+            for (JsonNode country : countries) {
+                assertThat(country.has("name")).as("Country should have name field").isTrue();
+                assertThat(country.has("countryCode")).as("Country should have countryCode field").isTrue();
+                assertThat(country.has("id")).as("Country should have id field").isTrue();
+                assertThat(country.get("name")).as("Country name should not be null").isNotNull();
+                assertThat(country.get("countryCode")).as("Country countryCode should not be null").isNotNull();
+                assertThat(country.get("id")).as("Country id should not be null").isNotNull();
+            }
         }
 
         @Test
@@ -533,8 +533,8 @@ class DslDataGeneratorTest {
                 .fromJsonNode(dslNode)
                 .generate();
 
-            Map<String, List<JsonNode>> collections = generation.getCollections();
-            List<JsonNode> countries = collections.get("countries");
+            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode countries = collectionsNode.get("countries");
 
             assertThat(countries)
                 .as("All countries should have mapped fields with non-null values")
@@ -1108,36 +1108,35 @@ class DslDataGeneratorTest {
                 .generate();
 
             // Test JSON generation
-            Map<String, List<JsonNode>> collections = generation.getCollections();
-            List<JsonNode> products = collections.get("products");
+            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode products = collectionsNode.get("products");
 
-            assertThat(products)
-                .isNotNull()
-                .hasSize(3)
-                .as("All products should have valid decimal fields within expected ranges")
-                .allSatisfy(product -> {
-                    // Verify all required fields are present and not null
-                    assertThat(product.get("price")).isNotNull();
-                    assertThat(product.get("weight")).isNotNull();
-                    assertThat(product.get("rating")).isNotNull();
-                    assertThat(product.get("discount")).isNotNull();
+            assertThat(products).isNotNull();
+            assertThat(products.size()).isEqualTo(3);
+            
+            for (JsonNode product : products) {
+                // Verify all required fields are present and not null
+                assertThat(product.get("price")).isNotNull();
+                assertThat(product.get("weight")).isNotNull();
+                assertThat(product.get("rating")).isNotNull();
+                assertThat(product.get("discount")).isNotNull();
 
-                    // Verify ranges using fluent assertions
-                    double price = product.get("price").doubleValue();
-                    double weight = product.get("weight").doubleValue();
-                    double rating = product.get("rating").doubleValue();
-                    double discount = product.get("discount").doubleValue();
+                // Verify ranges using fluent assertions
+                double price = product.get("price").doubleValue();
+                double weight = product.get("weight").doubleValue();
+                double rating = product.get("rating").doubleValue();
+                double discount = product.get("discount").doubleValue();
 
-                    assertThat(price).isBetween(10.0, 100.0);
-                    assertThat(weight).isBetween(0.1, 5.0);
-                    assertThat(rating).isBetween(1.0, 5.0);
-                    assertThat(discount).isBetween(0.0, 1.0);
+                assertThat(price).isBetween(10.0, 100.0);
+                assertThat(weight).isBetween(0.1, 5.0);
+                assertThat(rating).isBetween(1.0, 5.0);
+                assertThat(discount).isBetween(0.0, 1.0);
 
-                    // Verify discount is a whole number (0 decimals)
-                    assertThat(discount)
-                        .as("Discount should be a whole number")
-                        .isCloseTo(Math.floor(discount), within(0.0001));
-                });
+                // Verify discount is a whole number (0 decimals)
+                assertThat(discount)
+                    .as("Discount should be a whole number")
+                    .isCloseTo(Math.floor(discount), within(0.0001));
+            }
         }
 
         /**

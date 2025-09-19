@@ -68,25 +68,7 @@ public interface IGeneration {
      */
     int getCollectionSize(String collectionName);
     
-    /**
-     * Returns the collections as materialized JsonNode lists.
-     * 
-     * <p><strong>⚠️ Testing and Legacy Support Only:</strong> This method is primarily
-     * intended for testing and backward compatibility. It exposes internal structure
-     * and may consume significant memory for large datasets with memory optimization.
-     * 
-     * <p><strong>Recommended alternatives:</strong>
-     * <ul>
-     *   <li>Use {@link #asJsonNode()} for JSON output</li>
-     *   <li>Use {@link #streamSqlInserts(String)} for SQL generation</li>
-     *   <li>Use {@link #getCollectionSize(String)} to check sizes</li>
-     * </ul>
-     * 
-     * @return Map where keys are collection names and values are lists of JsonNode items
-     * @deprecated This method exposes internal structure and may be removed in future versions
-     */
-    @Deprecated
-    Map<String, java.util.List<JsonNode>> getCollections();
+
     
     /**
      * Generates SQL INSERT statements for all collections.
