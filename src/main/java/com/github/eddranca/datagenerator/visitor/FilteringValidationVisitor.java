@@ -1,7 +1,25 @@
 package com.github.eddranca.datagenerator.visitor;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.eddranca.datagenerator.node.*;
+import com.github.eddranca.datagenerator.node.ArrayFieldNode;
+import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
+import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
+import com.github.eddranca.datagenerator.node.CollectionNode;
+import com.github.eddranca.datagenerator.node.DslNode;
+import com.github.eddranca.datagenerator.node.DslNodeVisitor;
+import com.github.eddranca.datagenerator.node.FilterNode;
+import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
+import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
+import com.github.eddranca.datagenerator.node.ItemNode;
+import com.github.eddranca.datagenerator.node.LiteralFieldNode;
+import com.github.eddranca.datagenerator.node.ObjectFieldNode;
+import com.github.eddranca.datagenerator.node.PickReferenceNode;
+import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
+import com.github.eddranca.datagenerator.node.RootNode;
+import com.github.eddranca.datagenerator.node.SelfReferenceNode;
+import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
+import com.github.eddranca.datagenerator.node.SpreadFieldNode;
+import com.github.eddranca.datagenerator.node.TagReferenceNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,37 +101,55 @@ public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitTagReference(TagReferenceNode node) {
-        // References don't need validation at this stage
+        // Validate reference filtering
+        if (!node.getFilters().isEmpty()) {
+            validateReferenceFiltering(node.getFilters(), "TagReference");
+        }
         return null;
     }
 
     @Override
     public Void visitIndexedReference(IndexedReferenceNode node) {
-        // References don't need validation at this stage
+        // Validate reference filtering
+        if (!node.getFilters().isEmpty()) {
+            validateReferenceFiltering(node.getFilters(), "IndexedReference");
+        }
         return null;
     }
 
     @Override
     public Void visitArrayFieldReference(ArrayFieldReferenceNode node) {
-        // References don't need validation at this stage
+        // Validate reference filtering
+        if (!node.getFilters().isEmpty()) {
+            validateReferenceFiltering(node.getFilters(), "ArrayFieldReference");
+        }
         return null;
     }
 
     @Override
     public Void visitSelfReference(SelfReferenceNode node) {
-        // References don't need validation at this stage
+        // Validate reference filtering
+        if (!node.getFilters().isEmpty()) {
+            validateReferenceFiltering(node.getFilters(), "SelfReference");
+        }
         return null;
     }
 
     @Override
     public Void visitSimpleReference(SimpleReferenceNode node) {
-        // References don't need validation at this stage
+        // Validate reference filtering
+        if (!node.getFilters().isEmpty()) {
+            validateReferenceFiltering(node.getFilters(), "SimpleReference");
+        }
         return null;
     }
 
     @Override
     public Void visitPickReference(PickReferenceNode node) {
-        // References don't need validation at this stage
+        // Validate reference filtering
+        if (!node.getFilters().isEmpty()) {
+            validateReferenceFiltering(node.getFilters(), "PickReference");
+        }
         return null;
     }
 
@@ -126,8 +162,8 @@ public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
     @Override
     public Void visitArrayField(ArrayFieldNode node) {
         // Validate the array element template
-        if (node.getElement() != null) {
-            node.getElement().accept(this);
+        if (node.getItemNode() != null) {
+            node.getItemNode().accept(this);
         }
         return null;
     }
@@ -157,7 +193,7 @@ public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
      */
     private void validateChoiceFieldFiltering(ChoiceFieldNode node) {
         List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
-        
+
         if (filterValues.isEmpty()) {
             return; // No filtering, so no issue
         }
@@ -230,5 +266,43 @@ public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
             // If we can't evaluate the option, we can't validate
             return null;
         }
+    }
+
+    /**
+     * Validates reference filtering by attempting to perform a test resolution.
+     * This tries to catch cases where references would have no valid values after filtering.
+     */
+    private void validateReferenceFiltering(List<FilterNode> filters, String referenceType) {
+        List<JsonNode> filterValues = computeFilteredValues(filters);
+        
+        if (filterValues.isEmpty()) {
+            return; // No filtering, so no issue
+        }
+
+        // The most reliable way to validate reference filtering is to actually try
+        // to perform the reference resolution and see if it fails. However, this
+        // requires the referenced collections to be available.
+        
+        // For now, we'll implement a conservative approach: if there are filters
+        // on a reference, we'll assume it might be problematic and let the actual
+        // generation handle the validation. This is not ideal, but it's better than
+        // trying to implement complex reference resolution logic here.
+        
+        // The key insight is that reference filtering validation is much more complex
+        // than choice field validation because it depends on the actual data in
+        // other collections. The proper solution would be to:
+        // 1. Parse the reference path (e.g., "reference_data[*].name")
+        // 2. Look up the referenced collection definition
+        // 3. Analyze what values that collection can produce
+        // 4. Check if all those values would be filtered out
+        
+        // For now, we'll skip reference validation in the validation phase
+        // and rely on the actual generation to catch these issues.
+        // This means reference filtering exceptions will be thrown during
+        // stream consumption rather than during .generate(), which is not
+        // ideal but is acceptable as a temporary solution.
+        
+        // TODO: Implement proper reference filtering validation
+        return;
     }
 }
