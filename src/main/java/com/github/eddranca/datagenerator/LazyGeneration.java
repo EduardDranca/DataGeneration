@@ -84,33 +84,9 @@ public class LazyGeneration implements IGeneration {
     
 
 
-    @Override
-    public JsonNode asJsonNode() {
-        return mapper.valueToTree(materializeAllCollections());
-    }
 
-    /**
-     * Helper method to materialize all collections into JsonNode lists.
-     * This centralizes the materialization logic to avoid code duplication.
-     */
-    private Map<String, List<JsonNode>> materializeAllCollections() {
-        Map<String, List<JsonNode>> materializedCollections = new HashMap<>();
-        
-        for (Map.Entry<String, List<LazyItemProxy>> entry : lazyCollections.entrySet()) {
-            List<JsonNode> materializedCollection = new ArrayList<>();
-            for (LazyItemProxy lazyItem : entry.getValue()) {
-                materializedCollection.add(lazyItem.getMaterializedCopy());
-            }
-            materializedCollections.put(entry.getKey(), materializedCollection);
-        }
-        
-        return materializedCollections;
-    }
 
-    @Override
-    public String asJson() throws JsonProcessingException {
-        return mapper.writeValueAsString(asJsonNode());
-    }
+
 
     @Override
     public Map<String, String> asSqlInserts() {

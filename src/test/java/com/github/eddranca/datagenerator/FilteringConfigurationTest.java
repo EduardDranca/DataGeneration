@@ -6,6 +6,7 @@ import com.github.eddranca.datagenerator.exception.FilteringException;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,8 +39,8 @@ class FilteringConfigurationTest {
             .fromJsonNode(dslNode)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        List<JsonNode> items = collections.get("items");
+        JsonNode collectionsNode = generation.asJsonNode();
+        JsonNode itemsArray = collectionsNode.get("items"); List<JsonNode> items = new ArrayList<>(); itemsArray.forEach(items::add);
 
         assertThat(items).hasSize(5);
 
@@ -135,8 +136,8 @@ class FilteringConfigurationTest {
             .fromJsonNode(dslNode)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        List<JsonNode> items = collections.get("items");
+        JsonNode collectionsNode = generation.asJsonNode();
+        JsonNode itemsArray = collectionsNode.get("items"); List<JsonNode> items = new ArrayList<>(); itemsArray.forEach(items::add);
 
         assertThat(items).hasSize(5);
 
@@ -196,8 +197,8 @@ class FilteringConfigurationTest {
             .fromJsonNode(dslNode)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        List<JsonNode> items = collections.get("items");
+        JsonNode collectionsNode = generation.asJsonNode();
+        JsonNode itemsArray = collectionsNode.get("items"); List<JsonNode> items = new ArrayList<>(); itemsArray.forEach(items::add);
 
         assertThat(items)
             .hasSize(10)

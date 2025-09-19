@@ -25,26 +25,9 @@ import java.util.stream.Stream;
  */
 public interface IGeneration {
     
-    /**
-     * Returns the generated data as a JsonNode tree structure.
-     * 
-     * <p><strong>Memory Impact:</strong> This method materializes all data in memory,
-     * which may consume significant memory for large datasets when using memory optimization.
-     * 
-     * @return JsonNode containing all generated collections
-     */
-    JsonNode asJsonNode();
+
     
-    /**
-     * Returns the generated data as a formatted JSON string.
-     * 
-     * <p><strong>Memory Impact:</strong> This method materializes all data in memory
-     * before serialization.
-     * 
-     * @return JSON string representation of all generated data
-     * @throws JsonProcessingException if JSON serialization fails
-     */
-    String asJson() throws JsonProcessingException;
+
     
     /**
      * Returns the names of all generated collections.

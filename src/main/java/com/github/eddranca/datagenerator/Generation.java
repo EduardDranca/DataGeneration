@@ -53,15 +53,7 @@ public class Generation implements IGeneration {
 
 
 
-    public JsonNode asJsonNode() {
-        // For normal generation, collections already contain regular JsonNode objects
-        return mapper.valueToTree(collections);
-    }
 
-    public String asJson() throws JsonProcessingException {
-        // Use the materialized collections from asJsonNode() for consistency
-        return mapper.writeValueAsString(asJsonNode());
-    }
 
     /**
      * Generates SQL INSERT statements for all collections.
