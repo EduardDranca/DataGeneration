@@ -186,7 +186,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = generateFromDslWithSeed(dslNode, 123L, false);
+            IGeneration generation = generateFromDsl(dslNode, false);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode usersArray = collectionsNode.get("users");
@@ -226,7 +226,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = generateFromDslWithSeed(dslNode, 123L, false);
+            IGeneration generation = generateFromDsl(dslNode, false);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode messagesArray = collectionsNode.get("messages");
@@ -270,7 +270,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = generateFromDslWithSeed(dslNode, 123L, false);
+            IGeneration generation = generateFromDsl(dslNode, false);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode companiesArray = collectionsNode.get("companies");
@@ -313,7 +313,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = generateFromDslWithSeed(dslNode, 123L, false);
+            IGeneration generation = generateFromDsl(dslNode, false);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode usersArray = collectionsNode.get("users");
@@ -351,8 +351,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = DslDataGenerator.create()
-            IGeneration generation = generateFromDslWithSeed(dslNode, 123L, false);
+            IGeneration generation = generateFromDsl(dslNode, false);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode projectsArray = collectionsNode.get("projects");

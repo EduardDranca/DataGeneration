@@ -10,6 +10,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +27,7 @@ public abstract class ParameterizedGenerationTest {
     /**
      * Provides test parameters for both normal and memory-optimized implementations.
      */
-    protected static Stream<Arguments> generationImplementations() {
+    public static Stream<Arguments> generationImplementations() {
         return Stream.of(
             Arguments.of("Normal", false),
             Arguments.of("Memory-Optimized", true)
@@ -91,11 +93,11 @@ public abstract class ParameterizedGenerationTest {
     protected Map<String, List<JsonNode>> collectAllJsonNodes(IGeneration generation) {
         Map<String, Stream<JsonNode>> streams = generation.asJsonNodes();
         Map<String, List<JsonNode>> collections = new HashMap<>();
-        
+
         for (Map.Entry<String, Stream<JsonNode>> entry : streams.entrySet()) {
             collections.put(entry.getKey(), entry.getValue().toList());
         }
-        
+
         return collections;
     }
 
@@ -106,7 +108,7 @@ public abstract class ParameterizedGenerationTest {
     protected JsonNode createLegacyJsonNode(IGeneration generation) throws IOException {
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         ObjectMapper mapper = new ObjectMapper();
-        
+
         ObjectNode root = mapper.createObjectNode();
         for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
             ArrayNode arrayNode = mapper.createArrayNode();
@@ -115,7 +117,7 @@ public abstract class ParameterizedGenerationTest {
             }
             root.set(entry.getKey(), arrayNode);
         }
-        
+
         return root;
     }
 
@@ -136,12 +138,12 @@ public abstract class ParameterizedGenerationTest {
     protected Map<String, String> collectAllSqlInserts(IGeneration generation) {
         Map<String, Stream<String>> sqlStreams = generation.asSqlInserts();
         Map<String, String> sqlMap = new HashMap<>();
-        
+
         for (Map.Entry<String, Stream<String>> entry : sqlStreams.entrySet()) {
             String joinedSql = entry.getValue().collect(Collectors.joining("\n"));
             sqlMap.put(entry.getKey(), joinedSql);
         }
-        
+
         return sqlMap;
     }
 
@@ -151,36 +153,36 @@ public abstract class ParameterizedGenerationTest {
      */
     public static class LegacyApiHelper {
         private static final ObjectMapper mapper = new ObjectMapper();
-        
+
         static {
             mapper.enable(SerializationFeature.INDENT_OUTPUT);
         }
-        
+
         /**
          * Mimics the old asJson() method behavior.
          */
         public static String asJson(IGeneration generation) throws IOException {
             Map<String, List<JsonNode>> collections = new HashMap<>();
             Map<String, Stream<JsonNode>> streams = generation.asJsonNodes();
-            
+
             for (Map.Entry<String, Stream<JsonNode>> entry : streams.entrySet()) {
                 collections.put(entry.getKey(), entry.getValue().toList());
             }
-            
+
             return mapper.writeValueAsString(collections);
         }
-        
+
         /**
          * Mimics the old asJsonNode() method behavior.
          */
         public static JsonNode asJsonNode(IGeneration generation) throws IOException {
             Map<String, List<JsonNode>> collections = new HashMap<>();
             Map<String, Stream<JsonNode>> streams = generation.asJsonNodes();
-            
+
             for (Map.Entry<String, Stream<JsonNode>> entry : streams.entrySet()) {
                 collections.put(entry.getKey(), entry.getValue().toList());
             }
-            
+
             ObjectNode root = mapper.createObjectNode();
             for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
                 ArrayNode arrayNode = mapper.createArrayNode();
@@ -189,24 +191,24 @@ public abstract class ParameterizedGenerationTest {
                 }
                 root.set(entry.getKey(), arrayNode);
             }
-            
+
             return root;
         }
-        
 
-        
+
+
         /**
          * Mimics the old asSqlInserts() method behavior.
          */
         public static Map<String, String> asSqlInserts(IGeneration generation) {
             Map<String, Stream<String>> sqlStreams = generation.asSqlInserts();
             Map<String, String> sqlMap = new HashMap<>();
-            
+
             for (Map.Entry<String, Stream<String>> entry : sqlStreams.entrySet()) {
                 String joinedSql = entry.getValue().collect(Collectors.joining("\n"));
                 sqlMap.put(entry.getKey(), joinedSql);
             }
-            
+
             return sqlMap;
         }
     }
@@ -215,6 +217,7 @@ public abstract class ParameterizedGenerationTest {
      * Annotation for parameterized tests that run with both implementations.
      * Use this instead of @Test for tests that should run with both normal and memory-optimized modes.
      */
+    @Retention(RetentionPolicy.RUNTIME)
     @ParameterizedTest(name = "{0} Implementation")
     @MethodSource("generationImplementations")
     protected @interface BothImplementations {

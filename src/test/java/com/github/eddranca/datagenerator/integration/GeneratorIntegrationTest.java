@@ -8,12 +8,13 @@ import com.github.eddranca.datagenerator.Generation;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.*;
 
 /**
  * Integration tests for various generators working together in DSL scenarios.
  * Tests the interaction between boolean, lorem, phone, and other generators.
  */
-class GeneratorIntegrationTest {
+class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.ParameterizedGenerationTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
@@ -40,12 +41,9 @@ class GeneratorIntegrationTest {
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, false);
 
-        JsonNode result = generation.asJsonNode();
+        JsonNode result = asJsonNode(generation);
 
         // Verify structure
         assertThat(result.has("testData")).isTrue();
@@ -112,12 +110,9 @@ class GeneratorIntegrationTest {
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(456L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDslWithSeed(dslNode, 456L, false);
 
-        JsonNode result = generation.asJsonNode();
+        JsonNode result = asJsonNode(generation);
         JsonNode testData = result.get("booleanTest");
 
         int mostlyTrueCount = 0;
@@ -160,12 +155,9 @@ class GeneratorIntegrationTest {
 
         JsonNode dslNode = mapper.readTree(simpleDsl);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(789L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDslWithSeed(dslNode, 789L, false);
 
-        JsonNode result = generation.asJsonNode();
+        JsonNode result = asJsonNode(generation);
         JsonNode testData = result.get("loremTest");
 
         for (JsonNode item : testData) {
@@ -208,12 +200,9 @@ class GeneratorIntegrationTest {
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(999L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDslWithSeed(dslNode, 999L, false);
 
-        JsonNode result = generation.asJsonNode();
+        JsonNode result = asJsonNode(generation);
         JsonNode contacts = result.get("contacts");
 
         assertThat(contacts.size()).isEqualTo(5);

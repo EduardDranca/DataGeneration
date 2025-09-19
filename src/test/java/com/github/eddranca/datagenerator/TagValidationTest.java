@@ -65,10 +65,7 @@ class TagValidationTest extends ParameterizedGenerationTest {
                 """);
 
         // Should fail because different collections (users vs products) try to use the same tag
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(dslNode, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .hasMessageContaining("Tag 'people' is already declared by collection 'users'")
             .hasMessageContaining("cannot be redeclared by collection 'products'");
@@ -131,10 +128,7 @@ class TagValidationTest extends ParameterizedGenerationTest {
                 """);
 
         // Should fail because different final collection names (people vs items) try to use the same tag
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(dslNode, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .hasMessageContaining("Tag 'entities' is already declared by collection 'people'")
             .hasMessageContaining("cannot be redeclared by collection 'items'");
@@ -164,10 +158,7 @@ class TagValidationTest extends ParameterizedGenerationTest {
                 """);
 
         // Should fail because "active" tag is used by different collections
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(dslNode, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .hasMessageContaining("Tag 'active' is already declared by collection 'users'")
             .hasMessageContaining("cannot be redeclared by collection 'products'");

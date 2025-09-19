@@ -2,7 +2,7 @@ package com.github.eddranca.datagenerator.exception;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.DslDataGenerator;
+import com.github.eddranca.datagenerator.ParameterizedGenerationTest;
 import com.github.eddranca.datagenerator.ValidationError;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class DslValidationExceptionTest {
+class DslValidationExceptionTest extends ParameterizedGenerationTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Test
@@ -26,10 +26,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -57,10 +54,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -85,10 +79,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(e -> {
                 DslValidationException exception = (DslValidationException) e;
@@ -112,10 +103,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -147,10 +135,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -182,10 +167,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -217,10 +199,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -252,10 +231,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -287,10 +263,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -332,10 +305,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -369,10 +339,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -403,10 +370,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -432,10 +396,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -464,10 +425,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -511,10 +469,7 @@ class DslValidationExceptionTest {
                 """);
 
         // Should not throw any exception
-        assertThatCode(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(validDsl)
-            .generate())
+        assertThatCode(() -> generateFromDslWithSeed(validDsl, 123L, false))
             .doesNotThrowAnyException();
     }
 
@@ -534,10 +489,7 @@ class DslValidationExceptionTest {
                 """);
 
         // Should not throw any exception
-        assertThatCode(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(validDsl)
-            .generate())
+        assertThatCode(() -> generateFromDslWithSeed(validDsl, 123L, false))
             .doesNotThrowAnyException();
     }
 
@@ -556,10 +508,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -591,10 +540,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -628,10 +574,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -665,10 +608,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;
@@ -703,10 +643,7 @@ class DslValidationExceptionTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(invalidDsl)
-            .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
             .satisfies(ex -> {
                 DslValidationException exception = (DslValidationException) ex;

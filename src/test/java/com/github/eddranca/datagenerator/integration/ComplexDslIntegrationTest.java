@@ -80,7 +80,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
                 }
                 """);
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 123L, false);
+        IGeneration generation = generateFromDsl(dsl, false);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
@@ -251,12 +251,9 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(999L)
-            .fromJsonNode(dsl)
-            .generate();
+        IGeneration generation = generateFromDslWithSeed(dsl, 999L, false);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Verify filtering works correctly
         String highPriorityCategoryName = collections.get("categories").get(0).get("name").asText();
@@ -340,12 +337,9 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(111L)
-            .fromJsonNode(dsl)
-            .generate();
+        IGeneration generation = generateFromDslWithSeed(dsl, 111L, false);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Verify all collections exist and have correct sizes
         assertThat(collections.get("users")).hasSize(10);
@@ -401,15 +395,8 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
                 """);
 
         // Generate with same seed twice
-        IGeneration generation1 = DslDataGenerator.create()
-            .withSeed(222L)
-            .fromJsonNode(dsl)
-            .generate();
-
-        IGeneration generation2 = DslDataGenerator.create()
-            .withSeed(222L)
-            .fromJsonNode(dsl)
-            .generate();
+        IGeneration generation1 = generateFromDslWithSeed(dsl, 222L, false);
+        IGeneration generation2 = generateFromDslWithSeed(dsl, 222L, false);
 
         // Results should be identical
         assertThat(asJson(generation1)).isEqualTo(asJson(generation2));
@@ -439,12 +426,9 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
                 }
                 """, csvPath));
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(42L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDslWithSeed(dslNode, 42L, false);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users_from_csv");
 
         assertThat(users)
@@ -484,12 +468,9 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
                 }
                 """, csvPath));
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(42L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDslWithSeed(dslNode, 42L, false);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users_picked");
 
         assertThat(users)
