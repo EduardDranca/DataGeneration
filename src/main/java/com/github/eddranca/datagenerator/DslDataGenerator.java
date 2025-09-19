@@ -133,6 +133,10 @@ public class DslDataGenerator {
             // Perform eager validation to ensure filtering constraints are checked early
             validateFilteringConstraints(context, rootNode);
             
+            // Additionally, perform a dry run of the first item in each collection
+            // to trigger any reference filtering exceptions early
+            performDryRunValidation(lazyCollections);
+            
             return new LazyGeneration(lazyCollections);
         } else {
             // Normal generation
@@ -304,6 +308,33 @@ public class DslDataGenerator {
         com.github.eddranca.datagenerator.visitor.FilteringValidationVisitor validationVisitor = 
             new com.github.eddranca.datagenerator.visitor.FilteringValidationVisitor(context);
         rootNode.accept(validationVisitor);
+    }
+
+    /**
+     * Performs a dry run validation by attempting to generate the first item
+     * from each lazy collection. This helps catch reference filtering issues
+     * that can't be detected in the static validation phase.
+     */
+    private void performDryRunValidation(Map<String, List<com.github.eddranca.datagenerator.visitor.LazyItemProxy>> lazyCollections) {
+        for (Map.Entry<String, List<com.github.eddranca.datagenerator.visitor.LazyItemProxy>> entry : lazyCollections.entrySet()) {
+            List<com.github.eddranca.datagenerator.visitor.LazyItemProxy> collection = entry.getValue();
+            if (collection.size() > 0) {
+                try {
+                    // Try to get the first item - this will trigger any filtering exceptions
+                    com.github.eddranca.datagenerator.visitor.LazyItemProxy firstItem = collection.get(0);
+                    // Try to materialize the first item to trigger any reference resolution
+                    firstItem.getMaterializedCopy();
+                } catch (Exception e) {
+                    // If getting the first item fails, it's likely a filtering issue
+                    // Re-throw the exception to fail fast during .generate()
+                    if (e instanceof RuntimeException) {
+                        throw (RuntimeException) e;
+                    } else {
+                        throw new RuntimeException("Dry run validation failed: " + e.getMessage(), e);
+                    }
+                }
+            }
+        }
     }
 
 }
