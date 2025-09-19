@@ -190,7 +190,7 @@ class GenerationTest extends ParameterizedGenerationTest {
                 """;
 
         IGeneration complexGeneration = generateFromDsl(complexDsl, memoryOptimized);
-        String sql = complexGeneration.streamSqlInserts("users").collect(java.util.stream.Collectors.joining("\n"));
+        Map<String, String> sqlMap = collectAllSqlInserts(complexGeneration);
         String sql = sqlMap.get("users");
 
         assertThat(sql)
