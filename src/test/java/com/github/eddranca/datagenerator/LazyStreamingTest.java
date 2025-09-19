@@ -185,12 +185,14 @@ class LazyStreamingTest {
     assertThat(fullGeneration.getCollectionSize("users")).isEqualTo(5);
     assertThat(fullGeneration.getCollectionSize("orders")).isEqualTo(3);
 
-    // Get the final JSON to verify nested references work
-    JsonNode optimizedJson = optimizedGeneration.asJsonNode();
-    JsonNode fullJson = fullGeneration.asJsonNode();
+    // Get the final JSON streams to verify nested references work
+    List<JsonNode> optimizedUsers = optimizedGeneration.streamJsonNodes("users").collect(Collectors.toList());
+    List<JsonNode> optimizedOrders = optimizedGeneration.streamJsonNodes("orders").collect(Collectors.toList());
+    List<JsonNode> fullUsers = fullGeneration.streamJsonNodes("users").collect(Collectors.toList());
+    List<JsonNode> fullOrders = fullGeneration.streamJsonNodes("orders").collect(Collectors.toList());
 
     // Verify that orders reference nested user fields correctly
-    JsonNode optimizedFirstOrder = optimizedJson.get("orders").get(0);
+    JsonNode optimizedFirstOrder = optimizedOrders.get(0);
 
     // Check that all nested references are resolved
     assertThat(optimizedFirstOrder.has("userId")).isTrue();
@@ -210,9 +212,6 @@ class LazyStreamingTest {
     assertThat(optimizedFirstOrder.get("socialHandle").asText()).isNotEmpty();
 
     // Verify that the referenced user has the nested fields materialized
-    JsonNode optimizedUsers = optimizedJson.get("users");
-    JsonNode fullUsers = fullJson.get("users");
-
     for (int i = 0; i < optimizedUsers.size(); i++) {
       JsonNode optimizedUser = optimizedUsers.get(i);
 

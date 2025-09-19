@@ -1,6 +1,5 @@
 package com.github.eddranca.datagenerator;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 
@@ -17,10 +16,10 @@ import java.util.stream.Stream;
  * 
  * <p>Key features:
  * <ul>
- *   <li>JSON output in multiple formats</li>
- *   <li>SQL INSERT statement generation</li>
- *   <li>Memory-efficient streaming for large datasets</li>
- *   <li>Collection access for testing and inspection</li>
+ *   <li>Streaming JSON node generation</li>
+ *   <li>Streaming SQL INSERT statement generation</li>
+ *   <li>Memory-efficient processing for large datasets</li>
+ *   <li>Collection metadata access</li>
  * </ul>
  */
 public interface IGeneration {
@@ -51,28 +50,61 @@ public interface IGeneration {
      */
     int getCollectionSize(String collectionName);
     
-
+    /**
+     * Streams individual JsonNode items from a specific collection.
+     * 
+     * <p><strong>Memory-efficient:</strong> This method generates items on-demand
+     * without loading the entire collection into memory, making it ideal for
+     * large datasets or when using memory optimization.
+     * 
+     * @param collectionName name of the collection to stream
+     * @return Stream of JsonNode items, one per generated item
+     * @throws IllegalArgumentException if the collection doesn't exist
+     */
+    Stream<JsonNode> streamJsonNodes(String collectionName);
     
     /**
-     * Generates SQL INSERT statements for all collections.
+     * Returns streams of JsonNode items for all collections.
+     * 
+     * <p>Each collection is represented as a separate stream, allowing for
+     * memory-efficient processing of multiple collections.
+     * 
+     * @return Map where keys are collection names and values are streams of JsonNode items
+     */
+    Map<String, Stream<JsonNode>> asJsonNodes();
+    
+    /**
+     * Returns streams of JsonNode items for specified collections only.
+     * 
+     * <p>This method allows selective streaming, useful when only certain
+     * collections are needed.
+     * 
+     * @param collectionNames names of collections to stream, or empty for all
+     * @return Map where keys are collection names and values are streams of JsonNode items
+     */
+    Map<String, Stream<JsonNode>> asJsonNodes(String... collectionNames);
+    
+    /**
+     * Returns streams of SQL INSERT statements for all collections.
      * 
      * <p>Each collection becomes a table, and each item becomes a row.
      * Complex nested objects are serialized as JSON strings.
+     * Each stream contains individual INSERT statements for that collection.
      * 
-     * @return Map where keys are table names and values are SQL INSERT statements
+     * @return Map where keys are table names and values are streams of SQL INSERT statements
      */
-    Map<String, String> asSqlInserts();
+    Map<String, Stream<String>> asSqlInserts();
     
     /**
-     * Generates SQL INSERT statements for specified collections only.
+     * Returns streams of SQL INSERT statements for specified collections only.
      * 
      * <p>This method allows selective SQL generation, useful when some collections
      * are used only as reference data.
      * 
      * @param collectionNames names of collections to generate SQL for, or empty for all
-     * @return Map where keys are table names and values are SQL INSERT statements
+     * @return Map where keys are table names and values are streams of SQL INSERT statements
      */
-    Map<String, String> asSqlInserts(String... collectionNames);
+    Map<String, Stream<String>> asSqlInserts(String... collectionNames);
     
     /**
      * Generates SQL INSERT statements as a stream for memory-efficient processing.

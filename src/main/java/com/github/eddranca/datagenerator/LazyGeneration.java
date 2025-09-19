@@ -80,6 +80,79 @@ public class LazyGeneration implements IGeneration {
         return collection.size();
     }
 
+    @Override
+    public Stream<JsonNode> streamJsonNodes(String collectionName) {
+        List<LazyItemProxy> collection = lazyCollections.get(collectionName);
+        if (collection == null) {
+            throw new IllegalArgumentException("Collection '" + collectionName + "' not found");
+        }
+        return collection.stream().map(LazyItemProxy::getMaterializedCopy);
+    }
+
+    @Override
+    public Map<String, Stream<JsonNode>> asJsonNodes() {
+        Map<String, Stream<JsonNode>> streams = new HashMap<>();
+        for (Map.Entry<String, List<LazyItemProxy>> entry : lazyCollections.entrySet()) {
+            Stream<JsonNode> jsonStream = entry.getValue().stream()
+                .map(LazyItemProxy::getMaterializedCopy);
+            streams.put(entry.getKey(), jsonStream);
+        }
+        return streams;
+    }
+
+    @Override
+    public Map<String, Stream<JsonNode>> asJsonNodes(String... collectionNames) {
+        Map<String, Stream<JsonNode>> streams = new HashMap<>();
+        
+        Set<String> includeCollections = null;
+        if (collectionNames != null && collectionNames.length > 0) {
+            includeCollections = new HashSet<>(Arrays.asList(collectionNames));
+        }
+        
+        for (Map.Entry<String, List<LazyItemProxy>> entry : lazyCollections.entrySet()) {
+            String collectionName = entry.getKey();
+            if (includeCollections == null || includeCollections.contains(collectionName)) {
+                Stream<JsonNode> jsonStream = entry.getValue().stream()
+                    .map(LazyItemProxy::getMaterializedCopy);
+                streams.put(collectionName, jsonStream);
+            }
+        }
+        return streams;
+    }
+
+    @Override
+    public Map<String, Stream<String>> asSqlInserts() {
+        return asSqlInserts((String[]) null);
+    }
+
+    @Override
+    public Map<String, Stream<String>> asSqlInserts(String... collectionNames) {
+        Map<String, Stream<String>> sqlStreams = new HashMap<>();
+        
+        Set<String> includeCollections = null;
+        if (collectionNames != null && collectionNames.length > 0) {
+            includeCollections = new HashSet<>(Arrays.asList(collectionNames));
+        }
+        
+        for (Map.Entry<String, List<LazyItemProxy>> entry : lazyCollections.entrySet()) {
+            String tableName = entry.getKey();
+            
+            if (includeCollections != null && !includeCollections.contains(tableName)) {
+                continue;
+            }
+            
+            Stream<String> sqlStream = entry.getValue().stream()
+                .map(lazyItem -> {
+                    JsonNode materializedItem = lazyItem.getMaterializedCopy();
+                    return generateSqlInsert(tableName, materializedItem);
+                });
+            sqlStreams.put(tableName, sqlStream);
+        }
+        return sqlStreams;
+    }
+
+
+
 
     
 

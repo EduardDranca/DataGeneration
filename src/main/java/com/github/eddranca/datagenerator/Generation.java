@@ -47,6 +47,72 @@ public class Generation implements IGeneration {
         return collection.size();
     }
 
+    @Override
+    public Stream<JsonNode> streamJsonNodes(String collectionName) {
+        List<JsonNode> collection = collections.get(collectionName);
+        if (collection == null) {
+            throw new IllegalArgumentException("Collection '" + collectionName + "' not found");
+        }
+        return collection.stream();
+    }
+
+    @Override
+    public Map<String, Stream<JsonNode>> asJsonNodes() {
+        Map<String, Stream<JsonNode>> streams = new HashMap<>();
+        for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
+            streams.put(entry.getKey(), entry.getValue().stream());
+        }
+        return streams;
+    }
+
+    @Override
+    public Map<String, Stream<JsonNode>> asJsonNodes(String... collectionNames) {
+        Map<String, Stream<JsonNode>> streams = new HashMap<>();
+        
+        Set<String> includeCollections = null;
+        if (collectionNames != null && collectionNames.length > 0) {
+            includeCollections = new HashSet<>(Arrays.asList(collectionNames));
+        }
+        
+        for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
+            String collectionName = entry.getKey();
+            if (includeCollections == null || includeCollections.contains(collectionName)) {
+                streams.put(collectionName, entry.getValue().stream());
+            }
+        }
+        return streams;
+    }
+
+    @Override
+    public Map<String, Stream<String>> asSqlInserts() {
+        return asSqlInserts((String[]) null);
+    }
+
+    @Override
+    public Map<String, Stream<String>> asSqlInserts(String... collectionNames) {
+        Map<String, Stream<String>> sqlStreams = new HashMap<>();
+        
+        Set<String> includeCollections = null;
+        if (collectionNames != null && collectionNames.length > 0) {
+            includeCollections = new HashSet<>(Arrays.asList(collectionNames));
+        }
+        
+        for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
+            String tableName = entry.getKey();
+            
+            if (includeCollections != null && !includeCollections.contains(tableName)) {
+                continue;
+            }
+            
+            Stream<String> sqlStream = entry.getValue().stream()
+                .map(item -> generateSqlInsert(tableName, item));
+            sqlStreams.put(tableName, sqlStream);
+        }
+        return sqlStreams;
+    }
+
+
+
 
     
 
