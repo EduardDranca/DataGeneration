@@ -2,6 +2,7 @@ package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.exception.FilteringException;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -89,8 +90,7 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
+        assertThatThrownBy(() -> createGenerator(memoryOptimized)
             .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
             .fromJsonNode(dslNode)
             .generate())
@@ -98,8 +98,8 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
             .hasMessageContaining("has no valid values after filtering");
     }
 
-    @Test
-    void testCustomMaxFilteringRetries() throws IOException {
+    @BothImplementations
+    void testCustomMaxFilteringRetries(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "items": {
@@ -119,14 +119,12 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
 
         // With only 2 possible values (1, 2) and filtering out 1,
         // we should be able to generate 2 consistently
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
+        IGeneration generation = createGenerator(memoryOptimized)
             .withMaxFilteringRetries(10) // Lower retry count
             .fromJsonNode(dslNode)
             .generate();
 
-        JsonNode collectionsNode = generation.asJsonNode();
-        JsonNode itemsArray = collectionsNode.get("items"); List<JsonNode> items = new ArrayList<>(); itemsArray.forEach(items::add);
+        List<JsonNode> items = generation.streamJsonNodes("items").toList();
 
         assertThat(items).hasSize(5);
 
@@ -160,8 +158,8 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
         assertThat(generator).isNotNull();
     }
 
-    @Test
-    void testSuccessfulFilteringWithCustomRetries() throws IOException {
+    @BothImplementations
+    void testSuccessfulFilteringWithCustomRetries(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "items": {
@@ -179,15 +177,13 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
+        IGeneration generation = createGenerator(memoryOptimized)
             .withMaxFilteringRetries(200) // Higher retry count
             .withFilteringBehavior(FilteringBehavior.RETURN_NULL)
             .fromJsonNode(dslNode)
             .generate();
 
-        JsonNode collectionsNode = generation.asJsonNode();
-        JsonNode itemsArray = collectionsNode.get("items"); List<JsonNode> items = new ArrayList<>(); itemsArray.forEach(items::add);
+        List<JsonNode> items = generation.streamJsonNodes("items").toList();
 
         assertThat(items)
             .hasSize(10)
