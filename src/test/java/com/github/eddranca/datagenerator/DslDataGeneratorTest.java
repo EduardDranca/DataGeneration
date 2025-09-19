@@ -1331,7 +1331,7 @@ class DslDataGeneratorTest {
                 .fromJsonNode(dslNode)
                 .generate();
 
-            assertThat(generation.getCollectionsAsJsonNode()).isNotNull();
+            assertThat(generation.asJsonNode()).isNotNull();
             assertThat(generation.asJsonNode()).isNotNull();
 
             JsonNode jsonNode = generation.asJsonNode();

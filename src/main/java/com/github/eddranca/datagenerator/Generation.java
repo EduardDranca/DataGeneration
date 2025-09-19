@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.github.eddranca.datagenerator.exception.SerializationException;
 
 
@@ -33,13 +33,27 @@ public class Generation implements IGeneration {
         this.collections = new HashMap<>(collectionsMap);
     }
 
+    @Override
+    public Set<String> getCollectionNames() {
+        return collections.keySet();
+    }
+
+    @Override
+    public int getCollectionSize(String collectionName) {
+        List<JsonNode> collection = collections.get(collectionName);
+        if (collection == null) {
+            throw new IllegalArgumentException("Collection '" + collectionName + "' not found");
+        }
+        return collection.size();
+    }
+
+    @Override
+    @Deprecated
     public Map<String, List<JsonNode>> getCollections() {
         return collections;
     }
 
-    public ObjectNode getCollectionsAsJsonNode() {
-        return mapper.valueToTree(collections);
-    }
+
 
     public JsonNode asJsonNode() {
         // For normal generation, collections already contain regular JsonNode objects

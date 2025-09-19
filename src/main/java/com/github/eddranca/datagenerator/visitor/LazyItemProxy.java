@@ -19,143 +19,53 @@ import java.util.Set;
  * Supports nested path materialization for complex object hierarchies.
  * This is a simple POJO that doesn't implement JsonNode for cleaner design.
  */
-public class LazyItemProxy {
-    private final Map<String, DslNode> fieldNodes;
-    private final Set<String> referencedPaths;
+public class LazyItemProxy extends AbstractLazyProxy {
     private final String collectionName;
-    private final DataGenerationVisitor visitor;
-    private final Set<String> materializedFieldNames = new HashSet<>();
-    private final ObjectNode delegate;
     private boolean fullyMaterialized = false;
 
     public LazyItemProxy(String collectionName,
             Map<String, DslNode> fieldNodes,
             Set<String> referencedPaths,
             DataGenerationVisitor visitor) {
+        super(fieldNodes, referencedPaths, visitor);
         this.collectionName = collectionName;
-        this.referencedPaths = referencedPaths;
-        this.visitor = visitor;
-        this.fieldNodes = new HashMap<>(fieldNodes);
-        this.delegate = JsonNodeFactory.instance.objectNode();
 
         // Generate only referenced fields immediately
         materializeReferencedFields();
     }
 
-    /**
-     * Materializes only the fields that are referenced by other collections.
-     */
-    private void materializeReferencedFields() {
-        for (String fieldName : fieldNodes.keySet()) {
-            if (shouldMaterializeField(fieldName)) {
-                materializeField(fieldName);
-            }
-        }
-    }
-
-    /**
-     * Determines if a field should be materialized based on reference analysis.
-     */
-    private boolean shouldMaterializeField(String fieldName) {
+    @Override
+    protected boolean shouldMaterializeField(String fieldName) {
         // If entire object is referenced, materialize everything
         if (referencedPaths.contains("*")) {
             return true;
         }
 
         // Check if this field or any nested path is referenced
-        for (String referencedPath : referencedPaths) {
-            if (referencedPath.equals(fieldName) || referencedPath.startsWith(fieldName + ".")) {
-                return true;
-            }
-        }
-
-        return false;
+        return referencedPaths.contains(fieldName) || hasReferencesWithPrefix(fieldName);
     }
 
-    /**
-     * Materializes a specific field if not already materialized.
-     */
-    private void materializeField(String fieldName) {
-        // Check if already materialized using our own tracking
-        if (!materializedFieldNames.contains(fieldName)) {
-            DslNode fieldNode = fieldNodes.get(fieldName);
-            if (fieldNode != null) {
-                JsonNode value;
+    @Override
+    protected JsonNode generateFieldValue(String fieldName, DslNode fieldNode) {
+        // If this is an ObjectFieldNode and has nested references, create a LazyObjectProxy
+        if (fieldNode instanceof ObjectFieldNode objectFieldNode && hasReferencesWithPrefix(fieldName)) {
+            Set<String> nestedReferences = getReferencesWithPrefix(fieldName);
 
-                // If this is an ObjectFieldNode and has nested references, create a
-                // LazyObjectProxy and get its materialized copy
-                if (fieldNode instanceof ObjectFieldNode objectFieldNode && hasNestedReferences(fieldName)) {
-                    Set<String> nestedReferences = getNestedReferences(fieldName);
-
-                    LazyObjectProxy lazyObjectProxy = new LazyObjectProxy(
-                            objectFieldNode.getFields(),
-                            nestedReferences,
-                            visitor,
-                            fieldName);
-                    
-                    // Get the materialized copy for storage in the delegate
-                    value = lazyObjectProxy.getMaterializedCopy();
-                } else {
-                    // Generate normally for simple fields or non-referenced nested objects
-                    value = fieldNode.accept(visitor);
-                }
-
-                delegate.set(fieldName, value);
-                materializedFieldNames.add(fieldName);
-            }
+            LazyObjectProxy lazyObjectProxy = new LazyObjectProxy(
+                    objectFieldNode.getFields(),
+                    nestedReferences,
+                    visitor,
+                    fieldName);
+            
+            // Get the materialized copy for storage in the delegate
+            return lazyObjectProxy.getMaterializedCopy();
+        } else {
+            // Generate normally for simple fields or non-referenced nested objects
+            return fieldNode.accept(visitor);
         }
     }
 
-    /**
-     * Checks if there are any referenced paths that go deeper into this field.
-     */
-    private boolean hasNestedReferences(String fieldName) {
-        String prefix = fieldName + ".";
-        for (String referencedPath : referencedPaths) {
-            if (referencedPath.startsWith(prefix)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
-    /**
-     * Gets all referenced paths that start with the given field name.
-     */
-    private Set<String> getNestedReferences(String fieldName) {
-        Set<String> nestedRefs = new HashSet<>();
-        String prefix = fieldName + ".";
-
-        for (String referencedPath : referencedPaths) {
-            if (referencedPath.startsWith(prefix)) {
-                nestedRefs.add(referencedPath);
-            }
-        }
-
-        return nestedRefs;
-    }
-
-    public JsonNode get(String fieldName) {
-        // If field is already materialized, return it
-        if (materializedFieldNames.contains(fieldName)) {
-            return delegate.get(fieldName);
-        }
-
-        // If not materialized and we have a field node, materialize it now
-        if (fieldNodes.containsKey(fieldName)) {
-            materializeField(fieldName);
-            return delegate.get(fieldName);
-        }
-
-        // Field doesn't exist
-        return null;
-    }
-
-    public JsonNode path(String fieldName) {
-        // Similar to get() but returns missing node instead of null
-        JsonNode result = get(fieldName);
-        return result != null ? result : delegate.missingNode();
-    }
 
     /**
      * Returns a new ObjectNode with all fields materialized, leaving this proxy
@@ -171,9 +81,7 @@ public class LazyItemProxy {
 
         // First, ensure all fields are materialized in this proxy
         if (!fullyMaterialized) {
-            for (String fieldName : fieldNodes.keySet()) {
-                materializeField(fieldName);
-            }
+            materializeAll();
             fullyMaterialized = true;
         }
 
@@ -200,24 +108,5 @@ public class LazyItemProxy {
         }
     }
 
-    /**
-     * Checks if a field exists (either materialized or available to materialize).
-     */
-    public boolean has(String fieldName) {
-        return fieldNodes.containsKey(fieldName) || delegate.has(fieldName);
-    }
 
-    /**
-     * Returns the number of materialized fields.
-     */
-    public int size() {
-        return delegate.size();
-    }
-
-    /**
-     * Returns true if no fields are materialized yet.
-     */
-    public boolean isEmpty() {
-        return delegate.isEmpty();
-    }
 }

@@ -196,7 +196,7 @@ class ArrayIntegrationTest {
                 .fromJsonNode(dslNode)
                 .generate();
 
-            JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
+            JsonNode collectionsNode = generation.asJsonNode();
             JsonNode usersArray = collectionsNode.get("users");
 
             assertThat(usersArray)
@@ -239,7 +239,7 @@ class ArrayIntegrationTest {
                 .fromJsonNode(dslNode)
                 .generate();
 
-            JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
+            JsonNode collectionsNode = generation.asJsonNode();
             JsonNode messagesArray = collectionsNode.get("messages");
 
             assertThat(messagesArray).hasSize(1);
@@ -286,7 +286,7 @@ class ArrayIntegrationTest {
                 .fromJsonNode(dslNode)
                 .generate();
 
-            JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
+            JsonNode collectionsNode = generation.asJsonNode();
             JsonNode companiesArray = collectionsNode.get("companies");
 
             assertThat(companiesArray).hasSize(1);
@@ -332,7 +332,7 @@ class ArrayIntegrationTest {
                 .fromJsonNode(dslNode)
                 .generate();
 
-            JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
+            JsonNode collectionsNode = generation.asJsonNode();
             JsonNode usersArray = collectionsNode.get("users");
 
             assertThat(usersArray).hasSize(1);
@@ -373,7 +373,7 @@ class ArrayIntegrationTest {
                 .fromJsonNode(dslNode)
                 .generate();
 
-            JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
+            JsonNode collectionsNode = generation.asJsonNode();
             JsonNode projectsArray = collectionsNode.get("projects");
 
             assertThat(projectsArray).hasSize(1);

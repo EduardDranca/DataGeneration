@@ -67,7 +67,7 @@ class GenerationTest {
 
     @Test
     void testGetCollectionsAsJsonNode() {
-        JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
+        JsonNode collectionsNode = generation.asJsonNode();
 
         assertThat(collectionsNode).isNotNull();
         assertThat(collectionsNode.has("companies")).isTrue();
@@ -166,7 +166,7 @@ class GenerationTest {
     @Test
     void testCollectionsAndJsonNodeConsistency() {
         Map<String, List<JsonNode>> collections = generation.getCollections();
-        JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
+        JsonNode collectionsNode = generation.asJsonNode();
 
         assertThat(collections).isNotNull();
         assertThat(collectionsNode).isNotNull();

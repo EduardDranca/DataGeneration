@@ -4,12 +4,22 @@ import com.github.eddranca.datagenerator.node.CollectionNode;
 
 import java.util.*;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+
 
 /**
- * A lazy collection that generates LazyItemProxy objects on-demand during streaming.
- * This allows for memory-efficient generation where items are only created
- * when they're actually needed (during JSON serialization or SQL generation).
+ * A lazy collection that generates LazyItemProxy objects on-demand.
+ * 
+ * <p>This collection provides two modes of operation:
+ * <ul>
+ *   <li><strong>Indexed access</strong> - Items are cached for repeated access via {@link #get(int)}</li>
+ *   <li><strong>Streaming access</strong> - Items are generated fresh each time via {@link #stream()}</li>
+ * </ul>
+ * 
+ * <p>The streaming mode is key for memory efficiency as it doesn't cache items,
+ * allowing processing of large datasets without memory accumulation.
+ * 
+ * <p>This class is an internal implementation detail of the memory optimization feature
+ * and should not be used directly by client code.
  */
 public class LazyItemCollection implements List<LazyItemProxy> {
     private final CollectionNode collectionNode;
@@ -17,7 +27,6 @@ public class LazyItemCollection implements List<LazyItemProxy> {
     private final String collectionName;
     private final Set<String> referencedPaths;
     private final List<LazyItemProxy> materializedItems;
-    private boolean fullyMaterialized = false;
 
     public LazyItemCollection(CollectionNode collectionNode, DataGenerationVisitor visitor, 
                              String collectionName, Set<String> referencedPaths) {
@@ -77,23 +86,12 @@ public class LazyItemCollection implements List<LazyItemProxy> {
      */
     @Override
     public Stream<LazyItemProxy> stream() {
-        return StreamSupport.stream(
-            Spliterators.spliterator(streamingIterator(), size(), Spliterator.ORDERED | Spliterator.SIZED),
-            false
-        );
+        return Stream.generate(this::generateItem).limit(size());
     }
 
     @Override
     public Iterator<LazyItemProxy> iterator() {
         return new LazyIterator();
-    }
-
-    /**
-     * Returns a streaming iterator that doesn't cache items.
-     * This is used by stream() for true memory efficiency.
-     */
-    private Iterator<LazyItemProxy> streamingIterator() {
-        return new StreamingIterator();
     }
 
     /**
@@ -117,37 +115,11 @@ public class LazyItemCollection implements List<LazyItemProxy> {
     }
 
     /**
-     * Iterator that generates items on-demand WITHOUT caching them.
-     * This is used for streaming operations to maintain memory efficiency.
-     */
-    private class StreamingIterator implements Iterator<LazyItemProxy> {
-        private int currentIndex = 0;
-
-        @Override
-        public boolean hasNext() {
-            return currentIndex < size();
-        }
-
-        @Override
-        public LazyItemProxy next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            currentIndex++;
-            // Generate item directly without caching
-            return generateItem();
-        }
-    }
-
-    /**
      * Forces full materialization of all items.
      * This should only be called when absolutely necessary.
      */
     public void materializeAll() {
-        if (!fullyMaterialized) {
-            materializeUpTo(size() - 1);
-            fullyMaterialized = true;
-        }
+        materializeUpTo(size() - 1);
     }
 
     /**

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * Test for lazy streaming generation functionality.
@@ -46,10 +46,9 @@ class LazyStreamingTest {
         .generate();
 
     // Verify structure
-    assertTrue(generation.getCollections().containsKey("users"));
-    assertTrue(generation.getCollections().containsKey("posts"));
-    assertEquals(50, generation.getCollections().get("users").size());
-    assertEquals(30, generation.getCollections().get("posts").size());
+    assertThat(generation.getCollectionNames()).contains("users", "posts");
+    assertThat(generation.getCollectionSize("users")).isEqualTo(50);
+    assertThat(generation.getCollectionSize("posts")).isEqualTo(30);
   }
 
   @Test
@@ -73,19 +72,16 @@ class LazyStreamingTest {
         .generate();
 
     // Should work normally
-    assertEquals(3, generation.getCollections().get("users").size());
+    assertThat(generation.getCollectionSize("users")).isEqualTo(3);
 
     // Test streaming
     List<String> sqlStatements = generation.streamSqlInserts("users")
         .collect(Collectors.toList());
 
-    assertEquals(3, sqlStatements.size());
+    assertThat(sqlStatements).hasSize(3);
 
     for (String sql : sqlStatements) {
-      assertTrue(sql.contains("INSERT INTO users"));
-      assertTrue(sql.contains("id"));
-      assertTrue(sql.contains("name"));
-      assertTrue(sql.contains("email"));
+      assertThat(sql).contains("INSERT INTO users", "id", "name", "email");
     }
   }
 
@@ -124,13 +120,11 @@ class LazyStreamingTest {
         .generate();
 
     // Verify basic structure
-    assertEquals(20, optimizedGeneration.getCollections().get("posts").size());
+    assertThat(optimizedGeneration.getCollectionSize("posts")).isEqualTo(20);
 
     optimizedGeneration.streamSqlInserts("posts")
         .forEach(sql -> {
-          assertTrue(sql.contains("INSERT INTO posts"));
-          assertTrue(sql.contains("authorId"));
-          assertTrue(sql.contains("authorName"));
+          assertThat(sql).contains("INSERT INTO posts", "authorId", "authorName");
         });
   }
 
@@ -186,10 +180,10 @@ class LazyStreamingTest {
         .generate();
 
     // Both should have the same structure
-    assertEquals(5, optimizedGeneration.getCollections().get("users").size());
-    assertEquals(3, optimizedGeneration.getCollections().get("orders").size());
-    assertEquals(5, fullGeneration.getCollections().get("users").size());
-    assertEquals(3, fullGeneration.getCollections().get("orders").size());
+    assertThat(optimizedGeneration.getCollectionSize("users")).isEqualTo(5);
+    assertThat(optimizedGeneration.getCollectionSize("orders")).isEqualTo(3);
+    assertThat(fullGeneration.getCollectionSize("users")).isEqualTo(5);
+    assertThat(fullGeneration.getCollectionSize("orders")).isEqualTo(3);
 
     // Get the final JSON to verify nested references work
     JsonNode optimizedJson = optimizedGeneration.asJsonNode();
@@ -199,21 +193,21 @@ class LazyStreamingTest {
     JsonNode optimizedFirstOrder = optimizedJson.get("orders").get(0);
 
     // Check that all nested references are resolved
-    assertTrue(optimizedFirstOrder.has("userId"));
-    assertTrue(optimizedFirstOrder.has("shippingStreet"));
-    assertTrue(optimizedFirstOrder.has("customerName"));
-    assertTrue(optimizedFirstOrder.has("socialHandle"));
+    assertThat(optimizedFirstOrder.has("userId")).isTrue();
+    assertThat(optimizedFirstOrder.has("shippingStreet")).isTrue();
+    assertThat(optimizedFirstOrder.has("customerName")).isTrue();
+    assertThat(optimizedFirstOrder.has("socialHandle")).isTrue();
 
-    assertNotNull(optimizedFirstOrder.get("userId").asText());
-    assertNotNull(optimizedFirstOrder.get("shippingStreet").asText());
-    assertNotNull(optimizedFirstOrder.get("customerName").asText());
-    assertNotNull(optimizedFirstOrder.get("socialHandle").asText());
+    assertThat(optimizedFirstOrder.get("userId").asText()).isNotNull();
+    assertThat(optimizedFirstOrder.get("shippingStreet").asText()).isNotNull();
+    assertThat(optimizedFirstOrder.get("customerName").asText()).isNotNull();
+    assertThat(optimizedFirstOrder.get("socialHandle").asText()).isNotNull();
 
     // Verify the values are not null and have reasonable content
-    assertFalse(optimizedFirstOrder.get("userId").asText().isEmpty());
-    assertFalse(optimizedFirstOrder.get("shippingStreet").asText().isEmpty());
-    assertFalse(optimizedFirstOrder.get("customerName").asText().isEmpty());
-    assertFalse(optimizedFirstOrder.get("socialHandle").asText().isEmpty());
+    assertThat(optimizedFirstOrder.get("userId").asText()).isNotEmpty();
+    assertThat(optimizedFirstOrder.get("shippingStreet").asText()).isNotEmpty();
+    assertThat(optimizedFirstOrder.get("customerName").asText()).isNotEmpty();
+    assertThat(optimizedFirstOrder.get("socialHandle").asText()).isNotEmpty();
 
     // Verify that the referenced user has the nested fields materialized
     JsonNode optimizedUsers = optimizedJson.get("users");
@@ -224,19 +218,19 @@ class LazyStreamingTest {
 
       // These fields should be materialized in optimized version because they're
       // referenced
-      assertTrue(optimizedUser.has("id"));
-      assertTrue(optimizedUser.has("name"));
-      assertTrue(optimizedUser.has("address"));
-      assertTrue(optimizedUser.get("address").has("street"));
-      assertTrue(optimizedUser.has("profile"));
-      assertTrue(optimizedUser.get("profile").has("social"));
-      assertTrue(optimizedUser.get("profile").get("social").has("twitter"));
+      assertThat(optimizedUser.has("id")).isTrue();
+      assertThat(optimizedUser.has("name")).isTrue();
+      assertThat(optimizedUser.has("address")).isTrue();
+      assertThat(optimizedUser.get("address").has("street")).isTrue();
+      assertThat(optimizedUser.has("profile")).isTrue();
+      assertThat(optimizedUser.get("profile").has("social")).isTrue();
+      assertThat(optimizedUser.get("profile").get("social").has("twitter")).isTrue();
 
       // Verify the nested values are not null and have content
-      assertFalse(optimizedUser.get("id").asText().isEmpty());
-      assertFalse(optimizedUser.get("name").asText().isEmpty());
-      assertFalse(optimizedUser.get("address").get("street").asText().isEmpty());
-      assertFalse(optimizedUser.get("profile").get("social").get("twitter").asText().isEmpty());
+      assertThat(optimizedUser.get("id").asText()).isNotEmpty();
+      assertThat(optimizedUser.get("name").asText()).isNotEmpty();
+      assertThat(optimizedUser.get("address").get("street").asText()).isNotEmpty();
+      assertThat(optimizedUser.get("profile").get("social").get("twitter").asText()).isNotEmpty();
     }
 
   }

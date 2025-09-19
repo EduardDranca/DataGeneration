@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * Unit tests for PathDependencyAnalyzer to verify correct path analysis
@@ -66,14 +66,13 @@ class PathDependencyAnalyzerTest {
         Map<String, Set<String>> referencedPaths = analyzer.analyzeRoot(root);
 
         // Users collection should have id and name referenced
-        assertTrue(referencedPaths.containsKey("users"));
+        assertThat(referencedPaths).containsKey("users");
         Set<String> userPaths = referencedPaths.get("users");
-        assertTrue(userPaths.contains("id"));
-        assertTrue(userPaths.contains("name"));
-        assertFalse(userPaths.contains("email")); // email is not referenced
+        assertThat(userPaths).contains("id", "name");
+        assertThat(userPaths).doesNotContain("email"); // email is not referenced
 
         // Posts collection should not have any references
-        assertFalse(referencedPaths.containsKey("posts"));
+        assertThat(referencedPaths).doesNotContainKey("posts");
     }
 
     @Test
@@ -112,18 +111,14 @@ class PathDependencyAnalyzerTest {
         RootNode root = parseAndBuild(dsl);
         Map<String, Set<String>> referencedPaths = analyzer.analyzeRoot(root);
 
-        assertTrue(referencedPaths.containsKey("users"));
+        assertThat(referencedPaths).containsKey("users");
         Set<String> userPaths = referencedPaths.get("users");
         
         // Should contain all referenced paths
-        assertTrue(userPaths.contains("id"));
-        assertTrue(userPaths.contains("address.street"));
-        assertTrue(userPaths.contains("profile.social.twitter"));
+        assertThat(userPaths).contains("id", "address.street", "profile.social.twitter");
         
         // Should not contain unreferenced nested paths
-        assertFalse(userPaths.contains("profile.bio"));
-        assertFalse(userPaths.contains("address.city"));
-        assertFalse(userPaths.contains("profile.social.linkedin"));
+        assertThat(userPaths).doesNotContain("profile.bio", "address.city", "profile.social.linkedin");
     }
 
 
@@ -153,7 +148,7 @@ class PathDependencyAnalyzerTest {
         Map<String, Set<String>> referencedPaths = analyzer.analyzeRoot(root);
 
         // No collections should have references since there are no ref fields
-        assertTrue(referencedPaths.isEmpty());
+        assertThat(referencedPaths).isEmpty();
     }
 
     @Test
@@ -191,15 +186,13 @@ class PathDependencyAnalyzerTest {
         RootNode root = parseAndBuild(dsl);
         Map<String, Set<String>> referencedPaths = analyzer.analyzeRoot(root);
 
-        assertTrue(referencedPaths.containsKey("users"));
+        assertThat(referencedPaths).containsKey("users");
         Set<String> userPaths = referencedPaths.get("users");
         
         // Should contain all referenced fields from both posts and comments
-        assertTrue(userPaths.contains("id"));
-        assertTrue(userPaths.contains("name"));
-        assertTrue(userPaths.contains("email"));
+        assertThat(userPaths).contains("id", "name", "email");
         
         // Should not contain unreferenced field
-        assertFalse(userPaths.contains("bio"));
+        assertThat(userPaths).doesNotContain("bio");
     }
 }

@@ -141,11 +141,11 @@ public class GenerationContext {
         if (memoryOptimizationEnabled) {
             LazyItemCollection lazyCollection = lazyReferenceCollections.get(name);
             if (lazyCollection != null) {
-                return new LazyItemCollectionAdapter(lazyCollection);
+                return materializeLazyCollection(lazyCollection);
             }
             lazyCollection = lazyNamedCollections.get(name);
             if (lazyCollection != null) {
-                return new LazyItemCollectionAdapter(lazyCollection);
+                return materializeLazyCollection(lazyCollection);
             }
         }
 
@@ -163,13 +163,25 @@ public class GenerationContext {
         if (memoryOptimizationEnabled) {
             LazyItemCollection lazyCollection = lazyTaggedCollections.get(tag);
             if (lazyCollection != null) {
-                return new LazyItemCollectionAdapter(lazyCollection);
+                return materializeLazyCollection(lazyCollection);
             }
         }
 
         // Fall back to eager collections
         List<JsonNode> collection = taggedCollections.get(tag);
         return collection != null ? collection : List.of();
+    }
+
+    /**
+     * Helper method to materialize a lazy collection into a regular List<JsonNode>.
+     * This is used when lazy collections need to be accessed for reference resolution.
+     */
+    private List<JsonNode> materializeLazyCollection(LazyItemCollection lazyCollection) {
+        List<JsonNode> materializedList = new ArrayList<>();
+        for (LazyItemProxy lazyItem : lazyCollection) {
+            materializedList.add(lazyItem.getMaterializedCopy());
+        }
+        return materializedList;
     }
 
     public Map<String, List<JsonNode>> getNamedCollections() {
