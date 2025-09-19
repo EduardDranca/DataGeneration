@@ -1,8 +1,6 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -11,11 +9,10 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ReferenceSpreadTest {
-    private final ObjectMapper mapper = new ObjectMapper();
+class ReferenceSpreadTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testBasicReferenceSpread() throws IOException {
+    @BothImplementations
+    void testBasicReferenceSpread(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree(
                 """
                         {
@@ -40,12 +37,8 @@ class ReferenceSpreadTest {
                         }
                         """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
         List<JsonNode> orders = collections.get("orders");
 
@@ -66,8 +59,8 @@ class ReferenceSpreadTest {
             });
     }
 
-    @Test
-    void testReferenceSpreadWithFieldRenaming() throws IOException {
+    @BothImplementations
+    void testReferenceSpreadWithFieldRenaming(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -91,12 +84,8 @@ class ReferenceSpreadTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> orders = collections.get("orders");
 
         assertThat(orders)
@@ -115,8 +104,8 @@ class ReferenceSpreadTest {
             });
     }
 
-    @Test
-    void testReferenceSpreadWithoutFieldsArray() throws IOException {
+    @BothImplementations
+    void testReferenceSpreadWithoutFieldsArray(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -138,12 +127,8 @@ class ReferenceSpreadTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> orders = collections.get("orders");
 
         assertThat(orders)
@@ -160,8 +145,8 @@ class ReferenceSpreadTest {
             });
     }
 
-    @Test
-    void testReferenceSpreadWithSequential() throws IOException {
+    @BothImplementations
+    void testReferenceSpreadWithSequential(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -185,12 +170,8 @@ class ReferenceSpreadTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
         List<JsonNode> orders = collections.get("orders");
 

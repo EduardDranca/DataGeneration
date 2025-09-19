@@ -1,9 +1,7 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.generator.Generator;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,11 +12,10 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.Offset.offset;
 
-class GeneratorFilteringTest {
-    private final ObjectMapper mapper = new ObjectMapper();
+class GeneratorFilteringTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testBasicGeneratorFiltering() throws IOException {
+    @BothImplementations
+    void testBasicGeneratorFiltering(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "reference_data": {
@@ -51,12 +48,9 @@ class GeneratorFilteringTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> referenceData = collections.get("reference_data");
         List<JsonNode> filteredItems = collections.get("filtered_items");
 
@@ -96,8 +90,8 @@ class GeneratorFilteringTest {
             .hasSizeGreaterThan(1);
     }
 
-    @Test
-    void testGeneratorFilteringWithComplexOptions() throws IOException {
+    @BothImplementations
+    void testGeneratorFilteringWithComplexOptions(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "categories": {
@@ -131,12 +125,9 @@ class GeneratorFilteringTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(456L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> categories = collections.get("categories");
         List<JsonNode> products = collections.get("products");
 
@@ -171,8 +162,8 @@ class GeneratorFilteringTest {
             .doesNotContain(excludedCategory);
     }
 
-    @Test
-    void testGeneratorFilteringWithPathExtraction() throws IOException {
+    @BothImplementations
+    void testGeneratorFilteringWithPathExtraction(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "reference_names": {
@@ -204,12 +195,9 @@ class GeneratorFilteringTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(789L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> referenceNames = collections.get("reference_names");
         List<JsonNode> users = collections.get("users");
 
@@ -246,8 +234,8 @@ class GeneratorFilteringTest {
             .hasSizeGreaterThan(1);
     }
 
-    @Test
-    void testGeneratorFilteringFallbackToNull() throws IOException {
+    @BothImplementations
+    void testGeneratorFilteringFallbackToNull(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "items": {
@@ -264,12 +252,12 @@ class GeneratorFilteringTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(999L)
+        IGeneration generation = createGenerator(memoryOptimized)
+            .withFilteringBehavior(FilteringBehavior.RETURN_NULL)
             .fromJsonNode(dslNode)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> items = collections.get("items");
 
         assertThat(items).hasSize(5);
@@ -282,8 +270,8 @@ class GeneratorFilteringTest {
 
     }
 
-    @Test
-    void testCustomGeneratorWithNativeFiltering() throws IOException {
+    @BothImplementations
+    void testCustomGeneratorWithNativeFiltering(String implementationName, boolean memoryOptimized) throws IOException {
         // Create a custom generator that supports native filtering
         Generator customFilteringGenerator = new Generator() {
             @Override
@@ -325,13 +313,12 @@ class GeneratorFilteringTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(111L)
+        IGeneration generation = createGenerator(memoryOptimized)
             .withCustomGenerator("customFiltering", customFilteringGenerator)
             .fromJsonNode(dslNode)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> items = collections.get("items");
 
         assertThat(items).hasSize(3);

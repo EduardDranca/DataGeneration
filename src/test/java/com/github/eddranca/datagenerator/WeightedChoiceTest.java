@@ -129,7 +129,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
                         }
                     }
                 }
-                """);
+                """;
 
         IGeneration generation = createGenerator(memoryOptimized)
             .withSeed(789L)
@@ -180,7 +180,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
                         }
                     }
                 }
-                """);
+                """;
 
         IGeneration generation = createGenerator(memoryOptimized)
             .withSeed(999L)
@@ -225,7 +225,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
                         }
                     }
                 }
-                """);
+                """;
 
         IGeneration generation = createGenerator(memoryOptimized)
             .withSeed(111L)

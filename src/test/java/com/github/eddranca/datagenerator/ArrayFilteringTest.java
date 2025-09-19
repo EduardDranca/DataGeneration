@@ -1,10 +1,9 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,12 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests demonstrating array generation combined with filtering capabilities.
  * This showcases advanced features that differentiate this library from simple faker tools.
  */
-class ArrayFilteringTest {
+class ArrayFilteringTest extends ParameterizedGenerationTest {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    @Test
-    void testArrayWithExplicitSyntaxAndFiltering() throws Exception {
+    @BothImplementations
+    void testArrayWithExplicitSyntaxAndFiltering(String implementationName, boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                   "excluded": {
@@ -50,13 +47,9 @@ class ArrayFilteringTest {
                 }
                 """;
 
-        JsonNode dslNode = objectMapper.readTree(dsl);
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        JsonNode dslNode = mapper.readTree(dsl);
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> excluded = collections.get("excluded");
         List<JsonNode> projects = collections.get("projects");
@@ -78,8 +71,8 @@ class ArrayFilteringTest {
         });
     }
 
-    @Test
-    void testArrayWithCountSyntaxAndFiltering() throws Exception {
+    @BothImplementations
+    void testArrayWithCountSyntaxAndFiltering(String implementationName, boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                   "bannedUser": {
@@ -104,13 +97,9 @@ class ArrayFilteringTest {
                 }
                 """;
 
-        JsonNode dslNode = objectMapper.readTree(dsl);
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(789L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        JsonNode dslNode = mapper.readTree(dsl);
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> bannedUsers = collections.get("bannedUser");
         List<JsonNode> users = collections.get("users");
@@ -132,8 +121,8 @@ class ArrayFilteringTest {
         });
     }
 
-    @Test
-    void testArrayWithMultipleFilters() throws Exception {
+    @BothImplementations
+    void testArrayWithMultipleFilters(String implementationName, boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                   "restrictions": {
@@ -166,13 +155,9 @@ class ArrayFilteringTest {
                 }
                 """;
 
-        JsonNode dslNode = objectMapper.readTree(dsl);
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(456L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        JsonNode dslNode = mapper.readTree(dsl);
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> restrictions = collections.get("restrictions");
         List<JsonNode> projects = collections.get("projects");
@@ -195,8 +180,8 @@ class ArrayFilteringTest {
         });
     }
 
-    @Test
-    void testArrayWithTagBasedFiltering() throws Exception {
+    @BothImplementations
+    void testArrayWithTagBasedFiltering(String implementationName, boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                   "blacklist": {
@@ -227,13 +212,9 @@ class ArrayFilteringTest {
                 }
                 """;
 
-        JsonNode dslNode = objectMapper.readTree(dsl);
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(111L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        JsonNode dslNode = mapper.readTree(dsl);
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> blacklist = collections.get("blacklist");
         List<JsonNode> developers = collections.get("developers");
@@ -255,8 +236,8 @@ class ArrayFilteringTest {
         });
     }
 
-    @Test
-    void testNestedArraysWithFiltering() throws Exception {
+    @BothImplementations
+    void testNestedArraysWithFiltering(String implementationName, boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                   "forbidden": {
@@ -294,13 +275,9 @@ class ArrayFilteringTest {
                 }
                 """;
 
-        JsonNode dslNode = objectMapper.readTree(dsl);
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(999L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        JsonNode dslNode = mapper.readTree(dsl);
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> forbidden = collections.get("forbidden");
         List<JsonNode> teams = collections.get("teams");
