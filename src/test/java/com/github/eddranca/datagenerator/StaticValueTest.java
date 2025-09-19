@@ -1,27 +1,19 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class StaticValueTest {
-    private final ObjectMapper mapper = new ObjectMapper();
+class StaticValueTest extends ParameterizedGenerationTest {
 
-    // TODO: Rewrite these tests to use streaming API instead of inspecting internal collections
-    // These tests were validating static value generation by inspecting collection contents
-    
-    /*
-    @Test
-    void testBasicStaticValues() throws IOException {
+    @BothImplementations
+    void testBasicStaticValues(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "products": {
@@ -39,16 +31,11 @@ class StaticValueTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        JsonNode collectionsNode = generation.asJsonNode();
-        JsonNode products = collectionsNode.get("products");
+        List<JsonNode> products = generation.streamJsonNodes("products").toList();
 
-        assertThat(products).isNotNull();
-        assertThat(products.size()).isEqualTo(3);
+        assertThat(products).hasSize(3);
         
         for (JsonNode product : products) {
             // Dynamic fields should be present and different
@@ -70,8 +57,8 @@ class StaticValueTest {
         }
     }
 
-    @Test
-    void testComplexStaticValues() throws IOException {
+    @BothImplementations
+    void testComplexStaticValues(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "orders": {
@@ -97,16 +84,11 @@ class StaticValueTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        JsonNode collectionsNode = generation.asJsonNode();
-        JsonNode orders = collectionsNode.get("orders");
+        List<JsonNode> orders = generation.streamJsonNodes("orders").toList();
 
-        assertThat(orders).isNotNull();
-        assertThat(orders.size()).isEqualTo(2);
+        assertThat(orders).hasSize(2);
         
         for (JsonNode order : orders) {
             // Dynamic field
@@ -135,8 +117,8 @@ class StaticValueTest {
         }
     }
 
-    @Test
-    void testMixedStaticAndDynamicFields() throws IOException {
+    @BothImplementations
+    void testMixedStaticAndDynamicFields(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -157,16 +139,11 @@ class StaticValueTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
-        JsonNode collectionsNode = generation.asJsonNode();
-        JsonNode users = collectionsNode.get("users");
+        List<JsonNode> users = generation.streamJsonNodes("users").toList();
 
-        assertThat(users).isNotNull();
-        assertThat(users.size()).isEqualTo(3);
+        assertThat(users).hasSize(3);
         
         for (JsonNode user : users) {
             // Dynamic fields should vary
@@ -189,5 +166,4 @@ class StaticValueTest {
             assertThat(settings.get("language").asText()).isEqualTo("en");
         }
     }
-    */
 }

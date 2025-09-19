@@ -18,12 +18,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ArrayFieldTest {
+class ArrayFieldTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testFixedSizeArray() throws Exception {
+    @BothImplementations
+    void testFixedSizeArray(String implementationName, boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                     "users": {
@@ -40,12 +42,8 @@ class ArrayFieldTest {
                 }
                 """;
 
-        IGeneration generation = DslDataGenerator.create().fromJsonString(dsl).generate();
-        JsonNode result = generation.asJsonNode();
-
-        assertThat(result.has("users")).isTrue();
-        JsonNode users = result.get("users");
-        assertThat(users.isArray()).isTrue();
+        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        List<JsonNode> users = generation.streamJsonNodes("users").toList();
 
         assertThat(users)
             .hasSize(2)
@@ -61,8 +59,8 @@ class ArrayFieldTest {
             });
     }
 
-    @Test
-    void testVariableSizeArray() throws Exception {
+    @BothImplementations
+    void testVariableSizeArray(String implementationName, boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                     "users": {
@@ -80,11 +78,8 @@ class ArrayFieldTest {
                 }
                 """;
 
-        IGeneration generation = DslDataGenerator.create().fromJsonString(dsl).generate();
-        JsonNode result = generation.asJsonNode();
-
-        assertThat(result.has("users")).isTrue();
-        JsonNode users = result.get("users");
+        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        List<JsonNode> users = generation.streamJsonNodes("users").toList();
         JsonNode user = users.get(0);
 
         assertThat(user.has("scores")).isTrue();
@@ -98,8 +93,8 @@ class ArrayFieldTest {
             );
     }
 
-    @Test
-    void testArrayWithGeneratedItems() throws Exception {
+    @BothImplementations
+    void testArrayWithGeneratedItems(String implementationName, boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                     "users": {
@@ -120,10 +115,9 @@ class ArrayFieldTest {
                 }
                 """;
 
-        IGeneration generation = DslDataGenerator.create().fromJsonString(dsl).generate();
-        JsonNode result = generation.asJsonNode();
-
-        JsonNode user = result.get("users").get(0);
+        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        List<JsonNode> users = generation.streamJsonNodes("users").toList();
+        JsonNode user = users.get(0);
         JsonNode numbers = user.get("numbers");
 
         assertThat(numbers.isArray()).isTrue();
@@ -136,8 +130,8 @@ class ArrayFieldTest {
             });
     }
 
-    @Test
-    void testArrayWithObjectItems() throws Exception {
+    @BothImplementations
+    void testArrayWithObjectItems(String implementationName, boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                     "users": {
@@ -159,10 +153,9 @@ class ArrayFieldTest {
                 }
                 """;
 
-        IGeneration generation = DslDataGenerator.create().fromJsonString(dsl).generate();
-        JsonNode result = generation.asJsonNode();
-
-        JsonNode user = result.get("users").get(0);
+        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        List<JsonNode> users = generation.streamJsonNodes("users").toList();
+        JsonNode user = users.get(0);
         JsonNode contacts = user.get("contacts");
 
         assertThat(contacts.isArray()).isTrue();
@@ -178,8 +171,8 @@ class ArrayFieldTest {
             });
     }
 
-    @Test
-    void testEmptyArray() throws Exception {
+    @BothImplementations
+    void testEmptyArray(String implementationName, boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                     "users": {
@@ -196,10 +189,9 @@ class ArrayFieldTest {
                 }
                 """;
 
-        IGeneration generation = DslDataGenerator.create().fromJsonString(dsl).generate();
-        JsonNode result = generation.asJsonNode();
-
-        JsonNode user = result.get("users").get(0);
+        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        List<JsonNode> users = generation.streamJsonNodes("users").toList();
+        JsonNode user = users.get(0);
         JsonNode emptyList = user.get("emptyList");
 
         assertThat(emptyList.isArray()).isTrue();

@@ -1,23 +1,18 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.exception.FilteringException;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class FilteringConfigurationTest {
-    private final ObjectMapper mapper = new ObjectMapper();
+class FilteringConfigurationTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testDefaultFilteringBehaviorReturnsNull() throws IOException {
+    @BothImplementations
+    void testDefaultFilteringBehaviorReturnsNull(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "items": {
@@ -34,13 +29,8 @@ class FilteringConfigurationTest {
                 }
                 """);
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        JsonNode collectionsNode = generation.asJsonNode();
-        JsonNode itemsArray = collectionsNode.get("items"); List<JsonNode> items = new ArrayList<>(); itemsArray.forEach(items::add);
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        List<JsonNode> items = generation.streamJsonNodes("items").toList();
 
         assertThat(items).hasSize(5);
 
@@ -50,8 +40,8 @@ class FilteringConfigurationTest {
             .allSatisfy(choice -> assertThat(choice.isNull()).isTrue());
     }
 
-    @Test
-    void testThrowExceptionFilteringBehaviorForGenerators() throws IOException {
+    @BothImplementations
+    void testThrowExceptionFilteringBehaviorForGenerators(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "items": {
@@ -68,8 +58,7 @@ class FilteringConfigurationTest {
                 }
                 """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
+        assertThatThrownBy(() -> createGenerator(memoryOptimized)
             .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
             .fromJsonNode(dslNode)
             .generate())
@@ -77,8 +66,8 @@ class FilteringConfigurationTest {
             .hasMessageContaining("All choice options were filtered out");
     }
 
-    @Test
-    void testThrowExceptionFilteringBehaviorForReferences() throws IOException {
+    @BothImplementations
+    void testThrowExceptionFilteringBehaviorForReferences(String implementationName, boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "reference_data": {
