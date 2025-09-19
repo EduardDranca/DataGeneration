@@ -24,11 +24,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,6 +40,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.*;
 
 class DslDataGeneratorTest {
     private final ObjectMapper mapper = new ObjectMapper();
@@ -74,16 +77,16 @@ class DslDataGeneratorTest {
                             """);
 
             IGeneration generation1 = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
             IGeneration generation2 = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            assertThat(generation1.asJson()).isEqualTo(generation2.asJson());
+            assertThat(asJson(generation1)).isEqualTo(asJson(generation2));
         }
 
         @Test
@@ -104,18 +107,18 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation1 = DslDataGenerator.create()
-                .withSeed(456L)
-                .withCustomGenerator("customTest", customGenerator)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(456L)
+                    .withCustomGenerator("customTest", customGenerator)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
             IGeneration generation2 = DslDataGenerator.create()
-                .withSeed(456L)
-                .withCustomGenerator("customTest", customGenerator)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(456L)
+                    .withCustomGenerator("customTest", customGenerator)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            assertThat(generation1.asJson()).isEqualTo(generation2.asJson());
+            assertThat(asJson(generation1)).isEqualTo(asJson(generation2));
         }
 
         @Test
@@ -134,16 +137,16 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation1 = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
             IGeneration generation2 = DslDataGenerator.create()
-                .withSeed(456L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(456L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            assertThat(generation1.asJson()).isNotEqualTo(generation2.asJson());
+            assertThat(asJson(generation1)).isNotEqualTo(asJson(generation2));
         }
 
         @Test
@@ -161,15 +164,18 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            String json1 = DslDataGenerator.create()
-                .withSeed(789L)
-                .fromJsonNode(dslNode)
-                .generateAsJson();
+            IGeneration generation1 = DslDataGenerator.create()
+                    .withSeed(789L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            String json2 = DslDataGenerator.create()
-                .withSeed(789L)
-                .fromJsonNode(dslNode)
-                .generateAsJson();
+            IGeneration generation2 = DslDataGenerator.create()
+                    .withSeed(789L)
+                    .fromJsonNode(dslNode)
+                    .generate();
+
+            String json1 = asJson(generation1);
+            String json2 = asJson(generation2);
 
             assertThat(json1).isEqualTo(json2);
         }
@@ -189,16 +195,16 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation1 = DslDataGenerator.create()
-                .withSeed(999L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(999L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
             IGeneration generation2 = DslDataGenerator.create()
-                .withSeed(999L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(999L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            assertThat(generation1.asJson()).isEqualTo(generation2.asJson());
+            assertThat(asJson(generation1)).isEqualTo(asJson(generation2));
         }
 
         @Test
@@ -219,15 +225,18 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            String json1 = DslDataGenerator.create()
-                .withSeed(111L)
-                .fromJsonNode(dslNode)
-                .generateAsJson();
+            IGeneration generation1 = DslDataGenerator.create()
+                    .withSeed(111L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            String json2 = DslDataGenerator.create()
-                .withSeed(111L)
-                .fromJsonNode(dslNode)
-                .generateAsJson();
+            IGeneration generation2 = DslDataGenerator.create()
+                    .withSeed(111L)
+                    .fromJsonNode(dslNode)
+                    .generate();
+
+            String json1 = asJson(generation1);
+            String json2 = asJson(generation2);
 
             assertThat(json1).isEqualTo(json2);
         }
@@ -265,11 +274,11 @@ class DslDataGeneratorTest {
                             """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode countries = collectionsNode.get("countries");
             JsonNode companies = collectionsNode.get("companies");
 
@@ -280,8 +289,8 @@ class DslDataGeneratorTest {
             String firstCountryCode = countries.get(0).get("isoCode").asText();
             for (JsonNode comp : companies) {
                 assertThat(comp.get("countryCode").asText())
-                    .as("Company countryCode should not match the filtered first country isoCode")
-                    .isNotEqualTo(firstCountryCode);
+                        .as("Company countryCode should not match the filtered first country isoCode")
+                        .isNotEqualTo(firstCountryCode);
             }
         }
 
@@ -312,35 +321,35 @@ class DslDataGeneratorTest {
                             """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode locations = collectionsNode.get("locations");
             JsonNode events = collectionsNode.get("events");
 
             assertThat(locations)
-                .isNotNull()
-                .hasSize(5);
+                    .isNotNull()
+                    .hasSize(5);
             assertThat(events)
-                .isNotNull()
-                .hasSize(10)
-                .allSatisfy(event -> {
-                    String filteredLocationName = event.get("filteredLocationName").asText();
-                    assertThat(filteredLocationName)
-                        .as("Filtered location should be one of: Tokyo, Paris, Berlin")
-                        .isIn("Tokyo", "Paris", "Berlin");
-                })
-                .allSatisfy(event -> {
-                    String continentBasedLocation = event.get("continentBasedLocation").asText();
-                    assertThat(continentBasedLocation)
-                        .isNotNull()
-                        .as("Continent-based location should not be Asia")
-                        .isNotEqualTo("Asia")
-                        .as("Continent-based location should be North America or Europe")
-                        .isIn("North America", "Europe");
-                });
+                    .isNotNull()
+                    .hasSize(10)
+                    .allSatisfy(event -> {
+                        String filteredLocationName = event.get("filteredLocationName").asText();
+                        assertThat(filteredLocationName)
+                                .as("Filtered location should be one of: Tokyo, Paris, Berlin")
+                                .isIn("Tokyo", "Paris", "Berlin");
+                    })
+                    .allSatisfy(event -> {
+                        String continentBasedLocation = event.get("continentBasedLocation").asText();
+                        assertThat(continentBasedLocation)
+                                .isNotNull()
+                                .as("Continent-based location should not be Asia")
+                                .isNotEqualTo("Asia")
+                                .as("Continent-based location should be North America or Europe")
+                                .isIn("North America", "Europe");
+                    });
 
             // Verify that regular location reference (without filtering) can be any
             // location
@@ -356,19 +365,17 @@ class DslDataGeneratorTest {
 
             // Regular location references should potentially include all locations
             assertThat(eventLocationNames)
-                .as("Should have at least some location references")
-                .isNotEmpty();
+                    .as("Should have at least some location references")
+                    .isNotEmpty();
 
             // Verify that the locations collection contains valid location names
             List<String> expectedLocationNames = List.of("New York", "London", "Tokyo", "Paris", "Berlin");
             assertThat(allLocationNames)
-                .as("All location names should be from expected values")
-                .isNotEmpty()
-                .allSatisfy(locationName ->
-                    assertThat(expectedLocationNames)
-                        .as("Location name should be one of the expected values: " + locationName)
-                        .contains(locationName)
-                );
+                    .as("All location names should be from expected values")
+                    .isNotEmpty()
+                    .allSatisfy(locationName -> assertThat(expectedLocationNames)
+                            .as("Location name should be one of the expected values: " + locationName)
+                            .contains(locationName));
         }
     }
 
@@ -392,21 +399,21 @@ class DslDataGeneratorTest {
 
             // This should work without validation errors
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(validDsl)
-                .generate();
+                    .withSeed(123L)
+                    .fromJsonNode(validDsl)
+                    .generate();
 
             assertThat(generation).isNotNull();
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode users = collectionsNode.get("users");
 
             assertThat(users).isNotNull();
             assertThat(users.size()).isEqualTo(2);
-            
+
             for (JsonNode user : users) {
                 assertThat(user.get("displayName"))
-                    .as("displayName should match name via self-reference")
-                    .isEqualTo(user.get("name"));
+                        .as("displayName should match name via self-reference")
+                        .isEqualTo(user.get("name"));
             }
         }
 
@@ -432,14 +439,14 @@ class DslDataGeneratorTest {
 
             // Should have validation errors
             assertThat(result.hasErrors())
-                .as("Should have validation errors for invalid self-reference")
-                .isTrue();
+                    .as("Should have validation errors for invalid self-reference")
+                    .isTrue();
 
             // Check that the error message contains information about the invalid reference
             assertThat(result.getErrors())
-                .as("Should have error about nonExistentField reference. Errors: " +
-                    result.getErrors().stream().map(Object::toString).toList())
-                .anyMatch(error -> error.toString().contains("nonExistentField"));
+                    .as("Should have error about nonExistentField reference. Errors: " +
+                            result.getErrors().stream().map(Object::toString).toList())
+                    .anyMatch(error -> error.toString().contains("nonExistentField"));
         }
 
         @Test
@@ -459,9 +466,9 @@ class DslDataGeneratorTest {
 
             // This should throw a validation exception
             assertThatThrownBy(() -> DslDataGenerator.create()
-                .fromJsonNode(invalidDsl)
-                .generate())
-                .isInstanceOf(Exception.class);
+                    .fromJsonNode(invalidDsl)
+                    .generate())
+                    .isInstanceOf(Exception.class);
         }
     }
 
@@ -486,21 +493,21 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            assertThat(generation.asJson())
-                .isNotNull()
-                .contains("countries");
+            assertThat(asJson(generation))
+                    .isNotNull()
+                    .contains("countries");
 
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode countries = collectionsNode.get("countries");
 
             // Verify spread fields are present
             assertThat(countries).isNotNull();
             assertThat(countries.size()).isEqualTo(3);
-            
+
             for (JsonNode country : countries) {
                 assertThat(country.has("name")).as("Country should have name field").isTrue();
                 assertThat(country.has("countryCode")).as("Country should have countryCode field").isTrue();
@@ -530,28 +537,28 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(456L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(456L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode countries = collectionsNode.get("countries");
 
             assertThat(countries)
-                .as("All countries should have mapped fields with non-null values")
-                .hasSize(2)
-                .allSatisfy(country -> {
-                    assertThat(country.has("name")).isTrue();
-                    assertThat(country.has("isoCode")).isTrue();
-                    assertThat(country.has("id")).isTrue();
-                    assertThat(country.has("active")).isTrue();
-                    assertThat(country.has("countryCode")).isFalse(); // Should not contain the original field name
+                    .as("All countries should have mapped fields with non-null values")
+                    .hasSize(2)
+                    .allSatisfy(country -> {
+                        assertThat(country.has("name")).isTrue();
+                        assertThat(country.has("isoCode")).isTrue();
+                        assertThat(country.has("id")).isTrue();
+                        assertThat(country.has("active")).isTrue();
+                        assertThat(country.has("countryCode")).isFalse(); // Should not contain the original field name
 
-                    assertThat(country.get("name")).isNotNull();
-                    assertThat(country.get("isoCode")).isNotNull();
-                    assertThat(country.get("id")).isNotNull();
-                    assertThat(country.get("active")).isNotNull();
-                });
+                        assertThat(country.get("name")).isNotNull();
+                        assertThat(country.get("isoCode")).isNotNull();
+                        assertThat(country.get("id")).isNotNull();
+                        assertThat(country.get("active")).isNotNull();
+                    });
         }
 
         @Test
@@ -588,14 +595,14 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            String json = generation.asJson();
+            String json = asJson(generation);
             assertThat(json)
-                .isNotNull()
-                .contains("companyName", "address", "contact");
+                    .isNotNull()
+                    .contains("companyName", "address", "contact");
         }
 
         @Test
@@ -621,16 +628,16 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(789L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(789L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode users = collectionsNode.get("users");
 
             assertThat(users).isNotNull();
             assertThat(users.size()).isEqualTo(2);
-            
+
             for (JsonNode user : users) {
                 // From name spread and internet spread with mapping, plus regular fields
                 assertThat(user.has("firstName")).isTrue();
@@ -666,16 +673,16 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode users = collectionsNode.get("users");
 
             assertThat(users).isNotNull();
             assertThat(users.size()).isEqualTo(2);
-            
+
             for (JsonNode user : users) {
                 // These are the fields that the name generator provides plus regular field
                 assertThat(user.has("firstName")).isTrue();
@@ -716,18 +723,18 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
-            Map<String, String> sqlInserts = generation.asSqlInserts();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
+            Map<String, String> sqlInserts = asSqlInserts(generation);
 
             assertThat(sqlInserts)
-                .isNotNull()
-                .containsKey("companies");
+                    .isNotNull()
+                    .containsKey("companies");
 
             String companiesSql = sqlInserts.get("companies");
             assertThat(companiesSql)
-                .contains("INSERT INTO companies", "companyName", "address");
+                    .contains("INSERT INTO companies", "companyName", "address");
         }
 
         @Test
@@ -750,11 +757,11 @@ class DslDataGeneratorTest {
                     """, csvPath));
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode rows = collectionsNode.get("rows");
 
             assertThat(rows).isNotNull();
@@ -798,14 +805,14 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
-            Map<String, String> sqlInserts = generation.asSqlInserts();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
+            Map<String, String> sqlInserts = asSqlInserts(generation);
 
             assertThat(sqlInserts)
-                .isNotNull()
-                .containsKey("users");
+                    .isNotNull()
+                    .containsKey("users");
 
             String usersSql = sqlInserts.get("users");
             assertThat(usersSql).isNotNull();
@@ -815,8 +822,8 @@ class DslDataGeneratorTest {
 
             // Validate that all expected columns are present
             assertThat(usersSql)
-                .as("SQL should contain all expected columns")
-                .contains("id", "name", "profile");
+                    .as("SQL should contain all expected columns")
+                    .contains("id", "name", "profile");
 
             // Validate that we have exactly 2 valid INSERT statements (count: 2)
             validateAllSqlStatements(usersSql, "users", 2);
@@ -844,28 +851,36 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
             // Test subset generation for companies only
-            Map<String, String> companiesSqlMap = generation.asSqlInserts("companies");
+            Map<String, Stream<String>> companiesSqlStreamMap = generation.asSqlInserts("companies");
+            Map<String, String> companiesSqlMap = new HashMap<>();
+            for (Map.Entry<String, Stream<String>> entry : companiesSqlStreamMap.entrySet()) {
+                companiesSqlMap.put(entry.getKey(), entry.getValue().collect(Collectors.joining("\n")));
+            }
             assertThat(companiesSqlMap)
-                .isNotNull()
-                .hasSize(1)
-                .as("Should only contain companies table")
-                .containsKey("companies");
+                    .isNotNull()
+                    .hasSize(1)
+                    .as("Should only contain companies table")
+                    .containsKey("companies");
 
             String companiesSql = companiesSqlMap.get("companies");
             validateAllSqlStatements(companiesSql, "companies", 3);
 
             // Test subset generation for countries only
-            Map<String, String> countriesSqlMap = generation.asSqlInserts("countries");
+            Map<String, Stream<String>> countriesSqlStreamMap = generation.asSqlInserts("countries");
+            Map<String, String> countriesSqlMap = new HashMap<>();
+            for (Map.Entry<String, Stream<String>> entry : countriesSqlStreamMap.entrySet()) {
+                countriesSqlMap.put(entry.getKey(), entry.getValue().collect(Collectors.joining("\n")));
+            }
             assertThat(countriesSqlMap)
-                .isNotNull()
-                .hasSize(1)
-                .as("Should only contain countries table")
-                .containsKey("countries");
+                    .isNotNull()
+                    .hasSize(1)
+                    .as("Should only contain countries table")
+                    .containsKey("countries");
 
             String countriesSql = countriesSqlMap.get("countries");
             validateAllSqlStatements(countriesSql, "countries", 2);
@@ -897,16 +912,16 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            Map<String, String> allSqlMap = generation.asSqlInserts();
+            Map<String, String> allSqlMap = asSqlInserts(generation);
             assertThat(allSqlMap)
-                .isNotNull()
-                .hasSize(2)
-                .as("Should contain exactly 2 tables")
-                .containsKeys("companies", "countries");
+                    .isNotNull()
+                    .hasSize(2)
+                    .as("Should contain exactly 2 tables")
+                    .containsKeys("companies", "countries");
 
             String companiesSql = allSqlMap.get("companies");
             String countriesSql = allSqlMap.get("countries");
@@ -918,7 +933,8 @@ class DslDataGeneratorTest {
 
         @Test
         void testSqlGenerationWithSpecialCharacters() throws Exception {
-            JsonNode dslNode = mapper.readTree("""
+            JsonNode dslNode = mapper.readTree(
+                    """
                             {
                                 "products": {
                                     "count": 1,
@@ -931,10 +947,10 @@ class DslDataGeneratorTest {
                             """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
-            Map<String, String> sqlInserts = generation.asSqlInserts();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
+            Map<String, String> sqlInserts = asSqlInserts(generation);
 
             String productsSql = sqlInserts.get("products");
             assertThat(productsSql).isNotNull();
@@ -945,11 +961,10 @@ class DslDataGeneratorTest {
             // Check that quotes are properly escaped (should be doubled in SQL)
             if (productsSql.contains("Product's Name")) {
                 assertThat(productsSql)
-                    .as("Single quotes should be properly escaped")
-                    .satisfiesAnyOf(
-                        sql -> assertThat(sql).contains("Product''s Name"),
-                        sql -> assertThat(sql).contains("'Product''s Name'")
-                    );
+                        .as("Single quotes should be properly escaped")
+                        .satisfiesAnyOf(
+                                sql -> assertThat(sql).contains("Product''s Name"),
+                                sql -> assertThat(sql).contains("'Product''s Name'"));
             }
         }
 
@@ -968,10 +983,10 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
-            Map<String, String> sqlInserts = generation.asSqlInserts();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
+            Map<String, String> sqlInserts = asSqlInserts(generation);
 
             String itemsSql = sqlInserts.get("items");
             assertThat(itemsSql).isNotNull();
@@ -980,8 +995,8 @@ class DslDataGeneratorTest {
 
             // Check that null values are properly handled
             assertThat(itemsSql)
-                .as("Both columns should be present")
-                .contains("id", "optionalField");
+                    .as("Both columns should be present")
+                    .contains("id", "optionalField");
         }
 
         @Test
@@ -1004,10 +1019,10 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
-            Map<String, String> sqlInserts = generation.asSqlInserts();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
+            Map<String, String> sqlInserts = asSqlInserts(generation);
 
             String employeesSql = sqlInserts.get("employees");
             assertThat(employeesSql).isNotNull();
@@ -1017,7 +1032,7 @@ class DslDataGeneratorTest {
 
             // Validate all expected columns are present
             validateSqlColumns(employeesSql, "employees",
-                "id", "firstName", "lastName", "email", "age", "salary", "active");
+                    "id", "firstName", "lastName", "email", "age", "salary", "active");
         }
 
         @Test
@@ -1040,10 +1055,10 @@ class DslDataGeneratorTest {
                             """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
-            Map<String, String> sqlInserts = generation.asSqlInserts();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
+            Map<String, String> sqlInserts = asSqlInserts(generation);
 
             String testTableSql = sqlInserts.get("test_table");
             assertThat(testTableSql).isNotNull();
@@ -1053,7 +1068,7 @@ class DslDataGeneratorTest {
 
             // Validate all expected columns
             validateSqlColumns(testTableSql, "test_table",
-                "string_field", "number_field", "float_field", "boolean_field", "null_field", "special_chars");
+                    "string_field", "number_field", "float_field", "boolean_field", "null_field", "special_chars");
         }
 
         @Test
@@ -1072,10 +1087,10 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
-            Map<String, String> sqlInserts = generation.asSqlInserts();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
+            Map<String, String> sqlInserts = asSqlInserts(generation);
 
             String metricsSql = sqlInserts.get("metrics");
             assertThat(metricsSql).isNotNull();
@@ -1103,17 +1118,17 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
             // Test JSON generation
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode products = collectionsNode.get("products");
 
             assertThat(products).isNotNull();
             assertThat(products.size()).isEqualTo(3);
-            
+
             for (JsonNode product : products) {
                 // Verify all required fields are present and not null
                 assertThat(product.get("price")).isNotNull();
@@ -1134,8 +1149,8 @@ class DslDataGeneratorTest {
 
                 // Verify discount is a whole number (0 decimals)
                 assertThat(discount)
-                    .as("Discount should be a whole number")
-                    .isCloseTo(Math.floor(discount), within(0.0001));
+                        .as("Discount should be a whole number")
+                        .isCloseTo(Math.floor(discount), within(0.0001));
             }
         }
 
@@ -1155,11 +1170,11 @@ class DslDataGeneratorTest {
          */
         private void validateSqlInsertStructure(String sql, String tableName) {
             assertThat(sql)
-                .as("SQL should not be null")
-                .isNotNull();
+                    .as("SQL should not be null")
+                    .isNotNull();
             assertThat(sql.trim())
-                .as("SQL should not be empty")
-                .isNotBlank();
+                    .as("SQL should not be empty")
+                    .isNotBlank();
 
             // Parse each SQL statement using JSqlParser
             String[] statements = sql.split(";");
@@ -1176,34 +1191,34 @@ class DslDataGeneratorTest {
 
                 // Verify it's an INSERT statement
                 assertThat(parsedStatement)
-                    .as("Statement should be an INSERT: " + trimmedStatement)
-                    .isInstanceOf(Insert.class);
+                        .as("Statement should be an INSERT: " + trimmedStatement)
+                        .isInstanceOf(Insert.class);
 
                 Insert insertStatement = (Insert) parsedStatement;
 
                 // Verify table name
                 assertThat(insertStatement.getTable().getName())
-                    .as("Table name should match expected: " + tableName)
-                    .isEqualTo(tableName);
+                        .as("Table name should match expected: " + tableName)
+                        .isEqualTo(tableName);
 
                 // Verify it has columns
                 assertThat(insertStatement.getColumns())
-                    .as("INSERT should have columns defined")
-                    .isNotNull()
-                    .as("INSERT should have at least one column")
-                    .isNotEmpty();
+                        .as("INSERT should have columns defined")
+                        .isNotNull()
+                        .as("INSERT should have at least one column")
+                        .isNotEmpty();
 
                 // Verify it has values
                 assertThat(insertStatement.getValues())
-                    .as("INSERT should have VALUES clause")
-                    .isNotNull();
+                        .as("INSERT should have VALUES clause")
+                        .isNotNull();
 
                 validInsertCount++;
             }
 
             assertThat(validInsertCount)
-                .as("Should have at least one valid INSERT statement")
-                .isPositive();
+                    .as("Should have at least one valid INSERT statement")
+                    .isPositive();
         }
 
         /**
@@ -1222,26 +1237,26 @@ class DslDataGeneratorTest {
 
                 Statement parsedStatement = parseSqlStatement(trimmedStatement);
                 assertThat(parsedStatement)
-                    .as("Statement should be an INSERT: " + trimmedStatement)
-                    .isInstanceOf(Insert.class);
+                        .as("Statement should be an INSERT: " + trimmedStatement)
+                        .isInstanceOf(Insert.class);
 
                 Insert insertStatement = (Insert) parsedStatement;
                 assertThat(insertStatement.getTable().getName())
-                    .as("Table name should match: " + expectedTableName)
-                    .isEqualTo(expectedTableName);
+                        .as("Table name should match: " + expectedTableName)
+                        .isEqualTo(expectedTableName);
 
                 // Validate that columns and values count match
                 int columnCount = insertStatement.getColumns().size();
                 assertThat(columnCount)
-                    .as("Should have at least one column")
-                    .isPositive();
+                        .as("Should have at least one column")
+                        .isPositive();
 
                 validInsertCount++;
             }
 
             assertThat(validInsertCount)
-                .as("Should have exactly " + expectedCount + " valid INSERT statements")
-                .isEqualTo(expectedCount);
+                    .as("Should have exactly " + expectedCount + " valid INSERT statements")
+                    .isEqualTo(expectedCount);
         }
 
         /**
@@ -1264,13 +1279,13 @@ class DslDataGeneratorTest {
 
                 // Extract column names
                 List<String> actualColumns = insertStatement.getColumns().stream()
-                    .map(Column::getColumnName)
-                    .toList();
+                        .map(Column::getColumnName)
+                        .toList();
 
                 // Verify expected columns are present
                 assertThat(actualColumns)
-                    .as("All expected columns should be present")
-                    .containsAll(Arrays.asList(expectedColumns));
+                        .as("All expected columns should be present")
+                        .containsAll(Arrays.asList(expectedColumns));
             }
         }
     }
@@ -1293,15 +1308,16 @@ class DslDataGeneratorTest {
                     }
                     """);
 
-            String json = DslDataGenerator.create()
-                .withSeed(456L)
-                .withCustomGenerator("customTest", customGenerator)
-                .fromJsonNode(dslNode)
-                .generateAsJson();
+            IGeneration generation = DslDataGenerator.create()
+                    .withSeed(456L)
+                    .withCustomGenerator("customTest", customGenerator)
+                    .fromJsonNode(dslNode)
+                    .generate();
+            String json = asJson(generation);
 
             assertThat(json)
-                .isNotNull()
-                .contains("CUSTOM_VALUE_", "customField");
+                    .isNotNull()
+                    .contains("CUSTOM_VALUE_", "customField");
         }
 
         @Test
@@ -1326,19 +1342,19 @@ class DslDataGeneratorTest {
                     """);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+                    .withSeed(123L)
+                    .fromJsonNode(dslNode)
+                    .generate();
 
-            assertThat(generation.asJsonNode()).isNotNull();
-            assertThat(generation.asJsonNode()).isNotNull();
+            assertThat(asJsonNode(generation)).isNotNull();
+            assertThat(asJsonNode(generation)).isNotNull();
 
-            JsonNode jsonNode = generation.asJsonNode();
+            JsonNode jsonNode = asJsonNode(generation);
             assertThat(jsonNode.has("countries")).isTrue();
             assertThat(jsonNode.has("companies")).isTrue();
 
-            String jsonFromNode = generation.asJsonNode().toString();
-            String jsonFromMap = generation.asJson();
+            String jsonFromNode = asJsonNode(generation).toString();
+            String jsonFromMap = asJson(generation);
 
             assertThat(jsonFromNode).isNotNull();
             assertThat(jsonFromMap).isNotNull();
@@ -1369,36 +1385,36 @@ class DslDataGeneratorTest {
 
             // Test fromFile(File)
             IGeneration generation1 = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromFile(tempFile.toFile())
-                .generate();
+                    .withSeed(123L)
+                    .fromFile(tempFile.toFile())
+                    .generate();
 
             assertThat(generation1)
-                .isNotNull();
-            assertThat(generation1.asJson())
-                .contains("users");
+                    .isNotNull();
+            assertThat(asJson(generation1))
+                    .contains("users");
 
             // Test fromFile(String)
             IGeneration generation2 = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromFile(tempFile.toString())
-                .generate();
+                    .withSeed(123L)
+                    .fromFile(tempFile.toString())
+                    .generate();
 
             assertThat(generation2)
-                .isNotNull();
-            assertThat(generation2.asJson())
-                .isEqualTo(generation1.asJson());
+                    .isNotNull();
+            assertThat(asJson(generation2))
+                    .isEqualTo(asJson(generation1));
 
             // Test fromFile(Path)
             IGeneration generation3 = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromFile(tempFile)
-                .generate();
+                    .withSeed(123L)
+                    .fromFile(tempFile)
+                    .generate();
 
             assertThat(generation3)
-                .isNotNull();
-            assertThat(generation3.asJson())
-                .isEqualTo(generation1.asJson());
+                    .isNotNull();
+            assertThat(asJson(generation3))
+                    .isEqualTo(asJson(generation1));
         }
 
         @Test
@@ -1417,27 +1433,27 @@ class DslDataGeneratorTest {
                     """;
 
             IGeneration generation1 = DslDataGenerator.create()
-                .withSeed(456L)
-                .fromJsonString(jsonString)
-                .generate();
+                    .withSeed(456L)
+                    .fromJsonString(jsonString)
+                    .generate();
 
             IGeneration generation2 = DslDataGenerator.create()
-                .withSeed(456L)
-                .fromJsonString(jsonString)
-                .generate();
+                    .withSeed(456L)
+                    .fromJsonString(jsonString)
+                    .generate();
 
             assertThat(generation1).isNotNull();
             assertThat(generation2).isNotNull();
-            assertThat(generation2.asJson()).isEqualTo(generation1.asJson());
-            assertThat(generation1.asJson()).contains("products");
+            assertThat(asJson(generation2)).isEqualTo(asJson(generation1));
+            assertThat(asJson(generation1)).contains("products");
         }
 
         @Test
         void testFileNotFound() {
             assertThatThrownBy(() -> DslDataGenerator.create()
-                .fromFile("nonexistent.json")
-                .generate())
-                .isInstanceOf(IllegalArgumentException.class);
+                    .fromFile("nonexistent.json")
+                    .generate())
+                    .isInstanceOf(IllegalArgumentException.class);
         }
 
         @Test
@@ -1468,12 +1484,12 @@ class DslDataGeneratorTest {
             Files.writeString(tempFile, complexJson);
 
             IGeneration generation = DslDataGenerator.create()
-                .withSeed(789L)
-                .fromFile(tempFile)
-                .generate();
+                    .withSeed(789L)
+                    .fromFile(tempFile)
+                    .generate();
 
             assertThat(generation).isNotNull();
-            JsonNode collectionsNode = generation.asJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
 
             assertThat(collectionsNode.has("countries")).isTrue();
             assertThat(collectionsNode.has("companies")).isTrue();
@@ -1483,7 +1499,7 @@ class DslDataGeneratorTest {
             JsonNode companies = collectionsNode.get("companies");
             assertThat(companies).isNotNull();
             assertThat(companies.size()).isGreaterThan(0);
-            
+
             for (JsonNode company : companies) {
                 assertThat(company.get("countryCode")).isNotNull();
             }
@@ -1507,14 +1523,15 @@ class DslDataGeneratorTest {
             // Create mock RandomService for UUID generation
             RandomService mockRandom = mock(RandomService.class);
             when(mockRandom.nextLong()).thenReturn(123456789L, 987654321L, 111111111L, 222222222L, 333333333L,
-                444444444L);
+                    444444444L);
 
             // Create mock Faker that returns our mock Name and RandomService
             Faker mockFaker = mock(Faker.class);
             when(mockFaker.name()).thenReturn(mockName);
             when(mockFaker.random()).thenReturn(mockRandom);
 
-            // Create DSL JsonNode that only uses firstName and lastName (not fullName, title, prefix, suffix)
+            // Create DSL JsonNode that only uses firstName and lastName (not fullName,
+            // title, prefix, suffix)
             JsonNode dslNode = mapper.readTree("""
                     {
                         "users": {
@@ -1532,16 +1549,17 @@ class DslDataGeneratorTest {
             GeneratorRegistry mockRegistry = GeneratorRegistry.withDefaultGenerators(mockFaker);
 
             // Execute with mock registry
-            String json = DslDataGenerator.create()
-                .withSeed(123L)
-                .withGeneratorRegistry(mockRegistry)
-                .fromJsonNode(dslNode)
-                .generateAsJson();
+            IGeneration generation = DslDataGenerator.create()
+                    .withSeed(123L)
+                    .withGeneratorRegistry(mockRegistry)
+                    .fromJsonNode(dslNode)
+                    .generate();
+            String json = asJson(generation);
 
             // Verify results
             assertThat(json)
-                .isNotNull()
-                .contains("firstName", "lastName");
+                    .isNotNull()
+                    .contains("firstName", "lastName");
 
             // Verify efficiency: only firstName and lastName should be called
             verify(mockName, times(3)).firstName();
@@ -1566,7 +1584,8 @@ class DslDataGeneratorTest {
             Faker mockFaker = mock(Faker.class);
             when(mockFaker.address()).thenReturn(mockAddress);
 
-            // Create DSL JsonNode that only uses streetAddress and city (not state, zipCode, country)
+            // Create DSL JsonNode that only uses streetAddress and city (not state,
+            // zipCode, country)
             JsonNode dslNode = mapper.readTree("""
                     {
                         "locations": {
@@ -1583,16 +1602,17 @@ class DslDataGeneratorTest {
             GeneratorRegistry mockRegistry = GeneratorRegistry.withDefaultGenerators(mockFaker);
 
             // Execute with mock registry
-            String json = DslDataGenerator.create()
-                .withSeed(123L)
-                .withGeneratorRegistry(mockRegistry)
-                .fromJsonNode(dslNode)
-                .generateAsJson();
+            IGeneration generation = DslDataGenerator.create()
+                    .withSeed(123L)
+                    .withGeneratorRegistry(mockRegistry)
+                    .fromJsonNode(dslNode)
+                    .generate();
+            String json = asJson(generation);
 
             // Verify results
             assertThat(json)
-                .isNotNull()
-                .contains("street", "city");
+                    .isNotNull()
+                    .contains("street", "city");
 
             // Verify efficiency: only streetAddress and city should be called
             verify(mockAddress, times(2)).streetAddress();
@@ -1615,7 +1635,8 @@ class DslDataGeneratorTest {
             Faker mockFaker = mock(Faker.class);
             when(mockFaker.company()).thenReturn(mockCompany);
 
-            // Create DSL JsonNode that only uses company name (not industry, profession, buzzword)
+            // Create DSL JsonNode that only uses company name (not industry, profession,
+            // buzzword)
             JsonNode dslNode = mapper.readTree("""
                     {
                         "businesses": {
@@ -1631,16 +1652,17 @@ class DslDataGeneratorTest {
             GeneratorRegistry mockRegistry = GeneratorRegistry.withDefaultGenerators(mockFaker);
 
             // Execute with mock registry
-            String json = DslDataGenerator.create()
-                .withSeed(123L)
-                .withGeneratorRegistry(mockRegistry)
-                .fromJsonNode(dslNode)
-                .generateAsJson();
+            IGeneration generation = DslDataGenerator.create()
+                    .withSeed(123L)
+                    .withGeneratorRegistry(mockRegistry)
+                    .fromJsonNode(dslNode)
+                    .generate();
+            String json = asJson(generation);
 
             // Verify results
             assertThat(json)
-                .isNotNull()
-                .contains("companyName");
+                    .isNotNull()
+                    .contains("companyName");
 
             // Verify efficiency: only company name should be called
             verify(mockCompany, times(2)).name();
@@ -1662,7 +1684,8 @@ class DslDataGeneratorTest {
             Faker mockFaker = mock(Faker.class);
             when(mockFaker.internet()).thenReturn(mockInternet);
 
-            // Create DSL JsonNode that only uses emailAddress (not domainName, url, password)
+            // Create DSL JsonNode that only uses emailAddress (not domainName, url,
+            // password)
             JsonNode dslNode = mapper.readTree("""
                     {
                         "contacts": {
@@ -1678,16 +1701,17 @@ class DslDataGeneratorTest {
             GeneratorRegistry mockRegistry = GeneratorRegistry.withDefaultGenerators(mockFaker);
 
             // Execute with mock registry
-            String json = DslDataGenerator.create()
-                .withSeed(123L)
-                .withGeneratorRegistry(mockRegistry)
-                .fromJsonNode(dslNode)
-                .generateAsJson();
+            IGeneration generation = DslDataGenerator.create()
+                    .withSeed(123L)
+                    .withGeneratorRegistry(mockRegistry)
+                    .fromJsonNode(dslNode)
+                    .generate();
+            String json = asJson(generation);
 
             // Verify results
             assertThat(json)
-                .isNotNull()
-                .contains("email");
+                    .isNotNull()
+                    .contains("email");
 
             // Verify efficiency: only emailAddress should be called
             verify(mockInternet, times(2)).emailAddress();

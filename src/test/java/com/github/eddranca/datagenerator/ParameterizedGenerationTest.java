@@ -124,6 +124,72 @@ public abstract class ParameterizedGenerationTest {
     }
 
     /**
+     * Static utility methods for backward compatibility in non-parameterized tests.
+     * These can be used in tests that haven't been converted to parameterized testing yet.
+     */
+    public static class LegacyApiHelper {
+        private static final ObjectMapper mapper = new ObjectMapper();
+        
+        static {
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        }
+        
+        /**
+         * Mimics the old asJson() method behavior.
+         */
+        public static String asJson(IGeneration generation) throws IOException {
+            Map<String, List<JsonNode>> collections = new HashMap<>();
+            Map<String, Stream<JsonNode>> streams = generation.asJsonNodes();
+            
+            for (Map.Entry<String, Stream<JsonNode>> entry : streams.entrySet()) {
+                collections.put(entry.getKey(), entry.getValue().toList());
+            }
+            
+            return mapper.writeValueAsString(collections);
+        }
+        
+        /**
+         * Mimics the old asJsonNode() method behavior.
+         */
+        public static JsonNode asJsonNode(IGeneration generation) throws IOException {
+            Map<String, List<JsonNode>> collections = new HashMap<>();
+            Map<String, Stream<JsonNode>> streams = generation.asJsonNodes();
+            
+            for (Map.Entry<String, Stream<JsonNode>> entry : streams.entrySet()) {
+                collections.put(entry.getKey(), entry.getValue().toList());
+            }
+            
+            ObjectNode root = mapper.createObjectNode();
+            for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
+                ArrayNode arrayNode = mapper.createArrayNode();
+                for (JsonNode item : entry.getValue()) {
+                    arrayNode.add(item);
+                }
+                root.set(entry.getKey(), arrayNode);
+            }
+            
+            return root;
+        }
+        
+
+        
+        /**
+         * Mimics the old asSqlInserts() method behavior.
+         */
+        public static Map<String, String> asSqlInserts(IGeneration generation) {
+            Map<String, Stream<String>> sqlStreams = generation.asSqlInserts();
+            Map<String, String> sqlMap = new HashMap<>();
+            
+            for (Map.Entry<String, Stream<String>> entry : sqlStreams.entrySet()) {
+                String joinedSql = entry.getValue().collect(Collectors.joining("\n"));
+                sqlMap.put(entry.getKey(), joinedSql);
+            }
+            
+            return sqlMap;
+        }
+    }
+
+    /**
      * Annotation for parameterized tests that run with both implementations.
      * Use this instead of @Test for tests that should run with both normal and memory-optimized modes.
      */
