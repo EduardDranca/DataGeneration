@@ -58,8 +58,14 @@ public class LazyItemProxy extends AbstractLazyProxy {
             // Get the materialized copy for storage in the delegate
             return lazyObjectProxy.getMaterializedCopy();
         } else {
-            // Generate normally for simple fields or non-referenced nested objects
-            return fieldNode.accept(visitor);
+            // Set current item context for self-references and tag references
+            ObjectNode previousItem = visitor.getCurrentItem();
+            try {
+                visitor.setCurrentItem(delegate);
+                return fieldNode.accept(visitor);
+            } finally {
+                visitor.setCurrentItem(previousItem);
+            }
         }
     }
 

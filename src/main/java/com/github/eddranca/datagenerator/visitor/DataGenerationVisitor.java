@@ -385,4 +385,13 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
         }
     }
 
+    // Methods for managing current item context in lazy proxies
+    public ObjectNode getCurrentItem() {
+        return currentItem;
+    }
+
+    public void setCurrentItem(ObjectNode currentItem) {
+        this.currentItem = currentItem;
+    }
+
 }
