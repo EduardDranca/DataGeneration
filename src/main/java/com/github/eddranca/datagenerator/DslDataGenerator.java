@@ -126,10 +126,7 @@ public class DslDataGenerator {
                 lazyCollections.put(entry.getKey(), entry.getValue());
             }
 
-            // Perform eager validation to ensure filtering constraints are checked early
-            validateFilteringConstraints(context, rootNode);
-
-            // Additionally, perform a dry run of the first item in each collection
+            // Perform a dry run of the first item in each collection
             // to trigger any reference filtering exceptions early
             performDryRunValidation(lazyCollections);
 
@@ -140,17 +137,7 @@ public class DslDataGenerator {
         }
     }
 
-    /**
-     * Validates filtering constraints by performing a dry run to check if any
-     * filtering would result in exceptions. This ensures that filtering exceptions
-     * are thrown early in lazy mode, maintaining API compatibility.
-     */
-    private void validateFilteringConstraints(GenerationContext context, com.github.eddranca.datagenerator.node.DslNode rootNode) {
-        // Create a validation visitor that performs dry runs
-        com.github.eddranca.datagenerator.visitor.FilteringValidationVisitor validationVisitor =
-            new com.github.eddranca.datagenerator.visitor.FilteringValidationVisitor(context);
-        rootNode.accept(validationVisitor);
-    }
+
 
     /**
      * Performs a dry run validation by attempting to generate the first item
