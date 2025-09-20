@@ -27,11 +27,8 @@ public abstract class ParameterizedGenerationTest {
     /**
      * Provides test parameters for both normal and memory-optimized implementations.
      */
-    public static Stream<Arguments> generationImplementations() {
-        return Stream.of(
-            Arguments.of("Normal", false),
-            Arguments.of("Memory-Optimized", true)
-        );
+    public static Stream<Boolean> generationImplementations() {
+        return Stream.of(false, true);
     }
 
     /**
@@ -218,7 +215,7 @@ public abstract class ParameterizedGenerationTest {
      * Use this instead of @Test for tests that should run with both normal and memory-optimized modes.
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @ParameterizedTest(name = "{0} Implementation")
+    @ParameterizedTest()
     @MethodSource("generationImplementations")
     protected @interface BothImplementations {
     }

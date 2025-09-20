@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
 
     @BothImplementations
-    void testLegacyJsonNodeFormat(String implementationName, boolean memoryOptimized) throws IOException {
+    void testLegacyJsonNodeFormat(boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                     "users": {
@@ -29,7 +29,7 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
                     "products": {
                         "count": 2,
                         "item": {
-                            "name": {"gen": "commerce.productName"},
+                            "name": {"gen": "choice", "options": ["Widget", "Gadget", "Tool"]},
                             "price": {"gen": "number", "min": 10, "max": 100}
                         }
                     }
@@ -67,7 +67,7 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testLegacyJsonStringFormat(String implementationName, boolean memoryOptimized) throws IOException {
+    void testLegacyJsonStringFormat(boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                     "items": {
@@ -92,7 +92,7 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testLegacySqlFormat(String implementationName, boolean memoryOptimized) throws IOException {
+    void testLegacySqlFormat(boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                     "users": {
@@ -113,12 +113,12 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
 
         assertThat(sqlMap).hasSize(1);
         assertThat(sqlMap).containsKey("users");
-        
+
         String usersSql = sqlMap.get("users");
         assertThat(usersSql).contains("INSERT INTO users");
         assertThat(usersSql).contains("John");
         assertThat(usersSql).contains("25");
-        
+
         // Should have 2 INSERT statements joined by newlines
         String[] statements = usersSql.split("\n");
         assertThat(statements).hasSize(2);
@@ -127,7 +127,7 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testCollectAllJsonNodesFormat(String implementationName, boolean memoryOptimized) throws IOException {
+    void testCollectAllJsonNodesFormat(boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                     "orders": {
@@ -147,10 +147,10 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
 
         assertThat(collections).hasSize(1);
         assertThat(collections).containsKey("orders");
-        
+
         List<JsonNode> orders = collections.get("orders");
         assertThat(orders).hasSize(2);
-        
+
         for (JsonNode order : orders) {
             assertThat(order.has("id")).isTrue();
             assertThat(order.get("status").asText()).isEqualTo("pending");

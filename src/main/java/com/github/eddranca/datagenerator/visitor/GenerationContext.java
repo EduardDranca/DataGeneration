@@ -50,9 +50,9 @@ public class GenerationContext {
     private final Map<String, JsonNode> namedPicks;
 
     // Lazy collection support for memory optimization
-    private final Map<String, LazyItemCollection> lazyNamedCollections;
-    private final Map<String, LazyItemCollection> lazyReferenceCollections;
-    private final Map<String, LazyItemCollection> lazyTaggedCollections;
+    private final Map<String, List<LazyItemProxy>> lazyNamedCollections;
+    private final Map<String, List<LazyItemProxy>> lazyReferenceCollections;
+    private final Map<String, List<LazyItemProxy>> lazyTaggedCollections;
     private final Map<Sequential, Integer> sequentialCounters;
     
     // Cache for materialized lazy collections to ensure consistency
@@ -129,7 +129,21 @@ public class GenerationContext {
 
     // Lazy collection registration methods for memory optimization
     public void registerLazyCollection(String name, LazyItemCollection collection) {
-        lazyNamedCollections.put(name, collection);
+        List<LazyItemProxy> existing = lazyNamedCollections.get(name);
+        if (existing == null) {
+            lazyNamedCollections.put(name, collection);
+        } else {
+            // Merge collections with the same name
+            CompositeLazyItemCollection composite;
+            if (existing instanceof CompositeLazyItemCollection) {
+                composite = (CompositeLazyItemCollection) existing;
+            } else {
+                composite = new CompositeLazyItemCollection(name);
+                composite.addCollection((LazyItemCollection) existing);
+                lazyNamedCollections.put(name, composite);
+            }
+            composite.addCollection(collection);
+        }
     }
 
     public void registerLazyReferenceCollection(String name, LazyItemCollection collection) {
@@ -149,7 +163,7 @@ public class GenerationContext {
                 return cached;
             }
             
-            LazyItemCollection lazyCollection = lazyReferenceCollections.get(name);
+            List<LazyItemProxy> lazyCollection = lazyReferenceCollections.get(name);
             if (lazyCollection != null) {
                 List<JsonNode> materialized = materializeLazyCollection(lazyCollection);
                 materializedCollectionCache.put(name, materialized);
@@ -182,7 +196,7 @@ public class GenerationContext {
                 return cached;
             }
             
-            LazyItemCollection lazyCollection = lazyTaggedCollections.get(tag);
+            List<LazyItemProxy> lazyCollection = lazyTaggedCollections.get(tag);
             if (lazyCollection != null) {
                 List<JsonNode> materialized = materializeLazyCollection(lazyCollection);
                 materializedCollectionCache.put(cacheKey, materialized);
@@ -199,7 +213,7 @@ public class GenerationContext {
      * Helper method to materialize a lazy collection into a regular List<JsonNode>.
      * This is used when lazy collections need to be accessed for reference resolution.
      */
-    private List<JsonNode> materializeLazyCollection(LazyItemCollection lazyCollection) {
+    private List<JsonNode> materializeLazyCollection(List<LazyItemProxy> lazyCollection) {
         List<JsonNode> materializedList = new ArrayList<>();
         for (LazyItemProxy lazyItem : lazyCollection) {
             materializedList.add(lazyItem.getMaterializedCopy());
@@ -215,7 +229,7 @@ public class GenerationContext {
      * Gets the lazy collections for memory-optimized generation.
      * This method should only be called when memory optimization is enabled.
      */
-    public Map<String, LazyItemCollection> getLazyNamedCollections() {
+    public Map<String, List<LazyItemProxy>> getLazyNamedCollections() {
         if (!memoryOptimizationEnabled) {
             throw new IllegalStateException("Lazy collections are only available when memory optimization is enabled");
         }

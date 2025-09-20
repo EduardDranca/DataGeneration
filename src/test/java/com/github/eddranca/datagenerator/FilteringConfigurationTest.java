@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class FilteringConfigurationTest extends ParameterizedGenerationTest {
 
     @BothImplementations
-    void testDefaultFilteringBehaviorReturnsNull(String implementationName, boolean memoryOptimized) throws IOException {
+    void testDefaultFilteringBehaviorReturnsNull(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "items": {
@@ -42,7 +42,7 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testThrowExceptionFilteringBehaviorForGenerators(String implementationName, boolean memoryOptimized) throws IOException {
+    void testThrowExceptionFilteringBehaviorForGenerators(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "items": {
@@ -68,7 +68,7 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testThrowExceptionFilteringBehaviorForReferences(String implementationName, boolean memoryOptimized) throws IOException {
+    void testThrowExceptionFilteringBehaviorForReferences(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "reference_data": {
@@ -99,7 +99,7 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testCustomMaxFilteringRetries(String implementationName, boolean memoryOptimized) throws IOException {
+    void testCustomMaxFilteringRetries(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "items": {
@@ -159,7 +159,7 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testSuccessfulFilteringWithCustomRetries(String implementationName, boolean memoryOptimized) throws IOException {
+    void testSuccessfulFilteringWithCustomRetries(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "items": {

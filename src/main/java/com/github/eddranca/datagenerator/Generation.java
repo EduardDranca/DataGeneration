@@ -3,7 +3,6 @@ package com.github.eddranca.datagenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
 import com.github.eddranca.datagenerator.util.SqlInsertGenerator;
 
 import java.io.File;

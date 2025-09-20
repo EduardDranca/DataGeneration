@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ArrayFilteringTest extends ParameterizedGenerationTest {
 
     @BothImplementations
-    void testArrayWithExplicitSyntaxAndFiltering(String implementationName, boolean memoryOptimized) throws IOException {
+    void testArrayWithExplicitSyntaxAndFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                   "excluded": {
@@ -72,7 +72,7 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testArrayWithCountSyntaxAndFiltering(String implementationName, boolean memoryOptimized) throws IOException {
+    void testArrayWithCountSyntaxAndFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                   "bannedUser": {
@@ -122,7 +122,7 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testArrayWithMultipleFilters(String implementationName, boolean memoryOptimized) throws IOException {
+    void testArrayWithMultipleFilters(boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                   "restrictions": {
@@ -181,7 +181,7 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testArrayWithTagBasedFiltering(String implementationName, boolean memoryOptimized) throws IOException {
+    void testArrayWithTagBasedFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                   "blacklist": {
@@ -237,7 +237,7 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testNestedArraysWithFiltering(String implementationName, boolean memoryOptimized) throws IOException {
+    void testNestedArraysWithFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                   "forbidden": {

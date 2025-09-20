@@ -2,22 +2,28 @@ package com.github.eddranca.datagenerator.visitor;
 
 import com.github.eddranca.datagenerator.node.CollectionNode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Stream;
 
 
 /**
  * A lazy collection that generates LazyItemProxy objects on-demand.
- * 
+ *
  * <p>This collection provides two modes of operation:
  * <ul>
  *   <li><strong>Indexed access</strong> - Items are cached for repeated access via {@link #get(int)}</li>
  *   <li><strong>Streaming access</strong> - Items are generated fresh each time via {@link #stream()}</li>
  * </ul>
- * 
+ *
  * <p>The streaming mode is key for memory efficiency as it doesn't cache items,
  * allowing processing of large datasets without memory accumulation.
- * 
+ *
  * <p>This class is an internal implementation detail of the memory optimization feature
  * and should not be used directly by client code.
  */
@@ -28,7 +34,7 @@ public class LazyItemCollection implements List<LazyItemProxy> {
     private final Set<String> referencedPaths;
     private final List<LazyItemProxy> materializedItems;
 
-    public LazyItemCollection(CollectionNode collectionNode, DataGenerationVisitor visitor, 
+    public LazyItemCollection(CollectionNode collectionNode, DataGenerationVisitor visitor,
                              String collectionName, Set<String> referencedPaths) {
         this.collectionNode = collectionNode;
         this.visitor = visitor;
@@ -73,9 +79,9 @@ public class LazyItemCollection implements List<LazyItemProxy> {
      */
     private LazyItemProxy generateItem() {
         return new LazyItemProxy(
-            collectionName, 
-            collectionNode.getItem().getFields(), 
-            referencedPaths, 
+            collectionName,
+            collectionNode.getItem().getFields(),
+            referencedPaths,
             visitor
         );
     }

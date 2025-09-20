@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class TagValidationTest extends ParameterizedGenerationTest {
 
     @BothImplementations
-    void testValidTagSharing(String implementationName, boolean memoryOptimized) throws IOException {
+    void testValidTagSharing(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -72,7 +72,7 @@ class TagValidationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testValidTagSharingWithCustomNames(String implementationName, boolean memoryOptimized) throws IOException {
+    void testValidTagSharingWithCustomNames(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "user_data": {
@@ -165,7 +165,7 @@ class TagValidationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testSingleCollectionMultipleTags(String implementationName, boolean memoryOptimized) throws IOException {
+    void testSingleCollectionMultipleTags(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {

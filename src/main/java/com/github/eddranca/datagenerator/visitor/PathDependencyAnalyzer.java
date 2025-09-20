@@ -1,6 +1,24 @@
 package com.github.eddranca.datagenerator.visitor;
 
-import com.github.eddranca.datagenerator.node.*;
+import com.github.eddranca.datagenerator.node.ArrayFieldNode;
+import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
+import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
+import com.github.eddranca.datagenerator.node.CollectionNode;
+import com.github.eddranca.datagenerator.node.DslNode;
+import com.github.eddranca.datagenerator.node.DslNodeVisitor;
+import com.github.eddranca.datagenerator.node.FilterNode;
+import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
+import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
+import com.github.eddranca.datagenerator.node.ItemNode;
+import com.github.eddranca.datagenerator.node.LiteralFieldNode;
+import com.github.eddranca.datagenerator.node.ObjectFieldNode;
+import com.github.eddranca.datagenerator.node.PickReferenceNode;
+import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
+import com.github.eddranca.datagenerator.node.RootNode;
+import com.github.eddranca.datagenerator.node.SelfReferenceNode;
+import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
+import com.github.eddranca.datagenerator.node.SpreadFieldNode;
+import com.github.eddranca.datagenerator.node.TagReferenceNode;
 
 import java.util.HashMap;
 import java.util.HashSet;

@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class WeightedChoiceTest extends ParameterizedGenerationTest {
 
     @BothImplementations
-    void testBasicWeightedChoice(String implementationName, boolean memoryOptimized) throws IOException {
+    void testBasicWeightedChoice(boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                     "items": {
@@ -58,7 +58,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testWeightedChoiceWithDifferentWeights(String implementationName, boolean memoryOptimized) throws IOException {
+    void testWeightedChoiceWithDifferentWeights(boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                     "products": {
@@ -110,7 +110,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testWeightedChoiceWithComplexOptions(String implementationName, boolean memoryOptimized) throws IOException {
+    void testWeightedChoiceWithComplexOptions(boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                     "users": {
@@ -167,7 +167,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testUnweightedChoiceStillWorks(String implementationName, boolean memoryOptimized) throws IOException {
+    void testUnweightedChoiceStillWorks(boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                     "items": {
@@ -211,7 +211,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testWeightedChoiceWithDecimalWeights(String implementationName, boolean memoryOptimized) throws IOException {
+    void testWeightedChoiceWithDecimalWeights(boolean memoryOptimized) throws IOException {
         String dsl = """
                 {
                     "items": {

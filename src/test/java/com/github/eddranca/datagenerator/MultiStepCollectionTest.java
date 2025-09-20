@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class MultiStepCollectionTest extends ParameterizedGenerationTest {
 
     @BothImplementations
-    void testMultiStepCollectionGeneration(String implementationName, boolean memoryOptimized) throws IOException {
+    void testMultiStepCollectionGeneration(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "admin_users": {
@@ -103,7 +103,7 @@ class MultiStepCollectionTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testMultiStepCollectionWithReferences(String implementationName, boolean memoryOptimized) throws IOException {
+    void testMultiStepCollectionWithReferences(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "premium_products": {
@@ -187,7 +187,7 @@ class MultiStepCollectionTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testMultiStepCollectionWithTags(String implementationName, boolean memoryOptimized) throws IOException {
+    void testMultiStepCollectionWithTags(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "us_locations": {
@@ -257,7 +257,7 @@ class MultiStepCollectionTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testReferenceIndividualCollectionSteps(String implementationName, boolean memoryOptimized) throws IOException {
+    void testReferenceIndividualCollectionSteps(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "us_users": {

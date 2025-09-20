@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ReferenceSpreadTest extends ParameterizedGenerationTest {
 
     @BothImplementations
-    void testBasicReferenceSpread(String implementationName, boolean memoryOptimized) throws IOException {
+    void testBasicReferenceSpread(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree(
                 """
                         {
@@ -60,7 +60,7 @@ class ReferenceSpreadTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testReferenceSpreadWithFieldRenaming(String implementationName, boolean memoryOptimized) throws IOException {
+    void testReferenceSpreadWithFieldRenaming(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -105,7 +105,7 @@ class ReferenceSpreadTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testReferenceSpreadWithoutFieldsArray(String implementationName, boolean memoryOptimized) throws IOException {
+    void testReferenceSpreadWithoutFieldsArray(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -146,7 +146,7 @@ class ReferenceSpreadTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testReferenceSpreadWithSequential(String implementationName, boolean memoryOptimized) throws IOException {
+    void testReferenceSpreadWithSequential(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {

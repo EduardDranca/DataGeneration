@@ -15,7 +15,7 @@ import static org.assertj.core.data.Offset.offset;
 class GeneratorFilteringTest extends ParameterizedGenerationTest {
 
     @BothImplementations
-    void testBasicGeneratorFiltering(String implementationName, boolean memoryOptimized) throws IOException {
+    void testBasicGeneratorFiltering(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "reference_data": {
@@ -91,7 +91,7 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testGeneratorFilteringWithComplexOptions(String implementationName, boolean memoryOptimized) throws IOException {
+    void testGeneratorFilteringWithComplexOptions(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "categories": {
@@ -163,7 +163,7 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testGeneratorFilteringWithPathExtraction(String implementationName, boolean memoryOptimized) throws IOException {
+    void testGeneratorFilteringWithPathExtraction(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "reference_names": {
@@ -235,7 +235,7 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testGeneratorFilteringFallbackToNull(String implementationName, boolean memoryOptimized) throws IOException {
+    void testGeneratorFilteringFallbackToNull(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "items": {
@@ -271,7 +271,7 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testCustomGeneratorWithNativeFiltering(String implementationName, boolean memoryOptimized) throws IOException {
+    void testCustomGeneratorWithNativeFiltering(boolean memoryOptimized) throws IOException {
         // Create a custom generator that supports native filtering
         Generator customFilteringGenerator = new Generator() {
             @Override

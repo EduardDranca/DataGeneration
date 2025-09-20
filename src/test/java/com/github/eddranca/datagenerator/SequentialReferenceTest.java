@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SequentialReferenceTest extends ParameterizedGenerationTest {
 
     @BothImplementations
-    void testBasicSequentialReference(String implementationName, boolean memoryOptimized) throws IOException {
+    void testBasicSequentialReference(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -60,7 +60,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testSequentialReferenceWithFiltering(String implementationName, boolean memoryOptimized) throws IOException {
+    void testSequentialReferenceWithFiltering(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -124,7 +124,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testRandomVsSequentialReference(String implementationName, boolean memoryOptimized) throws IOException {
+    void testRandomVsSequentialReference(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -190,7 +190,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testSequentialReferenceWithTaggedCollections(String implementationName, boolean memoryOptimized)
+    void testSequentialReferenceWithTaggedCollections(boolean memoryOptimized)
             throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
@@ -239,7 +239,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testSequentialReferenceDefaultBehavior(String implementationName, boolean memoryOptimized) throws IOException {
+    void testSequentialReferenceDefaultBehavior(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {

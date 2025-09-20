@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class StaticValueTest extends ParameterizedGenerationTest {
 
     @BothImplementations
-    void testBasicStaticValues(String implementationName, boolean memoryOptimized) throws IOException {
+    void testBasicStaticValues(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "products": {
@@ -36,7 +36,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
         List<JsonNode> products = generation.streamJsonNodes("products").toList();
 
         assertThat(products).hasSize(3);
-        
+
         for (JsonNode product : products) {
             // Dynamic fields should be present and different
             assertThat(product.get("id")).isNotNull();
@@ -58,7 +58,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testComplexStaticValues(String implementationName, boolean memoryOptimized) throws IOException {
+    void testComplexStaticValues(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "orders": {
@@ -89,7 +89,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
         List<JsonNode> orders = generation.streamJsonNodes("orders").toList();
 
         assertThat(orders).hasSize(2);
-        
+
         for (JsonNode order : orders) {
             // Dynamic field
             assertThat(order.get("id")).isNotNull();
@@ -118,7 +118,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testMixedStaticAndDynamicFields(String implementationName, boolean memoryOptimized) throws IOException {
+    void testMixedStaticAndDynamicFields(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
                 {
                     "users": {
@@ -144,7 +144,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
         List<JsonNode> users = generation.streamJsonNodes("users").toList();
 
         assertThat(users).hasSize(3);
-        
+
         for (JsonNode user : users) {
             // Dynamic fields should vary
             assertThat(user.get("id")).isNotNull();

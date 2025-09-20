@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ArrayFieldTest extends ParameterizedGenerationTest {
 
     @BothImplementations
-    void testFixedSizeArray(String implementationName, boolean memoryOptimized) throws Exception {
+    void testFixedSizeArray(boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                     "users": {
@@ -60,7 +60,7 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testVariableSizeArray(String implementationName, boolean memoryOptimized) throws Exception {
+    void testVariableSizeArray(boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                     "users": {
@@ -94,7 +94,7 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testArrayWithGeneratedItems(String implementationName, boolean memoryOptimized) throws Exception {
+    void testArrayWithGeneratedItems(boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                     "users": {
@@ -131,7 +131,7 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testArrayWithObjectItems(String implementationName, boolean memoryOptimized) throws Exception {
+    void testArrayWithObjectItems(boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                     "users": {
@@ -172,7 +172,7 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testEmptyArray(String implementationName, boolean memoryOptimized) throws Exception {
+    void testEmptyArray(boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                     "users": {

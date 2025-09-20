@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,7 +59,7 @@ public class LazyObjectProxy extends AbstractLazyProxy {
                 return nestedLazyProxy.getMaterializedCopy();
             }
         }
-        
+
         // Simple field or no nested references, generate normally
         return fieldNode.accept(visitor);
     }
@@ -84,13 +82,13 @@ public class LazyObjectProxy extends AbstractLazyProxy {
         // Ensure all fields are materialized first
         materializeAll();
 
-        // Copy all materialized values (they're already JsonNode objects in the delegate)
-        for (String fieldName : fieldNodes.keySet()) {
+        // Copy all fields from the delegate (including spread fields)
+        delegate.fieldNames().forEachRemaining(fieldName -> {
             JsonNode value = delegate.get(fieldName);
             if (value != null) {
                 materializedCopy.set(fieldName, value);
             }
-        }
+        });
 
         return materializedCopy;
     }

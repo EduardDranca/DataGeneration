@@ -55,7 +55,18 @@ abstract class AbstractLazyProxy {
             DslNode fieldNode = fieldNodes.get(fieldName);
             if (fieldNode != null) {
                 JsonNode value = generateFieldValue(fieldName, fieldNode);
-                delegate.set(fieldName, value);
+
+                // Handle spread fields - spread the returned object into the parent
+                if (fieldNode instanceof com.github.eddranca.datagenerator.node.SpreadFieldNode ||
+                    fieldNode instanceof com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode) {
+                    if (value != null && value.isObject()) {
+                        ObjectNode spreadObj = (ObjectNode) value;
+                        spreadObj.fieldNames().forEachRemaining(
+                            fn -> delegate.set(fn, spreadObj.get(fn)));
+                    }
+                } else {
+                    delegate.set(fieldName, value);
+                }
                 materializedFieldNames.add(fieldName);
             }
         }

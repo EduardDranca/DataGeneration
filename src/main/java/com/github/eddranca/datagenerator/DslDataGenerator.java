@@ -10,17 +10,14 @@ import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.validation.DslTreeBuildResult;
 import com.github.eddranca.datagenerator.visitor.DataGenerationVisitor;
 import com.github.eddranca.datagenerator.visitor.GenerationContext;
-import com.github.eddranca.datagenerator.visitor.LazyItemCollection;
 import com.github.eddranca.datagenerator.visitor.LazyItemProxy;
 import net.datafaker.Faker;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -125,18 +122,18 @@ public class DslDataGenerator {
         if (memoryOptimizationEnabled) {
             // For memory optimization, use the lazy collections directly
             Map<String, List<LazyItemProxy>> lazyCollections = new HashMap<>();
-            
-            for (Map.Entry<String, LazyItemCollection> entry : context.getLazyNamedCollections().entrySet()) {
+
+            for (Map.Entry<String, List<LazyItemProxy>> entry : context.getLazyNamedCollections().entrySet()) {
                 lazyCollections.put(entry.getKey(), entry.getValue());
             }
-            
+
             // Perform eager validation to ensure filtering constraints are checked early
             validateFilteringConstraints(context, rootNode);
-            
+
             // Additionally, perform a dry run of the first item in each collection
             // to trigger any reference filtering exceptions early
             performDryRunValidation(lazyCollections);
-            
+
             return new LazyGeneration(lazyCollections);
         } else {
             // Normal generation
@@ -305,7 +302,7 @@ public class DslDataGenerator {
      */
     private void validateFilteringConstraints(GenerationContext context, com.github.eddranca.datagenerator.node.DslNode rootNode) {
         // Create a validation visitor that performs dry runs
-        com.github.eddranca.datagenerator.visitor.FilteringValidationVisitor validationVisitor = 
+        com.github.eddranca.datagenerator.visitor.FilteringValidationVisitor validationVisitor =
             new com.github.eddranca.datagenerator.visitor.FilteringValidationVisitor(context);
         rootNode.accept(validationVisitor);
     }
