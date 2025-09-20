@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.DslDataGenerator;
 import com.github.eddranca.datagenerator.IGeneration;
 import com.github.eddranca.datagenerator.Generation;
+import com.github.eddranca.datagenerator.ParameterizedGenerationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,8 +17,8 @@ import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.Lega
 
 class ArrayIntegrationTest extends com.github.eddranca.datagenerator.ParameterizedGenerationTest {
 
-    @Test
-    void testComplexArrayScenario() throws Exception {
+    @BothImplementations
+    void testComplexArrayScenario(boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                     "users": {
@@ -54,7 +55,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                 }
                 """;
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 12345L, false);
+        IGeneration generation = generateFromDslWithSeed(dsl, 12345L, memoryOptimized);
 
         JsonNode result = asJsonNode(generation);
 
@@ -101,8 +102,8 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
             });
     }
 
-    @Test
-    void testArrayWithReferences() throws Exception {
+    @BothImplementations
+    void testArrayWithReferences(boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                     "categories": {
@@ -128,7 +129,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                 }
                 """;
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 54321L, false);
+        IGeneration generation = generateFromDslWithSeed(dsl, 54321L, memoryOptimized);
 
         JsonNode result = asJsonNode(generation);
 
@@ -158,7 +159,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
     }
 
     @Nested
-    class CountSyntaxIntegrationTest {
+    class CountSyntaxIntegrationTest extends ParameterizedGenerationTest {
 
         private ObjectMapper objectMapper;
 
@@ -167,8 +168,8 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
             objectMapper = new ObjectMapper();
         }
 
-        @Test
-        void testCountSyntaxWithChoiceGenerator() throws Exception {
+        @BothImplementations
+        void testCountSyntaxWithChoiceGenerator(boolean memoryOptimized) throws Exception {
             String dsl = """
                     {
                       "users": {
@@ -186,7 +187,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = generateFromDsl(dslNode, false);
+            IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode usersArray = collectionsNode.get("users");
@@ -208,8 +209,8 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                 });
         }
 
-        @Test
-        void testCountSyntaxWithLiteralValues() throws Exception {
+        @BothImplementations
+        void testCountSyntaxWithLiteralValues(boolean memoryOptimized) throws Exception {
             String dsl = """
                     {
                       "messages": {
@@ -226,7 +227,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = generateFromDsl(dslNode, false);
+            IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode messagesArray = collectionsNode.get("messages");
@@ -248,8 +249,8 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                 );
         }
 
-        @Test
-        void testCountSyntaxWithComplexObjects() throws Exception {
+        @BothImplementations
+        void testCountSyntaxWithComplexObjects(boolean memoryOptimized) throws Exception {
             String dsl = """
                     {
                       "companies": {
@@ -270,7 +271,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = generateFromDsl(dslNode, false);
+            IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode companiesArray = collectionsNode.get("companies");
@@ -294,8 +295,8 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                 });
         }
 
-        @Test
-        void testCountZeroGeneratesEmptyArray() throws Exception {
+        @BothImplementations
+        void testCountZeroGeneratesEmptyArray(boolean memoryOptimized) throws Exception {
             String dsl = """
                     {
                       "users": {
@@ -313,7 +314,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = generateFromDsl(dslNode, false);
+            IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode usersArray = collectionsNode.get("users");
@@ -329,8 +330,8 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
             assertThat(emptyTags).isEmpty();
         }
 
-        @Test
-        void testCountSyntaxWithNestedObjects() throws Exception {
+        @BothImplementations
+        void testCountSyntaxWithNestedObjects(boolean memoryOptimized) throws Exception {
             String dsl = """
                     {
                       "projects": {
@@ -351,7 +352,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                     """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = generateFromDsl(dslNode, false);
+            IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode projectsArray = collectionsNode.get("projects");

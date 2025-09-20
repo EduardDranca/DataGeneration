@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -23,13 +24,6 @@ import java.util.stream.Stream;
  */
 public abstract class ParameterizedGenerationTest {
     protected final ObjectMapper mapper = new ObjectMapper();
-
-    /**
-     * Provides test parameters for both normal and memory-optimized implementations.
-     */
-    public static Stream<Boolean> generationImplementations() {
-        return Stream.of(false, true);
-    }
 
     /**
      * Creates a generation builder with the specified memory optimization setting.
@@ -215,8 +209,8 @@ public abstract class ParameterizedGenerationTest {
      * Use this instead of @Test for tests that should run with both normal and memory-optimized modes.
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @ParameterizedTest()
-    @MethodSource("generationImplementations")
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
     protected @interface BothImplementations {
     }
 }

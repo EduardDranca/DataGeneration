@@ -86,7 +86,7 @@ class LazyStreamingTest {
   }
 
   @Test
-  public void testMemoryOptimizationWithSelectiveFieldGeneration() throws Exception {
+  void testMemoryOptimizationWithSelectiveFieldGeneration() throws Exception {
     String dsl = """
         {
           "users": {
@@ -129,7 +129,7 @@ class LazyStreamingTest {
   }
 
   @Test
-  public void testNestedPathReferences() throws Exception {
+  void testNestedPathReferences() throws Exception {
     String dsl = """
         {
           "users": {

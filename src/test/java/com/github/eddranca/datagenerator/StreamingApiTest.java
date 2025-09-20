@@ -1,7 +1,6 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
@@ -13,10 +12,10 @@ import static org.assertj.core.api.Assertions.*;
 /**
  * Test for the new streaming API functionality.
  */
-class StreamingApiTest {
+class StreamingApiTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testStreamJsonNodes() throws Exception {
+    @BothImplementations
+    void testStreamJsonNodes(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
               "users": {
@@ -29,10 +28,7 @@ class StreamingApiTest {
             }
             """;
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonString(dsl)
-            .generate();
+        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
 
         // Test streaming individual collection
         Stream<JsonNode> userStream = generation.streamJsonNodes("users");
@@ -47,8 +43,8 @@ class StreamingApiTest {
         }
     }
 
-    @Test
-    void testAsJsonNodeStreams() throws Exception {
+    @BothImplementations
+    void testAsJsonNodeStreams(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
               "users": {
@@ -68,10 +64,7 @@ class StreamingApiTest {
             }
             """;
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonString(dsl)
-            .generate();
+        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
 
         // Test streaming all collections
         Map<String, Stream<JsonNode>> allStreams = generation.asJsonNodes();
@@ -85,8 +78,8 @@ class StreamingApiTest {
         assertThat(posts).hasSize(3);
     }
 
-    @Test
-    void testAsSqlInsertStreams() throws Exception {
+    @BothImplementations
+    void testAsSqlInsertStreams(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
               "products": {
@@ -100,10 +93,7 @@ class StreamingApiTest {
             }
             """;
 
-        IGeneration generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonString(dsl)
-            .generate();
+        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
 
         // Test streaming SQL inserts
         Map<String, Stream<String>> sqlStreams = generation.asSqlInserts();
@@ -119,8 +109,8 @@ class StreamingApiTest {
         }
     }
 
-    @Test
-    void testMemoryOptimizedStreaming() throws Exception {
+    @BothImplementations
+    void testStreamingWithSqlGeneration(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
               "users": {
@@ -134,13 +124,9 @@ class StreamingApiTest {
             }
             """;
 
-        IGeneration generation = DslDataGenerator.create()
-            .withMemoryOptimization()
-            .withSeed(123L)
-            .fromJsonString(dsl)
-            .generate();
+        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
 
-        // Test that streaming works with memory optimization
+        // Test that streaming works with both modes
         Stream<JsonNode> userStream = generation.streamJsonNodes("users");
         List<JsonNode> users = userStream.collect(Collectors.toList());
 
@@ -151,7 +137,7 @@ class StreamingApiTest {
             assertThat(user.has("email")).isTrue();
         }
 
-        // Test SQL streaming with memory optimization
+        // Test SQL streaming
         Stream<String> sqlStream = generation.streamSqlInserts("users");
         List<String> sqlStatements = sqlStream.collect(Collectors.toList());
 

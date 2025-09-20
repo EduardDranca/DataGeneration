@@ -17,8 +17,8 @@ import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.Lega
 class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.ParameterizedGenerationTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
-    @Test
-    void testMultipleGeneratorsInDsl() throws Exception {
+    @BothImplementations
+    void testMultipleGeneratorsInDsl(boolean memoryOptimized) throws Exception {
 
         String dsl = """
             {
@@ -41,7 +41,7 @@ class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.Paramet
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        IGeneration generation = generateFromDsl(dslNode, false);
+        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
         JsonNode result = asJsonNode(generation);
 
@@ -93,8 +93,8 @@ class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.Paramet
         }
     }
 
-    @Test
-    void testBooleanProbabilityDistribution() throws Exception {
+    @BothImplementations
+    void testBooleanProbabilityDistribution(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
               "booleanTest": {
@@ -110,7 +110,7 @@ class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.Paramet
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        IGeneration generation = generateFromDslWithSeed(dslNode, 456L, false);
+        IGeneration generation = generateFromDslWithSeed(dslNode, 456L, memoryOptimized);
 
         JsonNode result = asJsonNode(generation);
         JsonNode testData = result.get("booleanTest");
@@ -136,8 +136,8 @@ class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.Paramet
             .isBetween(85, 95);
     }
 
-    @Test
-    void testLoremGeneratorVariations() throws Exception {
+    @BothImplementations
+    void testLoremGeneratorVariations(boolean memoryOptimized) throws Exception {
         // Test simple lorem generation (this works)
         String simpleDsl = """
             {
@@ -155,7 +155,7 @@ class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.Paramet
 
         JsonNode dslNode = mapper.readTree(simpleDsl);
 
-        IGeneration generation = generateFromDslWithSeed(dslNode, 789L, false);
+        IGeneration generation = generateFromDslWithSeed(dslNode, 789L, memoryOptimized);
 
         JsonNode result = asJsonNode(generation);
         JsonNode testData = result.get("loremTest");
@@ -180,8 +180,8 @@ class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.Paramet
         }
     }
 
-    @Test
-    void testPhoneGeneratorFormats() throws Exception {
+    @BothImplementations
+    void testPhoneGeneratorFormats(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
               "contacts": {
@@ -200,7 +200,7 @@ class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.Paramet
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        IGeneration generation = generateFromDslWithSeed(dslNode, 999L, false);
+        IGeneration generation = generateFromDslWithSeed(dslNode, 999L, memoryOptimized);
 
         JsonNode result = asJsonNode(generation);
         JsonNode contacts = result.get("contacts");

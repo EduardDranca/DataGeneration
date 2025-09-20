@@ -28,8 +28,8 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
         mapper = new ObjectMapper();
     }
 
-    @Test
-    void testPickWithReferencesAndFiltering() throws Exception {
+    @BothImplementations
+    void testPickWithReferencesAndFiltering(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
                 {
                     "countries": {
@@ -80,7 +80,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
                 }
                 """);
 
-        IGeneration generation = generateFromDsl(dsl, false);
+        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
@@ -114,8 +114,8 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             );
     }
 
-    @Test
-    void testLargeScaleDataGeneration() throws Exception {
+    @BothImplementations
+    void testLargeScaleDataGeneration(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
                 {
                     "regions": {
@@ -174,7 +174,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
                 }
                 """);
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 789L, false);
+        IGeneration generation = generateFromDslWithSeed(dsl, 789L, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
@@ -204,8 +204,8 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             .hasSizeGreaterThan(100000); // Should be substantial JSON
     }
 
-    @Test
-    void testComplexFilteringWithMultipleLevels() throws Exception {
+    @BothImplementations
+    void testComplexFilteringWithMultipleLevels(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
                 {
                     "categories": {
@@ -251,7 +251,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
                 }
                 """);
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 999L, false);
+        IGeneration generation = generateFromDslWithSeed(dsl, 999L, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
@@ -289,8 +289,8 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             });
     }
 
-    @Test
-    void testDynamicTagReferencesWithThisField() throws Exception {
+    @BothImplementations
+    void testDynamicTagReferencesWithThisField(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
                 {
                     "users": {
@@ -337,7 +337,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
                 }
                 """);
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 111L, false);
+        IGeneration generation = generateFromDslWithSeed(dsl, 111L, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
@@ -363,8 +363,8 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             });
     }
 
-    @Test
-    void testSeedConsistencyWithComplexStructures() throws Exception {
+    @BothImplementations
+    void testSeedConsistencyWithComplexStructures(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
                 {
                     "base_data": {
@@ -395,8 +395,8 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
                 """);
 
         // Generate with same seed twice
-        IGeneration generation1 = generateFromDslWithSeed(dsl, 222L, false);
-        IGeneration generation2 = generateFromDslWithSeed(dsl, 222L, false);
+        IGeneration generation1 = generateFromDslWithSeed(dsl, 222L, memoryOptimized);
+        IGeneration generation2 = generateFromDslWithSeed(dsl, 222L, memoryOptimized);
 
         // Results should be identical
         assertThat(asJson(generation1)).isEqualTo(asJson(generation2));
@@ -407,8 +407,8 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
         assertThat(collections1.get("derived_data")).hasSize(10);
     }
 
-    @Test
-    void testCsvGeneratorUsersIntegration() throws Exception {
+    @BothImplementations
+    void testCsvGeneratorUsersIntegration(boolean memoryOptimized) throws Exception {
         String csvPath = "src/test/resources/test-users.csv";
 
         JsonNode dslNode = mapper.readTree(String.format("""
@@ -426,7 +426,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
                 }
                 """, csvPath));
 
-        IGeneration generation = generateFromDslWithSeed(dslNode, 42L, false);
+        IGeneration generation = generateFromDslWithSeed(dslNode, 42L, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users_from_csv");
@@ -448,8 +448,8 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             );
     }
 
-    @Test
-    void testCsvGeneratorPickFieldIntegration() throws Exception {
+    @BothImplementations
+    void testCsvGeneratorPickFieldIntegration(boolean memoryOptimized) throws Exception {
         String csvPath = "src/test/resources/test-users.csv";
 
         // TODO: This should work with just "item": { "gen": "csv", ... } but currently requires the nested 'user' object
@@ -468,7 +468,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
                 }
                 """, csvPath));
 
-        IGeneration generation = generateFromDslWithSeed(dslNode, 42L, false);
+        IGeneration generation = generateFromDslWithSeed(dslNode, 42L, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users_picked");

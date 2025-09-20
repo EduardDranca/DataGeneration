@@ -26,8 +26,8 @@ class SequenceGeneratorIntegrationTest extends ParameterizedGenerationTest {
         mapper = new ObjectMapper();
     }
 
-    @Test
-    void testSequenceGeneratorBasicFunctionality() throws Exception {
+    @BothImplementations
+    void testSequenceGeneratorBasicFunctionality(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
                 {
                     "items": {
@@ -39,7 +39,7 @@ class SequenceGeneratorIntegrationTest extends ParameterizedGenerationTest {
                 }
                 """);
 
-        IGeneration generation = generateFromDsl(dsl, false);
+        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         assertThat(collections).containsKey("items");
@@ -50,8 +50,8 @@ class SequenceGeneratorIntegrationTest extends ParameterizedGenerationTest {
             .containsExactly(0, 2, 4, 6, 8);
     }
 
-    @Test
-    void testMultipleFieldsHaveIndependentSequences() throws Exception {
+    @BothImplementations
+    void testMultipleFieldsHaveIndependentSequences(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
                 {
                     "items": {
@@ -65,7 +65,7 @@ class SequenceGeneratorIntegrationTest extends ParameterizedGenerationTest {
                 }
                 """);
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 456L, false);
+        IGeneration generation = generateFromDslWithSeed(dsl, 456L, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         assertThat(collections).containsKey("items");
@@ -89,8 +89,8 @@ class SequenceGeneratorIntegrationTest extends ParameterizedGenerationTest {
         assertThat(items.get(2).get("negativeNumbers").intValue()).isEqualTo(-7);
     }
 
-    @Test
-    void testSequenceGeneratorWithDefaultValues() throws Exception {
+    @BothImplementations
+    void testSequenceGeneratorWithDefaultValues(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
                 {
                     "items": {
@@ -102,7 +102,7 @@ class SequenceGeneratorIntegrationTest extends ParameterizedGenerationTest {
                 }
                 """);
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 789L, false);;
+        IGeneration generation = generateFromDslWithSeed(dsl, 789L, memoryOptimized);;
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         assertThat(collections).containsKey("items");
@@ -114,8 +114,8 @@ class SequenceGeneratorIntegrationTest extends ParameterizedGenerationTest {
             .containsExactly(0, 1, 2, 3);
     }
 
-    @Test
-    void testSequenceGeneratorWithNegativeIncrement() throws Exception {
+    @BothImplementations
+    void testSequenceGeneratorWithNegativeIncrement(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
                 {
                     "items": {
@@ -127,7 +127,7 @@ class SequenceGeneratorIntegrationTest extends ParameterizedGenerationTest {
                 }
                 """);
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 999L, false);;
+        IGeneration generation = generateFromDslWithSeed(dsl, 999L, memoryOptimized);;
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         assertThat(collections).containsKey("items");
