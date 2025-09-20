@@ -15,21 +15,21 @@ class StaticValueTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testBasicStaticValues(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "products": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.firstName"},
-                            "status": "active",
-                            "version": 1.0,
-                            "enabled": true,
-                            "category": null,
-                            "tags": ["electronics", "gadget"]
-                        }
+            {
+                "products": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.firstName"},
+                        "status": "active",
+                        "version": 1.0,
+                        "enabled": true,
+                        "category": null,
+                        "tags": ["electronics", "gadget"]
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
@@ -60,29 +60,29 @@ class StaticValueTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testComplexStaticValues(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "orders": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "metadata": {
-                                "source": "api",
-                                "version": 2,
-                                "features": ["tracking", "notifications"],
-                                "config": {
-                                    "timeout": 30,
-                                    "retries": 3
-                                }
-                            },
-                            "constants": {
-                                "pi": 3.14159,
-                                "enabled": true,
-                                "description": null
+            {
+                "orders": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "metadata": {
+                            "source": "api",
+                            "version": 2,
+                            "features": ["tracking", "notifications"],
+                            "config": {
+                                "timeout": 30,
+                                "retries": 3
                             }
+                        },
+                        "constants": {
+                            "pi": 3.14159,
+                            "enabled": true,
+                            "description": null
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
@@ -120,24 +120,24 @@ class StaticValueTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testMixedStaticAndDynamicFields(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.firstName"},
-                            "role": "user",
-                            "permissions": ["read", "write"],
-                            "settings": {
-                                "theme": "dark",
-                                "notifications": true,
-                                "language": "en"
-                            },
-                            "email": {"gen": "internet.emailAddress"}
-                        }
+            {
+                "users": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.firstName"},
+                        "role": "user",
+                        "permissions": ["read", "write"],
+                        "settings": {
+                            "theme": "dark",
+                            "notifications": true,
+                            "language": "en"
+                        },
+                        "email": {"gen": "internet.emailAddress"}
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 

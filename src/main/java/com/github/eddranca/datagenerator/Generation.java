@@ -121,8 +121,6 @@ public class Generation implements IGeneration {
             .map(item -> SqlInsertGenerator.generateSqlInsert(collectionName, item));
     }
 
-
-
     /**
      * Fluent builder for generation operations.
      */
@@ -193,6 +191,51 @@ public class Generation implements IGeneration {
          */
         public Map<String, Stream<String>> generateAsSql(String... collectionNames) throws IOException {
             return generate().asSqlInserts(collectionNames);
+        }
+
+        /**
+         * Generates the data and returns JsonNode streams for all collections.
+         *
+         * @return a map of collection names to JsonNode streams
+         * @throws IOException if file reading fails
+         */
+        public Map<String, Stream<JsonNode>> generateAsJson() throws IOException {
+            return generate().asJsonNodes();
+        }
+
+        /**
+         * Generates the data and returns JsonNode streams for specified collections only.
+         *
+         * @param collectionNames the names of collections to generate JSON for
+         * @return a map of collection names to JsonNode streams
+         * @throws IOException if file reading fails
+         */
+        public Map<String, Stream<JsonNode>> generateAsJson(String... collectionNames) throws IOException {
+            return generate().asJsonNodes(collectionNames);
+        }
+
+        /**
+         * Generates the data and returns a JsonNode stream for a single collection.
+         *
+         * @param collectionName the name of the collection to stream
+         * @return a stream of JsonNode items
+         * @throws IOException if file reading fails
+         * @throws IllegalArgumentException if the collection doesn't exist
+         */
+        public Stream<JsonNode> streamJsonNodes(String collectionName) throws IOException {
+            return generate().streamJsonNodes(collectionName);
+        }
+
+        /**
+         * Generates the data and returns a SQL INSERT stream for a single collection.
+         *
+         * @param collectionName the name of the collection to stream
+         * @return a stream of SQL INSERT statements
+         * @throws IOException if file reading fails
+         * @throws IllegalArgumentException if the collection doesn't exist
+         */
+        public Stream<String> streamSqlInserts(String collectionName) throws IOException {
+            return generate().streamSqlInserts(collectionName);
         }
     }
 }

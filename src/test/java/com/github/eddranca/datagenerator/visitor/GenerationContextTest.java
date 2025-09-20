@@ -256,7 +256,7 @@ class GenerationContextTest {
 
     @Test
     void testGetNextSequentialIndexWithZeroSize() {
-        assertThat(context.getNextSequentialIndex(mockSequentialNode, 0)).isEqualTo(0);
+        assertThat(context.getNextSequentialIndex(mockSequentialNode, 0)).isZero();
     }
 
     @Test

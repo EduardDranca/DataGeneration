@@ -54,7 +54,7 @@ public class GenerationContext {
     private final Map<String, List<LazyItemProxy>> lazyReferenceCollections;
     private final Map<String, List<LazyItemProxy>> lazyTaggedCollections;
     private final Map<Sequential, Integer> sequentialCounters;
-    
+
     // Cache for materialized lazy collections to ensure consistency
     private final Map<String, List<JsonNode>> materializedCollectionCache;
     private final int maxFilteringRetries;
@@ -135,8 +135,8 @@ public class GenerationContext {
         } else {
             // Merge collections with the same name
             CompositeLazyItemCollection composite;
-            if (existing instanceof CompositeLazyItemCollection) {
-                composite = (CompositeLazyItemCollection) existing;
+            if (existing instanceof CompositeLazyItemCollection existingComposite) {
+                composite = existingComposite;
             } else {
                 composite = new CompositeLazyItemCollection(name);
                 composite.addCollection((LazyItemCollection) existing);
@@ -162,7 +162,7 @@ public class GenerationContext {
             if (cached != null) {
                 return cached;
             }
-            
+
             List<LazyItemProxy> lazyCollection = lazyReferenceCollections.get(name);
             if (lazyCollection != null) {
                 List<JsonNode> materialized = materializeLazyCollection(lazyCollection);
@@ -195,7 +195,7 @@ public class GenerationContext {
             if (cached != null) {
                 return cached;
             }
-            
+
             List<LazyItemProxy> lazyCollection = lazyTaggedCollections.get(tag);
             if (lazyCollection != null) {
                 List<JsonNode> materialized = materializeLazyCollection(lazyCollection);

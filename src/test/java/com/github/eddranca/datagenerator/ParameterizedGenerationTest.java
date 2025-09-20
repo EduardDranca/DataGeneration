@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
@@ -96,9 +94,8 @@ public abstract class ParameterizedGenerationTest {
      * Utility method to create a JsonNode that mimics the old asJsonNode() behavior.
      * This creates an ObjectNode with collection names as keys and arrays as values.
      */
-    protected JsonNode createLegacyJsonNode(IGeneration generation) throws IOException {
+    protected JsonNode createLegacyJsonNode(IGeneration generation) {
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
-        ObjectMapper mapper = new ObjectMapper();
 
         ObjectNode root = mapper.createObjectNode();
         for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
@@ -117,7 +114,6 @@ public abstract class ParameterizedGenerationTest {
      */
     protected String createLegacyJsonString(IGeneration generation) throws IOException {
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
-        ObjectMapper mapper = new ObjectMapper();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         return mapper.writeValueAsString(collections);
     }
@@ -136,6 +132,16 @@ public abstract class ParameterizedGenerationTest {
         }
 
         return sqlMap;
+    }
+
+    /**
+     * Annotation for parameterized tests that run with both implementations.
+     * Use this instead of @Test for tests that should run with both normal and memory-optimized modes.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    protected @interface BothImplementations {
     }
 
     /**
@@ -166,7 +172,7 @@ public abstract class ParameterizedGenerationTest {
         /**
          * Mimics the old asJsonNode() method behavior.
          */
-        public static JsonNode asJsonNode(IGeneration generation) throws IOException {
+        public static JsonNode asJsonNode(IGeneration generation) {
             Map<String, List<JsonNode>> collections = new HashMap<>();
             Map<String, Stream<JsonNode>> streams = generation.asJsonNodes();
 
@@ -187,7 +193,6 @@ public abstract class ParameterizedGenerationTest {
         }
 
 
-
         /**
          * Mimics the old asSqlInserts() method behavior.
          */
@@ -202,15 +207,5 @@ public abstract class ParameterizedGenerationTest {
 
             return sqlMap;
         }
-    }
-
-    /**
-     * Annotation for parameterized tests that run with both implementations.
-     * Use this instead of @Test for tests that should run with both normal and memory-optimized modes.
-     */
-    @Retention(RetentionPolicy.RUNTIME)
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    protected @interface BothImplementations {
     }
 }

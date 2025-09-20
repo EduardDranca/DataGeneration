@@ -26,7 +26,7 @@ public final class SqlInsertGenerator {
      * Generates a single SQL INSERT statement for an item.
      *
      * @param tableName the name of the table
-     * @param item the JsonNode representing the item data
+     * @param item      the JsonNode representing the item data
      * @return SQL INSERT statement
      * @throws SerializationException if JSON serialization fails for complex objects
      */

@@ -22,8 +22,8 @@ abstract class AbstractLazyProxy {
     protected final ObjectNode delegate;
 
     protected AbstractLazyProxy(Map<String, DslNode> fieldNodes,
-                               Set<String> referencedPaths,
-                               DataGenerationVisitor visitor) {
+                                Set<String> referencedPaths,
+                                DataGenerationVisitor visitor) {
         this.fieldNodes = new HashMap<>(fieldNodes);
         this.referencedPaths = referencedPaths != null ? referencedPaths : Set.of();
         this.visitor = visitor;

@@ -53,30 +53,30 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @BothImplementations
         void testSeedConsistencyBasic(boolean memoryOptimized) throws IOException {
             JsonNode dslNode = mapper.readTree(
-                    """
-                            {
-                                "countries": {
-                                    "count": 3,
-                                    "tags": ["country"],
-                                    "item": {
-                                        "name": {"gen": "country.name"},
-                                        "isoCode": {"gen": "country.countryCode"},
-                                        "id": {"gen": "choice", "options": ["Romania", "Brasil"]},
-                                        "embargoed": {"gen": "choice", "options": [true, false, false, false]}
-                                    }
-                                },
-                                "companies": {
-                                    "count": 10,
-                                    "tags": ["company"],
-                                    "item": {
-                                        "id": {"gen": "uuid"},
-                                        "name": {"gen": "company.name"},
-                                        "countryCode": {"ref": "countries[*].isoCode", "filter": [{"ref": "countries[0].isoCode"}]},
-                                        "ctrName": {"ref": "countries[*].id", "filter": ["Romania"]}
-                                    }
-                                }
+                """
+                    {
+                        "countries": {
+                            "count": 3,
+                            "tags": ["country"],
+                            "item": {
+                                "name": {"gen": "country.name"},
+                                "isoCode": {"gen": "country.countryCode"},
+                                "id": {"gen": "choice", "options": ["Romania", "Brasil"]},
+                                "embargoed": {"gen": "choice", "options": [true, false, false, false]}
                             }
-                            """);
+                        },
+                        "companies": {
+                            "count": 10,
+                            "tags": ["company"],
+                            "item": {
+                                "id": {"gen": "uuid"},
+                                "name": {"gen": "company.name"},
+                                "countryCode": {"ref": "countries[*].isoCode", "filter": [{"ref": "countries[0].isoCode"}]},
+                                "ctrName": {"ref": "countries[*].id", "filter": ["Romania"]}
+                            }
+                        }
+                    }
+                    """);
 
             IGeneration generation1 = generateFromDsl(dslNode, memoryOptimized);
             IGeneration generation2 = generateFromDsl(dslNode, memoryOptimized);
@@ -89,29 +89,29 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             Generator customGenerator = options -> mapper.valueToTree("CUSTOM_FIXED_VALUE");
 
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "items": {
-                            "count": 5,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "customField": {"gen": "customTest"},
-                                "name": {"gen": "name.firstName"}
-                            }
+                {
+                    "items": {
+                        "count": 5,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "customField": {"gen": "customTest"},
+                            "name": {"gen": "name.firstName"}
                         }
                     }
-                    """);
+                }
+                """);
 
             DslDataGenerator.Builder builder1 = DslDataGenerator.create()
-                    .withSeed(456L)
-                    .withCustomGenerator("customTest", customGenerator);
+                .withSeed(456L)
+                .withCustomGenerator("customTest", customGenerator);
             if (memoryOptimized) {
                 builder1 = builder1.withMemoryOptimization();
             }
             IGeneration generation1 = builder1.fromJsonNode(dslNode).generate();
 
             DslDataGenerator.Builder builder2 = DslDataGenerator.create()
-                    .withSeed(456L)
-                    .withCustomGenerator("customTest", customGenerator);
+                .withSeed(456L)
+                .withCustomGenerator("customTest", customGenerator);
             if (memoryOptimized) {
                 builder2 = builder2.withMemoryOptimization();
             }
@@ -123,17 +123,17 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @BothImplementations
         void testDifferentSeedsProduceDifferentResults(boolean memoryOptimized) throws IOException {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "users": {
-                            "count": 5,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "name": {"gen": "name.firstName"},
-                                "email": {"gen": "internet.emailAddress"}
-                            }
+                {
+                    "users": {
+                        "count": 5,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "name": {"gen": "name.firstName"},
+                            "email": {"gen": "internet.emailAddress"}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation1 = generateFromDsl(dslNode, memoryOptimized);
             IGeneration generation2 = generateFromDslWithSeed(dslNode, 456L, memoryOptimized);
@@ -144,17 +144,17 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @BothImplementations
         void testSeedConsistencyWithFluentAPI(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "users": {
-                            "count": 5,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "name": {"gen": "name.firstName"},
-                                "age": {"gen": "number", "min": 18, "max": 65}
-                            }
+                {
+                    "users": {
+                        "count": 5,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "name": {"gen": "name.firstName"},
+                            "age": {"gen": "number", "min": 18, "max": 65}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation1 = generateFromDslWithSeed(dslNode, 789L, memoryOptimized);
             IGeneration generation2 = generateFromDslWithSeed(dslNode, 789L, memoryOptimized);
@@ -168,16 +168,16 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @Test
         void testSeedConsistencyWithLazySuppliers() throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "items": {
-                            "count": 3,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "value": {"gen": "string", "length": 10}
-                            }
+                {
+                    "items": {
+                        "count": 3,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "value": {"gen": "string", "length": 10}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation1 = generateFromDslWithSeed(dslNode, 999L, false);
             IGeneration generation2 = generateFromDslWithSeed(dslNode, 999L, false);
@@ -188,20 +188,20 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @Test
         void testSeedConsistencyWithComplexNesting() throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "companies": {
-                            "count": 2,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "name": {"gen": "company.name"},
-                                "address": {
-                                    "street": {"gen": "address.streetAddress"},
-                                    "city": {"gen": "address.city"}
-                                }
+                {
+                    "companies": {
+                        "count": 2,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "name": {"gen": "company.name"},
+                            "address": {
+                                "street": {"gen": "address.streetAddress"},
+                                "city": {"gen": "address.city"}
                             }
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation1 = generateFromDslWithSeed(dslNode, 111L, false);
             IGeneration generation2 = generateFromDslWithSeed(dslNode, 111L, false);
@@ -219,30 +219,30 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @BothImplementations
         void testOriginalSpreadTestFiltering(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree(
-                    """
-                            {
-                                "countries": {
-                                    "count": 3,
-                                    "tags": ["country"],
-                                    "item": {
-                                        "name": {"gen": "country.name"},
-                                        "isoCode": {"gen": "country.countryCode"},
-                                        "id": {"gen": "choice", "options": ["Romania", "Brasil"]},
-                                        "embargoed": {"gen": "choice", "options": [true, false, false, false]}
-                                    }
-                                },
-                                "companies": {
-                                    "count": 10,
-                                    "tags": ["company"],
-                                    "item": {
-                                        "id": {"gen": "uuid"},
-                                        "name": {"gen": "company.name"},
-                                        "countryCode": {"ref": "countries[*].isoCode", "filter": [{"ref": "countries[0].isoCode"}]},
-                                        "ctrName": {"ref": "countries[*].id", "filter": ["Romania"]}
-                                    }
-                                }
+                """
+                    {
+                        "countries": {
+                            "count": 3,
+                            "tags": ["country"],
+                            "item": {
+                                "name": {"gen": "country.name"},
+                                "isoCode": {"gen": "country.countryCode"},
+                                "id": {"gen": "choice", "options": ["Romania", "Brasil"]},
+                                "embargoed": {"gen": "choice", "options": [true, false, false, false]}
                             }
-                            """);
+                        },
+                        "companies": {
+                            "count": 10,
+                            "tags": ["company"],
+                            "item": {
+                                "id": {"gen": "uuid"},
+                                "name": {"gen": "company.name"},
+                                "countryCode": {"ref": "countries[*].isoCode", "filter": [{"ref": "countries[0].isoCode"}]},
+                                "ctrName": {"ref": "countries[*].id", "filter": ["Romania"]}
+                            }
+                        }
+                    }
+                    """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
@@ -257,36 +257,36 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             String firstCountryCode = countries.get(0).get("isoCode").asText();
             for (JsonNode comp : companies) {
                 assertThat(comp.get("countryCode").asText())
-                        .as("Company countryCode should not match the filtered first country isoCode")
-                        .isNotEqualTo(firstCountryCode);
+                    .as("Company countryCode should not match the filtered first country isoCode")
+                    .isNotEqualTo(firstCountryCode);
             }
         }
 
         @BothImplementations
         void testTagReferenceWithFiltering(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree(
-                    """
-                            {
-                                "locations": {
-                                    "count": 5,
-                                    "tags": ["location"],
-                                    "item": {
-                                        "name": {"gen": "choice", "options": ["New York", "London", "Tokyo", "Paris", "Berlin"]},
-                                        "country": {"gen": "choice", "options": ["USA", "UK", "Japan", "France", "Germany"]},
-                                        "continent": {"gen": "choice", "options": ["North America", "Europe", "Asia", "Europe", "Europe"]}
-                                    }
-                                },
-                                "events": {
-                                    "count": 10,
-                                    "item": {
-                                        "name": {"gen": "choice", "options": ["Conference", "Workshop", "Meetup"]},
-                                        "location": {"ref": "byTag[location]"},
-                                        "filteredLocationName": {"ref": "byTag[location].name", "filter": ["New York", "London"]},
-                                        "continentBasedLocation": {"ref": "byTag[location].continent", "filter": ["Asia"]}
-                                    }
-                                }
+                """
+                    {
+                        "locations": {
+                            "count": 5,
+                            "tags": ["location"],
+                            "item": {
+                                "name": {"gen": "choice", "options": ["New York", "London", "Tokyo", "Paris", "Berlin"]},
+                                "country": {"gen": "choice", "options": ["USA", "UK", "Japan", "France", "Germany"]},
+                                "continent": {"gen": "choice", "options": ["North America", "Europe", "Asia", "Europe", "Europe"]}
                             }
-                            """);
+                        },
+                        "events": {
+                            "count": 10,
+                            "item": {
+                                "name": {"gen": "choice", "options": ["Conference", "Workshop", "Meetup"]},
+                                "location": {"ref": "byTag[location]"},
+                                "filteredLocationName": {"ref": "byTag[location].name", "filter": ["New York", "London"]},
+                                "continentBasedLocation": {"ref": "byTag[location].continent", "filter": ["Asia"]}
+                            }
+                        }
+                    }
+                    """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
@@ -295,26 +295,26 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             JsonNode events = collectionsNode.get("events");
 
             assertThat(locations)
-                    .isNotNull()
-                    .hasSize(5);
+                .isNotNull()
+                .hasSize(5);
             assertThat(events)
-                    .isNotNull()
-                    .hasSize(10)
-                    .allSatisfy(event -> {
-                        String filteredLocationName = event.get("filteredLocationName").asText();
-                        assertThat(filteredLocationName)
-                                .as("Filtered location should be one of: Tokyo, Paris, Berlin")
-                                .isIn("Tokyo", "Paris", "Berlin");
-                    })
-                    .allSatisfy(event -> {
-                        String continentBasedLocation = event.get("continentBasedLocation").asText();
-                        assertThat(continentBasedLocation)
-                                .isNotNull()
-                                .as("Continent-based location should not be Asia")
-                                .isNotEqualTo("Asia")
-                                .as("Continent-based location should be North America or Europe")
-                                .isIn("North America", "Europe");
-                    });
+                .isNotNull()
+                .hasSize(10)
+                .allSatisfy(event -> {
+                    String filteredLocationName = event.get("filteredLocationName").asText();
+                    assertThat(filteredLocationName)
+                        .as("Filtered location should be one of: Tokyo, Paris, Berlin")
+                        .isIn("Tokyo", "Paris", "Berlin");
+                })
+                .allSatisfy(event -> {
+                    String continentBasedLocation = event.get("continentBasedLocation").asText();
+                    assertThat(continentBasedLocation)
+                        .isNotNull()
+                        .as("Continent-based location should not be Asia")
+                        .isNotEqualTo("Asia")
+                        .as("Continent-based location should be North America or Europe")
+                        .isIn("North America", "Europe");
+                });
 
             // Verify that regular location reference (without filtering) can be any
             // location
@@ -330,17 +330,17 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
 
             // Regular location references should potentially include all locations
             assertThat(eventLocationNames)
-                    .as("Should have at least some location references")
-                    .isNotEmpty();
+                .as("Should have at least some location references")
+                .isNotEmpty();
 
             // Verify that the locations collection contains valid location names
             List<String> expectedLocationNames = List.of("New York", "London", "Tokyo", "Paris", "Berlin");
             assertThat(allLocationNames)
-                    .as("All location names should be from expected values")
-                    .isNotEmpty()
-                    .allSatisfy(locationName -> assertThat(expectedLocationNames)
-                            .as("Location name should be one of the expected values: " + locationName)
-                            .contains(locationName));
+                .as("All location names should be from expected values")
+                .isNotEmpty()
+                .allSatisfy(locationName -> assertThat(expectedLocationNames)
+                    .as("Location name should be one of the expected values: " + locationName)
+                    .contains(locationName));
         }
     }
 
@@ -350,17 +350,17 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         void testSelfReferenceValidation(boolean memoryOptimized) throws Exception {
             // Test valid simple self-reference
             JsonNode validDsl = mapper.readTree("""
-                    {
-                        "users": {
-                            "count": 2,
-                            "item": {
-                                "name": {"gen": "name.firstName"},
-                                "email": {"gen": "internet.emailAddress"},
-                                "displayName": {"ref": "this.name"}
-                            }
+                {
+                    "users": {
+                        "count": 2,
+                        "item": {
+                            "name": {"gen": "name.firstName"},
+                            "email": {"gen": "internet.emailAddress"},
+                            "displayName": {"ref": "this.name"}
                         }
                     }
-                    """);
+                }
+                """);
 
             // This should work without validation errors
             IGeneration generation = generateFromDsl(validDsl, memoryOptimized);
@@ -374,8 +374,8 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
 
             for (JsonNode user : users) {
                 assertThat(user.get("displayName"))
-                        .as("displayName should match name via self-reference")
-                        .isEqualTo(user.get("name"));
+                    .as("displayName should match name via self-reference")
+                    .isEqualTo(user.get("name"));
             }
         }
 
@@ -383,16 +383,16 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         void testInvalidSelfReferenceValidation() throws Exception {
             // Test invalid self-reference to non-existent field
             JsonNode invalidDsl = mapper.readTree("""
-                    {
-                        "users": {
-                            "count": 1,
-                            "item": {
-                                "name": {"gen": "name.firstName"},
-                                "invalidRef": {"ref": "this.nonExistentField"}
-                            }
+                {
+                    "users": {
+                        "count": 1,
+                        "item": {
+                            "name": {"gen": "name.firstName"},
+                            "invalidRef": {"ref": "this.nonExistentField"}
                         }
                     }
-                    """);
+                }
+                """);
 
             // Test using DslTreeBuilder directly to check validation
             DslTreeBuilder builder = new DslTreeBuilder(GeneratorRegistry.withDefaultGenerators(new Faker()));
@@ -401,36 +401,36 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
 
             // Should have validation errors
             assertThat(result.hasErrors())
-                    .as("Should have validation errors for invalid self-reference")
-                    .isTrue();
+                .as("Should have validation errors for invalid self-reference")
+                .isTrue();
 
             // Check that the error message contains information about the invalid reference
             assertThat(result.getErrors())
-                    .as("Should have error about nonExistentField reference. Errors: " +
-                            result.getErrors().stream().map(Object::toString).toList())
-                    .anyMatch(error -> error.toString().contains("nonExistentField"));
+                .as("Should have error about nonExistentField reference. Errors: " +
+                    result.getErrors().stream().map(Object::toString).toList())
+                .anyMatch(error -> error.toString().contains("nonExistentField"));
         }
 
         @Test
         void testInvalidSelfReferenceToSubfield() throws Exception {
             // Test invalid self-reference to subfield of non-object field
             JsonNode invalidDsl = mapper.readTree("""
-                    {
-                        "users": {
-                            "count": 1,
-                            "item": {
-                                "name": {"gen": "name.firstName"},
-                                "invalidRef": {"ref": "this.name.subfield"}
-                            }
+                {
+                    "users": {
+                        "count": 1,
+                        "item": {
+                            "name": {"gen": "name.firstName"},
+                            "invalidRef": {"ref": "this.name.subfield"}
                         }
                     }
-                    """);
+                }
+                """);
 
             // This should throw a validation exception
             assertThatThrownBy(() -> DslDataGenerator.create()
-                    .fromJsonNode(invalidDsl)
-                    .generate())
-                    .isInstanceOf(Exception.class);
+                .fromJsonNode(invalidDsl)
+                .generate())
+                .isInstanceOf(Exception.class);
         }
     }
 
@@ -440,25 +440,25 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @BothImplementations
         void testSpreadOperatorBasic(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "countries": {
-                            "count": 3,
-                            "item": {
-                                "...countryDetails": {
-                                    "gen": "country",
-                                    "fields": ["name", "countryCode"]
-                                },
-                                "id": {"gen": "uuid"}
-                            }
+                {
+                    "countries": {
+                        "count": 3,
+                        "item": {
+                            "...countryDetails": {
+                                "gen": "country",
+                                "fields": ["name", "countryCode"]
+                            },
+                            "id": {"gen": "uuid"}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
             assertThat(asJson(generation))
-                    .isNotNull()
-                    .contains("countries");
+                .isNotNull()
+                .contains("countries");
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode countries = collectionsNode.get("countries");
@@ -480,20 +480,20 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @BothImplementations
         void testSpreadOperatorWithFieldMapping(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "countries": {
-                            "count": 2,
-                            "item": {
-                                "...countryDetails": {
-                                    "gen": "country",
-                                    "fields": ["name", "isoCode:countryCode"]
-                                },
-                                "id": {"gen": "uuid"},
-                                "active": {"gen": "choice", "options": [true, false]}
-                            }
+                {
+                    "countries": {
+                        "count": 2,
+                        "item": {
+                            "...countryDetails": {
+                                "gen": "country",
+                                "fields": ["name", "isoCode:countryCode"]
+                            },
+                            "id": {"gen": "uuid"},
+                            "active": {"gen": "choice", "options": [true, false]}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = generateFromDslWithSeed(dslNode, 456L, memoryOptimized);
 
@@ -501,84 +501,84 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             JsonNode countries = collectionsNode.get("countries");
 
             assertThat(countries)
-                    .as("All countries should have mapped fields with non-null values")
-                    .hasSize(2)
-                    .allSatisfy(country -> {
-                        assertThat(country.has("name")).isTrue();
-                        assertThat(country.has("isoCode")).isTrue();
-                        assertThat(country.has("id")).isTrue();
-                        assertThat(country.has("active")).isTrue();
-                        assertThat(country.has("countryCode")).isFalse(); // Should not contain the original field name
+                .as("All countries should have mapped fields with non-null values")
+                .hasSize(2)
+                .allSatisfy(country -> {
+                    assertThat(country.has("name")).isTrue();
+                    assertThat(country.has("isoCode")).isTrue();
+                    assertThat(country.has("id")).isTrue();
+                    assertThat(country.has("active")).isTrue();
+                    assertThat(country.has("countryCode")).isFalse(); // Should not contain the original field name
 
-                        assertThat(country.get("name")).isNotNull();
-                        assertThat(country.get("isoCode")).isNotNull();
-                        assertThat(country.get("id")).isNotNull();
-                        assertThat(country.get("active")).isNotNull();
-                    });
+                    assertThat(country.get("name")).isNotNull();
+                    assertThat(country.get("isoCode")).isNotNull();
+                    assertThat(country.get("id")).isNotNull();
+                    assertThat(country.get("active")).isNotNull();
+                });
         }
 
         @BothImplementations
         void testSpreadOperatorWithComplexObjects(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "companies": {
-                            "count": 1,
-                            "item": {
-                                "companyName": {"gen": "company.name"},
-                                "address": {
-                                    "street": {"gen": "address.streetAddress"},
-                                    "city": {"gen": "address.city"},
-                                    "zipCode": {"gen": "address.zipCode"},
-                                    "foo": {
-                                        "bar": {"gen": "country.name"},
-                                        "baz": {"gen": "book.title"}
-                                    }
-                                },
-                                "contact": {
-                                    "name": {
-                                        "firstName": {"gen": "name.firstName"},
-                                        "lastName": {"gen": "name.lastName"},
-                                        "fullName": {"gen": "name.fullName"},
-                                        "prefix": {"gen": "name.prefix"},
-                                        "suffix": {"gen": "name.suffix"},
-                                        "title": {"gen": "name.title"}
-                                    },
-                                    "email": {"gen": "internet.emailAddress"}
+                {
+                    "companies": {
+                        "count": 1,
+                        "item": {
+                            "companyName": {"gen": "company.name"},
+                            "address": {
+                                "street": {"gen": "address.streetAddress"},
+                                "city": {"gen": "address.city"},
+                                "zipCode": {"gen": "address.zipCode"},
+                                "foo": {
+                                    "bar": {"gen": "country.name"},
+                                    "baz": {"gen": "book.title"}
                                 }
+                            },
+                            "contact": {
+                                "name": {
+                                    "firstName": {"gen": "name.firstName"},
+                                    "lastName": {"gen": "name.lastName"},
+                                    "fullName": {"gen": "name.fullName"},
+                                    "prefix": {"gen": "name.prefix"},
+                                    "suffix": {"gen": "name.suffix"},
+                                    "title": {"gen": "name.title"}
+                                },
+                                "email": {"gen": "internet.emailAddress"}
                             }
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
             String json = asJson(generation);
             assertThat(json)
-                    .isNotNull()
-                    .contains("companyName", "address", "contact");
+                .isNotNull()
+                .contains("companyName", "address", "contact");
         }
 
         @BothImplementations
         void testMultipleSpreadOperators(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "users": {
-                            "count": 2,
-                            "item": {
-                                "...nameDetails": {
-                                    "gen": "name",
-                                    "fields": ["firstName", "lastName"]
-                                },
-                                "...contactDetails": {
-                                    "gen": "internet",
-                                    "fields": ["email:emailAddress"]
-                                },
-                                "id": {"gen": "uuid"},
-                                "age": {"gen": "number", "min": 18, "max": 65}
-                            }
+                {
+                    "users": {
+                        "count": 2,
+                        "item": {
+                            "...nameDetails": {
+                                "gen": "name",
+                                "fields": ["firstName", "lastName"]
+                            },
+                            "...contactDetails": {
+                                "gen": "internet",
+                                "fields": ["email:emailAddress"]
+                            },
+                            "id": {"gen": "uuid"},
+                            "age": {"gen": "number", "min": 18, "max": 65}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = generateFromDslWithSeed(dslNode, 789L, memoryOptimized);
 
@@ -609,18 +609,18 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @BothImplementations
         void testSpreadOperatorWithoutFieldsUsesAllFields(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "users": {
-                            "count": 2,
-                            "item": {
-                                "...nameDetails": {
-                                    "gen": "name"
-                                },
-                                "id": {"gen": "uuid"}
-                            }
+                {
+                    "users": {
+                        "count": 2,
+                        "item": {
+                            "...nameDetails": {
+                                "gen": "name"
+                            },
+                            "id": {"gen": "uuid"}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
@@ -654,31 +654,31 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @BothImplementations
         void testSpreadOperatorSqlGeneration(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "companies": {
-                            "count": 1,
-                            "item": {
-                                "companyName": {"gen": "company.name"},
-                                "address": {
-                                    "street": {"gen": "address.streetAddress"},
-                                    "city": {"gen": "address.city"},
-                                    "zipCode": {"gen": "address.zipCode"}
-                                }
+                {
+                    "companies": {
+                        "count": 1,
+                        "item": {
+                            "companyName": {"gen": "company.name"},
+                            "address": {
+                                "street": {"gen": "address.streetAddress"},
+                                "city": {"gen": "address.city"},
+                                "zipCode": {"gen": "address.zipCode"}
                             }
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
             Map<String, String> sqlInserts = asSqlInserts(generation);
 
             assertThat(sqlInserts)
-                    .isNotNull()
-                    .containsKey("companies");
+                .isNotNull()
+                .containsKey("companies");
 
             String companiesSql = sqlInserts.get("companies");
             assertThat(companiesSql)
-                    .contains("INSERT INTO companies", "companyName", "address");
+                .contains("INSERT INTO companies", "companyName", "address");
         }
 
         @BothImplementations
@@ -686,19 +686,19 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             String csvPath = "src/test/resources/test.csv";
 
             JsonNode dslNode = mapper.readTree(String.format("""
-                    {
-                        "rows": {
-                            "count": 3,
-                            "item": {
-                                "...csvRow": {
-                                    "gen": "csv",
-                                    "file": "%s",
-                                    "sequential": true
-                                }
+                {
+                    "rows": {
+                        "count": 3,
+                        "item": {
+                            "...csvRow": {
+                                "gen": "csv",
+                                "file": "%s",
+                                "sequential": true
                             }
                         }
                     }
-                    """, csvPath));
+                }
+                """, csvPath));
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
@@ -727,30 +727,30 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @BothImplementations
         void testSqlInsertsWithComplexObjects(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "users": {
-                            "count": 2,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "name": {"gen": "name.firstName"},
-                                "profile": {
-                                    "age": {"gen": "number", "min": 18, "max": 65},
-                                    "address": {
-                                        "street": {"gen": "address.streetAddress"},
-                                        "city": {"gen": "address.city"}
-                                    }
+                {
+                    "users": {
+                        "count": 2,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "name": {"gen": "name.firstName"},
+                            "profile": {
+                                "age": {"gen": "number", "min": 18, "max": 65},
+                                "address": {
+                                    "street": {"gen": "address.streetAddress"},
+                                    "city": {"gen": "address.city"}
                                 }
                             }
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
             Map<String, String> sqlInserts = asSqlInserts(generation);
 
             assertThat(sqlInserts)
-                    .isNotNull()
-                    .containsKey("users");
+                .isNotNull()
+                .containsKey("users");
 
             String usersSql = sqlInserts.get("users");
             assertThat(usersSql).isNotNull();
@@ -760,8 +760,8 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
 
             // Validate that all expected columns are present
             assertThat(usersSql)
-                    .as("SQL should contain all expected columns")
-                    .contains("id", "name", "profile");
+                .as("SQL should contain all expected columns")
+                .contains("id", "name", "profile");
 
             // Validate that we have exactly 2 valid INSERT statements (count: 2)
             validateAllSqlStatements(usersSql, "users", 2);
@@ -770,23 +770,23 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @BothImplementations
         void testSqlSubsetGeneration(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "countries": {
-                            "count": 2,
-                            "item": {
-                                "name": {"gen": "country.name"},
-                                "isoCode": {"gen": "country.countryCode"}
-                            }
-                        },
-                        "companies": {
-                            "count": 3,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "name": {"gen": "company.name"}
-                            }
+                {
+                    "countries": {
+                        "count": 2,
+                        "item": {
+                            "name": {"gen": "country.name"},
+                            "isoCode": {"gen": "country.countryCode"}
+                        }
+                    },
+                    "companies": {
+                        "count": 3,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "name": {"gen": "company.name"}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
@@ -797,10 +797,10 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                 companiesSqlMap.put(entry.getKey(), entry.getValue().collect(Collectors.joining("\n")));
             }
             assertThat(companiesSqlMap)
-                    .isNotNull()
-                    .hasSize(1)
-                    .as("Should only contain companies table")
-                    .containsKey("companies");
+                .isNotNull()
+                .hasSize(1)
+                .as("Should only contain companies table")
+                .containsKey("companies");
 
             String companiesSql = companiesSqlMap.get("companies");
             validateAllSqlStatements(companiesSql, "companies", 3);
@@ -812,10 +812,10 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                 countriesSqlMap.put(entry.getKey(), entry.getValue().collect(Collectors.joining("\n")));
             }
             assertThat(countriesSqlMap)
-                    .isNotNull()
-                    .hasSize(1)
-                    .as("Should only contain countries table")
-                    .containsKey("countries");
+                .isNotNull()
+                .hasSize(1)
+                .as("Should only contain countries table")
+                .containsKey("countries");
 
             String countriesSql = countriesSqlMap.get("countries");
             validateAllSqlStatements(countriesSql, "countries", 2);
@@ -828,32 +828,32 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @BothImplementations
         void testSqlGenerationWithAllTables(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "countries": {
-                            "count": 2,
-                            "item": {
-                                "name": {"gen": "country.name"},
-                                "isoCode": {"gen": "country.countryCode"}
-                            }
-                        },
-                        "companies": {
-                            "count": 3,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "name": {"gen": "company.name"}
-                            }
+                {
+                    "countries": {
+                        "count": 2,
+                        "item": {
+                            "name": {"gen": "country.name"},
+                            "isoCode": {"gen": "country.countryCode"}
+                        }
+                    },
+                    "companies": {
+                        "count": 3,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "name": {"gen": "company.name"}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
             Map<String, String> allSqlMap = asSqlInserts(generation);
             assertThat(allSqlMap)
-                    .isNotNull()
-                    .hasSize(2)
-                    .as("Should contain exactly 2 tables")
-                    .containsKeys("companies", "countries");
+                .isNotNull()
+                .hasSize(2)
+                .as("Should contain exactly 2 tables")
+                .containsKeys("companies", "countries");
 
             String companiesSql = allSqlMap.get("companies");
             String countriesSql = allSqlMap.get("countries");
@@ -866,17 +866,17 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @BothImplementations
         void testSqlGenerationWithSpecialCharacters(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree(
-                    """
-                            {
-                                "products": {
-                                    "count": 1,
-                                    "item": {
-                                        "name": {"gen": "choice", "options": ["Product's Name", "Product Quote", "Product Newline"]},
-                                        "description": {"gen": "choice", "options": ["It's great!", "Contains quotes", "Multi Line Text"]}
-                                    }
-                                }
+                """
+                    {
+                        "products": {
+                            "count": 1,
+                            "item": {
+                                "name": {"gen": "choice", "options": ["Product's Name", "Product Quote", "Product Newline"]},
+                                "description": {"gen": "choice", "options": ["It's great!", "Contains quotes", "Multi Line Text"]}
                             }
-                            """);
+                        }
+                    }
+                    """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
             Map<String, String> sqlInserts = asSqlInserts(generation);
@@ -890,26 +890,26 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             // Check that quotes are properly escaped (should be doubled in SQL)
             if (productsSql.contains("Product's Name")) {
                 assertThat(productsSql)
-                        .as("Single quotes should be properly escaped")
-                        .satisfiesAnyOf(
-                                sql -> assertThat(sql).contains("Product''s Name"),
-                                sql -> assertThat(sql).contains("'Product''s Name'"));
+                    .as("Single quotes should be properly escaped")
+                    .satisfiesAnyOf(
+                        sql -> assertThat(sql).contains("Product''s Name"),
+                        sql -> assertThat(sql).contains("'Product''s Name'"));
             }
         }
 
         @BothImplementations
         void testSqlGenerationWithNullValues(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "items": {
-                            "count": 1,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "optionalField": {"gen": "choice", "options": [null, "value"]}
-                            }
+                {
+                    "items": {
+                        "count": 1,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "optionalField": {"gen": "choice", "options": [null, "value"]}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
             Map<String, String> sqlInserts = asSqlInserts(generation);
@@ -921,28 +921,28 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
 
             // Check that null values are properly handled
             assertThat(itemsSql)
-                    .as("Both columns should be present")
-                    .contains("id", "optionalField");
+                .as("Both columns should be present")
+                .contains("id", "optionalField");
         }
 
         @BothImplementations
         void testSqlGenerationValidatesWithParser(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "employees": {
-                            "count": 3,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "firstName": {"gen": "name.firstName"},
-                                "lastName": {"gen": "name.lastName"},
-                                "email": {"gen": "internet.emailAddress"},
-                                "age": {"gen": "number", "min": 18, "max": 65},
-                                "salary": {"gen": "float", "min": 30000.0, "max": 150000.0},
-                                "active": {"gen": "choice", "options": [true, false]}
-                            }
+                {
+                    "employees": {
+                        "count": 3,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "firstName": {"gen": "name.firstName"},
+                            "lastName": {"gen": "name.lastName"},
+                            "email": {"gen": "internet.emailAddress"},
+                            "age": {"gen": "number", "min": 18, "max": 65},
+                            "salary": {"gen": "float", "min": 30000.0, "max": 150000.0},
+                            "active": {"gen": "choice", "options": [true, false]}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
             Map<String, String> sqlInserts = asSqlInserts(generation);
@@ -955,27 +955,27 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
 
             // Validate all expected columns are present
             validateSqlColumns(employeesSql, "employees",
-                    "id", "firstName", "lastName", "email", "age", "salary", "active");
+                "id", "firstName", "lastName", "email", "age", "salary", "active");
         }
 
         @BothImplementations
         void testSqlGenerationSyntaxValidation(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree(
-                    """
-                            {
-                                "test_table": {
-                                    "count": 2,
-                                    "item": {
-                                        "string_field": {"gen": "name.firstName"},
-                                        "number_field": {"gen": "number", "min": 1, "max": 100},
-                                        "float_field": {"gen": "float", "min": 0.0, "max": 1.0},
-                                        "boolean_field": {"gen": "choice", "options": [true, false]},
-                                        "null_field": {"gen": "choice", "options": [null, "value"]},
-                                        "special_chars": {"gen": "choice", "options": ["O'Reilly", "Smith & Co", "Test\\"Quote"]}
-                                    }
-                                }
+                """
+                    {
+                        "test_table": {
+                            "count": 2,
+                            "item": {
+                                "string_field": {"gen": "name.firstName"},
+                                "number_field": {"gen": "number", "min": 1, "max": 100},
+                                "float_field": {"gen": "float", "min": 0.0, "max": 1.0},
+                                "boolean_field": {"gen": "choice", "options": [true, false]},
+                                "null_field": {"gen": "choice", "options": [null, "value"]},
+                                "special_chars": {"gen": "choice", "options": ["O'Reilly", "Smith & Co", "Test\\"Quote"]}
                             }
-                            """);
+                        }
+                    }
+                    """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
             Map<String, String> sqlInserts = asSqlInserts(generation);
@@ -988,23 +988,23 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
 
             // Validate all expected columns
             validateSqlColumns(testTableSql, "test_table",
-                    "string_field", "number_field", "float_field", "boolean_field", "null_field", "special_chars");
+                "string_field", "number_field", "float_field", "boolean_field", "null_field", "special_chars");
         }
 
         @BothImplementations
         void testSqlGenerationWithNumericValues(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "metrics": {
-                            "count": 2,
-                            "item": {
-                                "id": {"gen": "number", "min": 1, "max": 1000},
-                                "score": {"gen": "float", "min": 0.0, "max": 100.0},
-                                "active": {"gen": "choice", "options": [true, false]}
-                            }
+                {
+                    "metrics": {
+                        "count": 2,
+                        "item": {
+                            "id": {"gen": "number", "min": 1, "max": 1000},
+                            "score": {"gen": "float", "min": 0.0, "max": 100.0},
+                            "active": {"gen": "choice", "options": [true, false]}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
             Map<String, String> sqlInserts = asSqlInserts(generation);
@@ -1020,19 +1020,19 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @BothImplementations
         void testFloatGeneratorWithDecimalsConfiguration(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "products": {
-                            "count": 3,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "price": {"gen": "float", "min": 10.0, "max": 100.0, "decimals": 2},
-                                "weight": {"gen": "float", "min": 0.1, "max": 5.0, "decimals": 3},
-                                "rating": {"gen": "float", "min": 1.0, "max": 5.0, "decimals": 1},
-                                "discount": {"gen": "float", "min": 0.0, "max": 1.0, "decimals": 0}
-                            }
+                {
+                    "products": {
+                        "count": 3,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "price": {"gen": "float", "min": 10.0, "max": 100.0, "decimals": 2},
+                            "weight": {"gen": "float", "min": 0.1, "max": 5.0, "decimals": 3},
+                            "rating": {"gen": "float", "min": 1.0, "max": 5.0, "decimals": 1},
+                            "discount": {"gen": "float", "min": 0.0, "max": 1.0, "decimals": 0}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
@@ -1063,8 +1063,8 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
 
                 // Verify discount is a whole number (0 decimals)
                 assertThat(discount)
-                        .as("Discount should be a whole number")
-                        .isCloseTo(Math.floor(discount), within(0.0001));
+                    .as("Discount should be a whole number")
+                    .isCloseTo(Math.floor(discount), within(0.0001));
             }
         }
 
@@ -1084,11 +1084,11 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
          */
         private void validateSqlInsertStructure(String sql, String tableName) {
             assertThat(sql)
-                    .as("SQL should not be null")
-                    .isNotNull();
+                .as("SQL should not be null")
+                .isNotNull();
             assertThat(sql.trim())
-                    .as("SQL should not be empty")
-                    .isNotBlank();
+                .as("SQL should not be empty")
+                .isNotBlank();
 
             // Parse each SQL statement using JSqlParser
             String[] statements = sql.split(";");
@@ -1105,34 +1105,34 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
 
                 // Verify it's an INSERT statement
                 assertThat(parsedStatement)
-                        .as("Statement should be an INSERT: " + trimmedStatement)
-                        .isInstanceOf(Insert.class);
+                    .as("Statement should be an INSERT: " + trimmedStatement)
+                    .isInstanceOf(Insert.class);
 
                 Insert insertStatement = (Insert) parsedStatement;
 
                 // Verify table name
                 assertThat(insertStatement.getTable().getName())
-                        .as("Table name should match expected: " + tableName)
-                        .isEqualTo(tableName);
+                    .as("Table name should match expected: " + tableName)
+                    .isEqualTo(tableName);
 
                 // Verify it has columns
                 assertThat(insertStatement.getColumns())
-                        .as("INSERT should have columns defined")
-                        .isNotNull()
-                        .as("INSERT should have at least one column")
-                        .isNotEmpty();
+                    .as("INSERT should have columns defined")
+                    .isNotNull()
+                    .as("INSERT should have at least one column")
+                    .isNotEmpty();
 
                 // Verify it has values
                 assertThat(insertStatement.getValues())
-                        .as("INSERT should have VALUES clause")
-                        .isNotNull();
+                    .as("INSERT should have VALUES clause")
+                    .isNotNull();
 
                 validInsertCount++;
             }
 
             assertThat(validInsertCount)
-                    .as("Should have at least one valid INSERT statement")
-                    .isPositive();
+                .as("Should have at least one valid INSERT statement")
+                .isPositive();
         }
 
         /**
@@ -1151,26 +1151,26 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
 
                 Statement parsedStatement = parseSqlStatement(trimmedStatement);
                 assertThat(parsedStatement)
-                        .as("Statement should be an INSERT: " + trimmedStatement)
-                        .isInstanceOf(Insert.class);
+                    .as("Statement should be an INSERT: " + trimmedStatement)
+                    .isInstanceOf(Insert.class);
 
                 Insert insertStatement = (Insert) parsedStatement;
                 assertThat(insertStatement.getTable().getName())
-                        .as("Table name should match: " + expectedTableName)
-                        .isEqualTo(expectedTableName);
+                    .as("Table name should match: " + expectedTableName)
+                    .isEqualTo(expectedTableName);
 
                 // Validate that columns and values count match
                 int columnCount = insertStatement.getColumns().size();
                 assertThat(columnCount)
-                        .as("Should have at least one column")
-                        .isPositive();
+                    .as("Should have at least one column")
+                    .isPositive();
 
                 validInsertCount++;
             }
 
             assertThat(validInsertCount)
-                    .as("Should have exactly " + expectedCount + " valid INSERT statements")
-                    .isEqualTo(expectedCount);
+                .as("Should have exactly " + expectedCount + " valid INSERT statements")
+                .isEqualTo(expectedCount);
         }
 
         /**
@@ -1193,13 +1193,13 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
 
                 // Extract column names
                 List<String> actualColumns = insertStatement.getColumns().stream()
-                        .map(Column::getColumnName)
-                        .toList();
+                    .map(Column::getColumnName)
+                    .toList();
 
                 // Verify expected columns are present
                 assertThat(actualColumns)
-                        .as("All expected columns should be present")
-                        .containsAll(Arrays.asList(expectedColumns));
+                    .as("All expected columns should be present")
+                    .containsAll(Arrays.asList(expectedColumns));
             }
         }
     }
@@ -1211,49 +1211,49 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         void testFluentApiWithCustomGenerator() throws Exception {
             Generator customGenerator = node -> mapper.valueToTree("CUSTOM_VALUE_" + System.currentTimeMillis());
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "items": {
-                            "count": 1,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "customField": {"gen": "customTest"}
-                            }
+                {
+                    "items": {
+                        "count": 1,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "customField": {"gen": "customTest"}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = DslDataGenerator.create()
-                    .withSeed(456L)
-                    .withCustomGenerator("customTest", customGenerator)
-                    .fromJsonNode(dslNode)
-                    .generate();
+                .withSeed(456L)
+                .withCustomGenerator("customTest", customGenerator)
+                .fromJsonNode(dslNode)
+                .generate();
             String json = asJson(generation);
 
             assertThat(json)
-                    .isNotNull()
-                    .contains("CUSTOM_VALUE_", "customField");
+                .isNotNull()
+                .contains("CUSTOM_VALUE_", "customField");
         }
 
         @BothImplementations
         void testJsonNodeMethods(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "countries": {
-                            "count": 2,
-                            "item": {
-                                "name": {"gen": "country.name"},
-                                "isoCode": {"gen": "country.countryCode"}
-                            }
-                        },
-                        "companies": {
-                            "count": 3,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "name": {"gen": "company.name"}
-                            }
+                {
+                    "countries": {
+                        "count": 2,
+                        "item": {
+                            "name": {"gen": "country.name"},
+                            "isoCode": {"gen": "country.countryCode"}
+                        }
+                    },
+                    "companies": {
+                        "count": 3,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "name": {"gen": "company.name"}
                         }
                     }
-                    """);
+                }
+                """);
 
             IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
@@ -1279,69 +1279,69 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         void testGenerationFromFile(@TempDir Path tempDir) throws IOException {
             // Create a temporary JSON file
             String jsonContent = """
-                    {
-                        "users": {
-                            "count": 3,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "name": {"gen": "name.firstName"},
-                                "email": {"gen": "internet.emailAddress"}
-                            }
+                {
+                    "users": {
+                        "count": 3,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "name": {"gen": "name.firstName"},
+                            "email": {"gen": "internet.emailAddress"}
                         }
                     }
-                    """;
+                }
+                """;
 
             Path tempFile = tempDir.resolve("test.json");
             Files.writeString(tempFile, jsonContent);
 
             // Test fromFile(File)
             IGeneration generation1 = DslDataGenerator.create()
-                    .withSeed(123L)
-                    .fromFile(tempFile.toFile())
-                    .generate();
+                .withSeed(123L)
+                .fromFile(tempFile.toFile())
+                .generate();
 
             assertThat(generation1)
-                    .isNotNull();
+                .isNotNull();
             assertThat(asJson(generation1))
-                    .contains("users");
+                .contains("users");
 
             // Test fromFile(String)
             IGeneration generation2 = DslDataGenerator.create()
-                    .withSeed(123L)
-                    .fromFile(tempFile.toString())
-                    .generate();
+                .withSeed(123L)
+                .fromFile(tempFile.toString())
+                .generate();
 
             assertThat(generation2)
-                    .isNotNull();
+                .isNotNull();
             assertThat(asJson(generation2))
-                    .isEqualTo(asJson(generation1));
+                .isEqualTo(asJson(generation1));
 
             // Test fromFile(Path)
             IGeneration generation3 = DslDataGenerator.create()
-                    .withSeed(123L)
-                    .fromFile(tempFile)
-                    .generate();
+                .withSeed(123L)
+                .fromFile(tempFile)
+                .generate();
 
             assertThat(generation3)
-                    .isNotNull();
+                .isNotNull();
             assertThat(asJson(generation3))
-                    .isEqualTo(asJson(generation1));
+                .isEqualTo(asJson(generation1));
         }
 
         @Test
         void testGenerationFromJsonString() throws IOException {
             String jsonString = """
-                    {
-                        "products": {
-                            "count": 2,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "name": {"gen": "string", "length": 10},
-                                "price": {"gen": "number", "min": 1, "max": 100}
-                            }
+                {
+                    "products": {
+                        "count": 2,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "name": {"gen": "string", "length": 10},
+                            "price": {"gen": "number", "min": 1, "max": 100}
                         }
                     }
-                    """;
+                }
+                """;
 
             IGeneration generation1 = generateFromDslWithSeed(jsonString, 456L, false);
             IGeneration generation2 = generateFromDslWithSeed(jsonString, 456L, false);
@@ -1355,42 +1355,42 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         @Test
         void testFileNotFound() {
             assertThatThrownBy(() -> DslDataGenerator.create()
-                    .fromFile("nonexistent.json")
-                    .generate())
-                    .isInstanceOf(IllegalArgumentException.class);
+                .fromFile("nonexistent.json")
+                .generate())
+                .isInstanceOf(IllegalArgumentException.class);
         }
 
         @Test
         void testGenerationFromFileWithComplexStructure(@TempDir Path tempDir) throws IOException {
             String complexJson = """
-                    {
-                        "countries": {
-                            "count": 2,
-                            "tags": ["country"],
-                            "item": {
-                                "name": {"gen": "country.name"},
-                                "isoCode": {"gen": "country.countryCode"},
-                                "id": {"gen": "choice", "options": ["Romania", "Brasil"]}
-                            }
-                        },
-                        "companies": {
-                            "count": 5,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "name": {"gen": "company.name"},
-                                "countryCode": {"ref": "countries[*].isoCode"}
-                            }
+                {
+                    "countries": {
+                        "count": 2,
+                        "tags": ["country"],
+                        "item": {
+                            "name": {"gen": "country.name"},
+                            "isoCode": {"gen": "country.countryCode"},
+                            "id": {"gen": "choice", "options": ["Romania", "Brasil"]}
+                        }
+                    },
+                    "companies": {
+                        "count": 5,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "name": {"gen": "company.name"},
+                            "countryCode": {"ref": "countries[*].isoCode"}
                         }
                     }
-                    """;
+                }
+                """;
 
             Path tempFile = tempDir.resolve("complex.json");
             Files.writeString(tempFile, complexJson);
 
             IGeneration generation = DslDataGenerator.create()
-                    .withSeed(789L)
-                    .fromFile(tempFile)
-                    .generate();
+                .withSeed(789L)
+                .fromFile(tempFile)
+                .generate();
 
             assertThat(generation).isNotNull();
             JsonNode collectionsNode = asJsonNode(generation);
@@ -1427,7 +1427,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             // Create mock RandomService for UUID generation
             RandomService mockRandom = mock(RandomService.class);
             when(mockRandom.nextLong()).thenReturn(123456789L, 987654321L, 111111111L, 222222222L, 333333333L,
-                    444444444L);
+                444444444L);
 
             // Create mock Faker that returns our mock Name and RandomService
             Faker mockFaker = mock(Faker.class);
@@ -1437,33 +1437,33 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             // Create DSL JsonNode that only uses firstName and lastName (not fullName,
             // title, prefix, suffix)
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "users": {
-                            "count": 3,
-                            "item": {
-                                "id": {"gen": "uuid"},
-                                "firstName": {"gen": "name.firstName"},
-                                "lastName": {"gen": "name.lastName"}
-                            }
+                {
+                    "users": {
+                        "count": 3,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "firstName": {"gen": "name.firstName"},
+                            "lastName": {"gen": "name.lastName"}
                         }
                     }
-                    """);
+                }
+                """);
 
             // Create a custom registry with the mock faker
             GeneratorRegistry mockRegistry = GeneratorRegistry.withDefaultGenerators(mockFaker);
 
             // Execute with mock registry
             IGeneration generation = DslDataGenerator.create()
-                    .withSeed(123L)
-                    .withGeneratorRegistry(mockRegistry)
-                    .fromJsonNode(dslNode)
-                    .generate();
+                .withSeed(123L)
+                .withGeneratorRegistry(mockRegistry)
+                .fromJsonNode(dslNode)
+                .generate();
             String json = asJson(generation);
 
             // Verify results
             assertThat(json)
-                    .isNotNull()
-                    .contains("firstName", "lastName");
+                .isNotNull()
+                .contains("firstName", "lastName");
 
             // Verify efficiency: only firstName and lastName should be called
             verify(mockName, times(3)).firstName();
@@ -1491,32 +1491,32 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             // Create DSL JsonNode that only uses streetAddress and city (not state,
             // zipCode, country)
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "locations": {
-                            "count": 2,
-                            "item": {
-                                "street": {"gen": "address.streetAddress"},
-                                "city": {"gen": "address.city"}
-                            }
+                {
+                    "locations": {
+                        "count": 2,
+                        "item": {
+                            "street": {"gen": "address.streetAddress"},
+                            "city": {"gen": "address.city"}
                         }
                     }
-                    """);
+                }
+                """);
 
             // Create a custom registry with the mock faker
             GeneratorRegistry mockRegistry = GeneratorRegistry.withDefaultGenerators(mockFaker);
 
             // Execute with mock registry
             IGeneration generation = DslDataGenerator.create()
-                    .withSeed(123L)
-                    .withGeneratorRegistry(mockRegistry)
-                    .fromJsonNode(dslNode)
-                    .generate();
+                .withSeed(123L)
+                .withGeneratorRegistry(mockRegistry)
+                .fromJsonNode(dslNode)
+                .generate();
             String json = asJson(generation);
 
             // Verify results
             assertThat(json)
-                    .isNotNull()
-                    .contains("street", "city");
+                .isNotNull()
+                .contains("street", "city");
 
             // Verify efficiency: only streetAddress and city should be called
             verify(mockAddress, times(2)).streetAddress();
@@ -1542,31 +1542,31 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             // Create DSL JsonNode that only uses company name (not industry, profession,
             // buzzword)
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "businesses": {
-                            "count": 2,
-                            "item": {
-                                "companyName": {"gen": "company.name"}
-                            }
+                {
+                    "businesses": {
+                        "count": 2,
+                        "item": {
+                            "companyName": {"gen": "company.name"}
                         }
                     }
-                    """);
+                }
+                """);
 
             // Create a custom registry with the mock faker
             GeneratorRegistry mockRegistry = GeneratorRegistry.withDefaultGenerators(mockFaker);
 
             // Execute with mock registry
             IGeneration generation = DslDataGenerator.create()
-                    .withSeed(123L)
-                    .withGeneratorRegistry(mockRegistry)
-                    .fromJsonNode(dslNode)
-                    .generate();
+                .withSeed(123L)
+                .withGeneratorRegistry(mockRegistry)
+                .fromJsonNode(dslNode)
+                .generate();
             String json = asJson(generation);
 
             // Verify results
             assertThat(json)
-                    .isNotNull()
-                    .contains("companyName");
+                .isNotNull()
+                .contains("companyName");
 
             // Verify efficiency: only company name should be called
             verify(mockCompany, times(2)).name();
@@ -1591,31 +1591,31 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             // Create DSL JsonNode that only uses emailAddress (not domainName, url,
             // password)
             JsonNode dslNode = mapper.readTree("""
-                    {
-                        "contacts": {
-                            "count": 2,
-                            "item": {
-                                "email": {"gen": "internet.emailAddress"}
-                            }
+                {
+                    "contacts": {
+                        "count": 2,
+                        "item": {
+                            "email": {"gen": "internet.emailAddress"}
                         }
                     }
-                    """);
+                }
+                """);
 
             // Create a custom registry with the mock faker
             GeneratorRegistry mockRegistry = GeneratorRegistry.withDefaultGenerators(mockFaker);
 
             // Execute with mock registry
             IGeneration generation = DslDataGenerator.create()
-                    .withSeed(123L)
-                    .withGeneratorRegistry(mockRegistry)
-                    .fromJsonNode(dslNode)
-                    .generate();
+                .withSeed(123L)
+                .withGeneratorRegistry(mockRegistry)
+                .fromJsonNode(dslNode)
+                .generate();
             String json = asJson(generation);
 
             // Verify results
             assertThat(json)
-                    .isNotNull()
-                    .contains("email");
+                .isNotNull()
+                .contains("email");
 
             // Verify efficiency: only emailAddress should be called
             verify(mockInternet, times(2)).emailAddress();

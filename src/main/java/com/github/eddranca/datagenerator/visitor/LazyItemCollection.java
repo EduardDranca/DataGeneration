@@ -35,7 +35,7 @@ public class LazyItemCollection implements List<LazyItemProxy> {
     private final List<LazyItemProxy> materializedItems;
 
     public LazyItemCollection(CollectionNode collectionNode, DataGenerationVisitor visitor,
-                             String collectionName, Set<String> referencedPaths) {
+                              String collectionName, Set<String> referencedPaths) {
         this.collectionNode = collectionNode;
         this.visitor = visitor;
         this.collectionName = collectionName;
@@ -100,26 +100,6 @@ public class LazyItemCollection implements List<LazyItemProxy> {
     @Override
     public Iterator<LazyItemProxy> iterator() {
         return new LazyIterator();
-    }
-
-    /**
-     * Iterator that generates items on-demand and caches them for indexed access.
-     */
-    private class LazyIterator implements Iterator<LazyItemProxy> {
-        private int currentIndex = 0;
-
-        @Override
-        public boolean hasNext() {
-            return currentIndex < size();
-        }
-
-        @Override
-        public LazyItemProxy next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            return get(currentIndex++);
-        }
     }
 
     /**
@@ -240,5 +220,25 @@ public class LazyItemCollection implements List<LazyItemProxy> {
     @Override
     public List<LazyItemProxy> subList(int fromIndex, int toIndex) {
         throw new UnsupportedOperationException("SubList not supported for lazy collections");
+    }
+
+    /**
+     * Iterator that generates items on-demand and caches them for indexed access.
+     */
+    private class LazyIterator implements Iterator<LazyItemProxy> {
+        private int currentIndex = 0;
+
+        @Override
+        public boolean hasNext() {
+            return currentIndex < size();
+        }
+
+        @Override
+        public LazyItemProxy next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            return get(currentIndex++);
+        }
     }
 }

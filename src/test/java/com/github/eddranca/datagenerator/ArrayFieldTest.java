@@ -27,20 +27,20 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testFixedSizeArray(boolean memoryOptimized) throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "tags": {
-                                "array": {
-                                    "size": 3,
-                                    "item": "tag"
-                                }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "tags": {
+                            "array": {
+                                "size": 3,
+                                "item": "tag"
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration generation = generateFromDsl(dsl, memoryOptimized);
         List<JsonNode> users = generation.streamJsonNodes("users").toList();
@@ -54,7 +54,7 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
                 assertThat(tags).hasSize(3);
 
                 assertThat(tags).allSatisfy(tag ->
-                        assertThat(tag.asText()).isEqualTo("tag")
+                    assertThat(tag.asText()).isEqualTo("tag")
                 );
             });
     }
@@ -62,21 +62,21 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testVariableSizeArray(boolean memoryOptimized) throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "scores": {
-                                "array": {
-                                    "minSize": 2,
-                                    "maxSize": 5,
-                                    "item": 100
-                                }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "scores": {
+                            "array": {
+                                "minSize": 2,
+                                "maxSize": 5,
+                                "item": 100
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration generation = generateFromDsl(dsl, memoryOptimized);
         List<JsonNode> users = generation.streamJsonNodes("users").toList();
@@ -96,24 +96,24 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testArrayWithGeneratedItems(boolean memoryOptimized) throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "numbers": {
-                                "array": {
-                                    "size": 3,
-                                    "item": {
-                                        "gen": "number",
-                                        "min": 1,
-                                        "max": 10
-                                    }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "numbers": {
+                            "array": {
+                                "size": 3,
+                                "item": {
+                                    "gen": "number",
+                                    "min": 1,
+                                    "max": 10
                                 }
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration generation = generateFromDsl(dsl, memoryOptimized);
         List<JsonNode> users = generation.streamJsonNodes("users").toList();
@@ -133,25 +133,25 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testArrayWithObjectItems(boolean memoryOptimized) throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "contacts": {
-                                "array": {
-                                    "size": 2,
-                                    "item": {
-                                        "type": "email",
-                                        "value": {
-                                            "gen": "internet.emailAddress"
-                                        }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "contacts": {
+                            "array": {
+                                "size": 2,
+                                "item": {
+                                    "type": "email",
+                                    "value": {
+                                        "gen": "internet.emailAddress"
                                     }
                                 }
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration generation = generateFromDsl(dsl, memoryOptimized);
         List<JsonNode> users = generation.streamJsonNodes("users").toList();
@@ -174,20 +174,20 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testEmptyArray(boolean memoryOptimized) throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "emptyList": {
-                                "array": {
-                                    "size": 0,
-                                    "item": "value"
-                                }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "emptyList": {
+                            "array": {
+                                "size": 0,
+                                "item": "value"
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration generation = generateFromDsl(dsl, memoryOptimized);
         List<JsonNode> users = generation.streamJsonNodes("users").toList();
@@ -214,19 +214,19 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
         @Test
         void testBasicCountWithGenerator() throws Exception {
             String dsl = """
-                    {
-                      "users": {
-                        "count": 1,
-                        "item": {
-                          "tags": {
-                            "gen": "choice",
-                            "options": ["tech", "business", "personal"],
-                            "count": 3
-                          }
-                        }
+                {
+                  "users": {
+                    "count": 1,
+                    "item": {
+                      "tags": {
+                        "gen": "choice",
+                        "options": ["tech", "business", "personal"],
+                        "count": 3
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode jsonNode = objectMapper.readTree(dsl);
             DslTreeBuildResult result = builder.build(jsonNode);
@@ -248,18 +248,18 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
         @Test
         void testCountWithLiteralValue() throws Exception {
             String dsl = """
-                    {
-                      "users": {
-                        "count": 1,
-                        "item": {
-                          "repeated_message": {
-                            "value": "Hello World",
-                            "count": 5
-                          }
-                        }
+                {
+                  "users": {
+                    "count": 1,
+                    "item": {
+                      "repeated_message": {
+                        "value": "Hello World",
+                        "count": 5
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode jsonNode = objectMapper.readTree(dsl);
             DslTreeBuildResult result = builder.build(jsonNode);
@@ -281,19 +281,19 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
         @Test
         void testCountZero() throws Exception {
             String dsl = """
-                    {
-                      "users": {
-                        "count": 1,
-                        "item": {
-                          "empty_tags": {
-                            "gen": "choice",
-                            "options": ["a", "b", "c"],
-                            "count": 0
-                          }
-                        }
+                {
+                  "users": {
+                    "count": 1,
+                    "item": {
+                      "empty_tags": {
+                        "gen": "choice",
+                        "options": ["a", "b", "c"],
+                        "count": 0
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode jsonNode = objectMapper.readTree(dsl);
             DslTreeBuildResult result = builder.build(jsonNode);
@@ -319,19 +319,19 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
         })
         void testInvalidCountErrors(String countValue, String expectedError) throws Exception {
             String dsl = """
-                    {
-                      "users": {
-                        "count": 1,
-                        "item": {
-                          "invalid_tags": {
-                            "gen": "choice",
-                            "options": ["a", "b", "c"],
-                            "count": %s
-                          }
-                        }
+                {
+                  "users": {
+                    "count": 1,
+                    "item": {
+                      "invalid_tags": {
+                        "gen": "choice",
+                        "options": ["a", "b", "c"],
+                        "count": %s
                       }
                     }
-                    """.formatted(countValue);
+                  }
+                }
+                """.formatted(countValue);
 
             JsonNode jsonNode = objectMapper.readTree(dsl);
             DslTreeBuildResult result = builder.build(jsonNode);
@@ -345,17 +345,17 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
         @Test
         void testCountWithoutAdditionalFieldsError() throws Exception {
             String dsl = """
-                    {
-                      "users": {
-                        "count": 1,
-                        "item": {
-                          "invalid_field": {
-                            "count": 3
-                          }
-                        }
+                {
+                  "users": {
+                    "count": 1,
+                    "item": {
+                      "invalid_field": {
+                        "count": 3
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode jsonNode = objectMapper.readTree(dsl);
             DslTreeBuildResult result = builder.build(jsonNode);
@@ -369,26 +369,26 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
         @Test
         void testCountWithComplexGenerator() throws Exception {
             String dsl = """
-                    {
-                      "companies": {
-                        "count": 1,
-                        "item": {
-                          "employees": {
-                            "name": {
-                              "gen": "choice",
-                              "options": ["Alice", "Bob", "Charlie"]
-                            },
-                            "age": {
-                              "gen": "number",
-                              "min": 18,
-                              "max": 65
-                            },
-                            "count": 2
-                          }
-                        }
+                {
+                  "companies": {
+                    "count": 1,
+                    "item": {
+                      "employees": {
+                        "name": {
+                          "gen": "choice",
+                          "options": ["Alice", "Bob", "Charlie"]
+                        },
+                        "age": {
+                          "gen": "number",
+                          "min": 18,
+                          "max": 65
+                        },
+                        "count": 2
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode jsonNode = objectMapper.readTree(dsl);
             DslTreeBuildResult result = builder.build(jsonNode);

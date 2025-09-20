@@ -14,28 +14,28 @@ class ReferenceSpreadTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testBasicReferenceSpread(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree(
-                """
-                        {
-                            "users": {
-                                "count": 3,
-                                "item": {
-                                    "id": {"gen": "uuid"},
-                                    "name": {"gen": "choice", "options": ["Alice", "Bob", "Charlie"]},
-                                    "email": {"gen": "choice", "options": ["alice@test.com", "bob@test.com", "charlie@test.com"]}
-                                }
-                            },
-                            "orders": {
-                                "count": 5,
-                                "item": {
-                                    "orderId": {"gen": "uuid"},
-                                    "...userInfo": {
-                                        "ref": "users[*]",
-                                        "fields": ["id", "name"]
-                                    }
-                                }
+            """
+                {
+                    "users": {
+                        "count": 3,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "name": {"gen": "choice", "options": ["Alice", "Bob", "Charlie"]},
+                            "email": {"gen": "choice", "options": ["alice@test.com", "bob@test.com", "charlie@test.com"]}
+                        }
+                    },
+                    "orders": {
+                        "count": 5,
+                        "item": {
+                            "orderId": {"gen": "uuid"},
+                            "...userInfo": {
+                                "ref": "users[*]",
+                                "fields": ["id", "name"]
                             }
                         }
-                        """);
+                    }
+                }
+                """);
 
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
@@ -62,27 +62,27 @@ class ReferenceSpreadTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testReferenceSpreadWithFieldRenaming(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Alice", "Bob"]},
-                            "email": {"gen": "choice", "options": ["alice@test.com", "bob@test.com"]}
-                        }
-                    },
-                    "orders": {
-                        "count": 4,
-                        "item": {
-                            "orderId": {"gen": "uuid"},
-                            "...userInfo": {
-                                "ref": "users[*]",
-                                "fields": ["userId:id", "customerName:name"]
-                            }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Alice", "Bob"]},
+                        "email": {"gen": "choice", "options": ["alice@test.com", "bob@test.com"]}
+                    }
+                },
+                "orders": {
+                    "count": 4,
+                    "item": {
+                        "orderId": {"gen": "uuid"},
+                        "...userInfo": {
+                            "ref": "users[*]",
+                            "fields": ["userId:id", "customerName:name"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
@@ -107,25 +107,25 @@ class ReferenceSpreadTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testReferenceSpreadWithoutFieldsArray(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Alice", "Bob"]}
-                        }
-                    },
-                    "orders": {
-                        "count": 3,
-                        "item": {
-                            "orderId": {"gen": "uuid"},
-                            "...userInfo": {
-                                "ref": "users[*]"
-                            }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Alice", "Bob"]}
+                    }
+                },
+                "orders": {
+                    "count": 3,
+                    "item": {
+                        "orderId": {"gen": "uuid"},
+                        "...userInfo": {
+                            "ref": "users[*]"
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
@@ -148,27 +148,27 @@ class ReferenceSpreadTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testReferenceSpreadWithSequential(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Alice", "Bob"]}
-                        }
-                    },
-                    "orders": {
-                        "count": 6,
-                        "item": {
-                            "orderId": {"gen": "uuid"},
-                            "...userInfo": {
-                                "ref": "users[*]",
-                                "sequential": true,
-                                "fields": ["userId:id", "userName:name"]
-                            }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Alice", "Bob"]}
+                    }
+                },
+                "orders": {
+                    "count": 6,
+                    "item": {
+                        "orderId": {"gen": "uuid"},
+                        "...userInfo": {
+                            "ref": "users[*]",
+                            "sequential": true,
+                            "fields": ["userId:id", "userName:name"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);

@@ -50,7 +50,7 @@ class LoremGeneratorTest {
     @ParameterizedTest
     @CsvSource({
         "words, 3, 0",
-        "sentences, 2, 5", 
+        "sentences, 2, 5",
         "paragraphs, 2, 10"
     })
     void testGenerateTextTypes(String type, int count, int minExpectedSize) throws Exception {

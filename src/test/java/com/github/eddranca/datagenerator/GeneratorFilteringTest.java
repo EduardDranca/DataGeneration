@@ -17,36 +17,36 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testBasicGeneratorFiltering(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "reference_data": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "number", "min": 1, "max": 10},
-                            "name": {"gen": "choice", "options": ["Alice", "Bob", "Charlie"]}
-                        },
-                        "pick": {
-                            "first": 0
-                        }
+            {
+                "reference_data": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "number", "min": 1, "max": 10},
+                        "name": {"gen": "choice", "options": ["Alice", "Bob", "Charlie"]}
                     },
-                    "filtered_items": {
-                        "count": 20,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "filteredNumber": {
-                                "gen": "number",
-                                "min": 1,
-                                "max": 10,
-                                "filter": [{"ref": "first.id"}]
-                            },
-                            "filteredChoice": {
-                                "gen": "choice",
-                                "options": ["Alice", "Bob", "Charlie", "David", "Eve"],
-                                "filter": [{"ref": "first.name"}, "David"]
-                            }
+                    "pick": {
+                        "first": 0
+                    }
+                },
+                "filtered_items": {
+                    "count": 20,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "filteredNumber": {
+                            "gen": "number",
+                            "min": 1,
+                            "max": 10,
+                            "filter": [{"ref": "first.id"}]
+                        },
+                        "filteredChoice": {
+                            "gen": "choice",
+                            "options": ["Alice", "Bob", "Charlie", "David", "Eve"],
+                            "filter": [{"ref": "first.name"}, "David"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
@@ -93,37 +93,37 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testGeneratorFilteringWithComplexOptions(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "categories": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "choice", "options": ["electronics", "books"]},
-                            "priority": {"gen": "choice", "options": ["high", "low"]}
-                        },
-                        "pick": {
-                            "excluded": 0
-                        }
+            {
+                "categories": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "choice", "options": ["electronics", "books"]},
+                        "priority": {"gen": "choice", "options": ["high", "low"]}
                     },
-                    "products": {
-                        "count": 15,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "category": {
-                                "gen": "choice",
-                                "options": ["electronics", "books", "clothing", "home"],
-                                "filter": [{"ref": "excluded.name"}]
-                            },
-                            "price": {
-                                "gen": "float",
-                                "min": 10.0,
-                                "max": 100.0,
-                                "decimals": 2,
-                                "filter": [50.0, 75.0]
-                            }
+                    "pick": {
+                        "excluded": 0
+                    }
+                },
+                "products": {
+                    "count": 15,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "category": {
+                            "gen": "choice",
+                            "options": ["electronics", "books", "clothing", "home"],
+                            "filter": [{"ref": "excluded.name"}]
+                        },
+                        "price": {
+                            "gen": "float",
+                            "min": 10.0,
+                            "max": 100.0,
+                            "decimals": 2,
+                            "filter": [50.0, 75.0]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
@@ -165,35 +165,35 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testGeneratorFilteringWithPathExtraction(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "reference_names": {
-                        "count": 2,
-                        "item": {
-                            "firstName": {"gen": "choice", "options": ["John", "Jane"]},
-                            "lastName": {"gen": "choice", "options": ["Doe", "Smith"]}
-                        },
-                        "pick": {
-                            "excluded": 0
-                        }
+            {
+                "reference_names": {
+                    "count": 2,
+                    "item": {
+                        "firstName": {"gen": "choice", "options": ["John", "Jane"]},
+                        "lastName": {"gen": "choice", "options": ["Doe", "Smith"]}
                     },
-                    "users": {
-                        "count": 10,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "firstName": {
-                                "gen": "choice",
-                                "options": ["John", "Jane", "Bob", "Alice"],
-                                "filter": [{"ref": "excluded.firstName"}]
-                            },
-                            "lastName": {
-                                "gen": "choice",
-                                "options": ["Doe", "Smith", "Johnson", "Brown"],
-                                "filter": [{"ref": "excluded.lastName"}]
-                            }
+                    "pick": {
+                        "excluded": 0
+                    }
+                },
+                "users": {
+                    "count": 10,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "firstName": {
+                            "gen": "choice",
+                            "options": ["John", "Jane", "Bob", "Alice"],
+                            "filter": [{"ref": "excluded.firstName"}]
+                        },
+                        "lastName": {
+                            "gen": "choice",
+                            "options": ["Doe", "Smith", "Johnson", "Brown"],
+                            "filter": [{"ref": "excluded.lastName"}]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
 
@@ -237,20 +237,20 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testGeneratorFilteringFallbackToNull(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "restrictedChoice": {
-                                "gen": "choice",
-                                "options": ["A", "B"],
-                                "filter": ["A", "B"]
-                            }
+            {
+                "items": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "restrictedChoice": {
+                            "gen": "choice",
+                            "options": ["A", "B"],
+                            "filter": ["A", "B"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = createGenerator(memoryOptimized)
             .withFilteringBehavior(FilteringBehavior.RETURN_NULL)
@@ -299,19 +299,19 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
         };
 
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "customValue": {
-                                "gen": "customFiltering",
-                                "filter": ["filtered"]
-                            }
+            {
+                "items": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "customValue": {
+                            "gen": "customFiltering",
+                            "filter": ["filtered"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = createGenerator(memoryOptimized)
             .withCustomGenerator("customFiltering", customFilteringGenerator)

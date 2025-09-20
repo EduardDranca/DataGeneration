@@ -13,7 +13,7 @@ import java.util.Set;
  * A lazy proxy that only materializes fields on-demand.
  * This allows us to keep only referenced fields in memory during generation
  * and generate the rest when needed for output.
- *
+ * <p>
  * Supports nested path materialization for complex object hierarchies.
  * This is a simple POJO that doesn't implement JsonNode for cleaner design.
  */
@@ -22,9 +22,9 @@ public class LazyItemProxy extends AbstractLazyProxy {
     private boolean fullyMaterialized = false;
 
     public LazyItemProxy(String collectionName,
-            Map<String, DslNode> fieldNodes,
-            Set<String> referencedPaths,
-            DataGenerationVisitor visitor) {
+                         Map<String, DslNode> fieldNodes,
+                         Set<String> referencedPaths,
+                         DataGenerationVisitor visitor) {
         super(fieldNodes, referencedPaths, visitor);
         this.collectionName = collectionName;
 
@@ -50,10 +50,10 @@ public class LazyItemProxy extends AbstractLazyProxy {
             Set<String> nestedReferences = getReferencesWithPrefix(fieldName);
 
             LazyObjectProxy lazyObjectProxy = new LazyObjectProxy(
-                    objectFieldNode.getFields(),
-                    nestedReferences,
-                    visitor,
-                    fieldName);
+                objectFieldNode.getFields(),
+                nestedReferences,
+                visitor,
+                fieldName);
 
             // Get the materialized copy for storage in the delegate
             return lazyObjectProxy.getMaterializedCopy();
@@ -68,7 +68,6 @@ public class LazyItemProxy extends AbstractLazyProxy {
             }
         }
     }
-
 
 
     /**
@@ -108,7 +107,7 @@ public class LazyItemProxy extends AbstractLazyProxy {
             return delegate.toString();
         } else {
             return String.format("LazyItemProxy{collection=%s, materialized=%d/%d fields}",
-                    collectionName, delegate.size(), fieldNodes.size());
+                collectionName, delegate.size(), fieldNodes.size());
         }
     }
 

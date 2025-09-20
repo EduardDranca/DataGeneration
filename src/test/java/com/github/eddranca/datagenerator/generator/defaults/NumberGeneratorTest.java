@@ -40,7 +40,7 @@ class NumberGeneratorTest {
     @ParameterizedTest
     @CsvSource({
         "-50, -10, -50, -10",
-        "42, 42, 42, 42", 
+        "42, 42, 42, 42",
         "20, 10, 10, 20"
     })
     void testGenerateWithRanges(int min, int max, int expectedMin, int expectedMax) throws Exception {

@@ -18,23 +18,23 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testLegacyJsonNodeFormat(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                    "users": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.firstName"}
-                        }
-                    },
-                    "products": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "choice", "options": ["Widget", "Gadget", "Tool"]},
-                            "price": {"gen": "number", "min": 10, "max": 100}
-                        }
+            {
+                "users": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.firstName"}
+                    }
+                },
+                "products": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "choice", "options": ["Widget", "Gadget", "Tool"]},
+                        "price": {"gen": "number", "min": 10, "max": 100}
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration generation = generateFromDsl(dsl, memoryOptimized);
 
@@ -69,16 +69,16 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testLegacyJsonStringFormat(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                    "items": {
-                        "count": 2,
-                        "item": {
-                            "type": "test",
-                            "value": {"gen": "number", "min": 1, "max": 10}
-                        }
+            {
+                "items": {
+                    "count": 2,
+                    "item": {
+                        "type": "test",
+                        "value": {"gen": "number", "min": 1, "max": 10}
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration generation = generateFromDsl(dsl, memoryOptimized);
 
@@ -94,16 +94,16 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testLegacySqlFormat(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "name": "John",
-                            "age": 25
-                        }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "name": "John",
+                        "age": 25
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration generation = generateFromDsl(dsl, memoryOptimized);
 
@@ -129,16 +129,16 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testCollectAllJsonNodesFormat(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                    "orders": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "status": "pending"
-                        }
+            {
+                "orders": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "status": "pending"
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration generation = generateFromDsl(dsl, memoryOptimized);
 

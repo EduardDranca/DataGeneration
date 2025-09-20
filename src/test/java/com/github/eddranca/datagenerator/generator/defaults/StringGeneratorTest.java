@@ -45,10 +45,10 @@ class StringGeneratorTest {
 
         assertThat(result).isNotNull();
         assertThat(result.isTextual()).isTrue();
-        
+
         String value = result.asText();
         assertThat(value).hasSize(length);
-        
+
         if (length > 0) {
             assertThat(value).matches("[a-zA-Z0-9]+");
         } else {

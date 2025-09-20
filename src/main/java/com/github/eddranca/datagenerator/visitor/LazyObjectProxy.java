@@ -17,9 +17,9 @@ public class LazyObjectProxy extends AbstractLazyProxy {
     private final String objectPath; // For debugging and path resolution
 
     public LazyObjectProxy(Map<String, DslNode> fieldNodes,
-                          Set<String> referencedPaths,
-                          DataGenerationVisitor visitor,
-                          String objectPath) {
+                           Set<String> referencedPaths,
+                           DataGenerationVisitor visitor,
+                           String objectPath) {
         super(fieldNodes, referencedPaths, visitor);
         this.objectPath = objectPath;
 
@@ -43,13 +43,12 @@ public class LazyObjectProxy extends AbstractLazyProxy {
     protected JsonNode generateFieldValue(String fieldName, DslNode fieldNode) {
         // If this field node represents a nested object and has sub-references,
         // create another LazyObjectProxy for it
-        if (fieldNode instanceof com.github.eddranca.datagenerator.node.ObjectFieldNode) {
+        if (fieldNode instanceof com.github.eddranca.datagenerator.node.ObjectFieldNode objectFieldNode) {
             String nestedPath = buildFieldPath(fieldName);
             Set<String> nestedReferences = getReferencesWithPrefix(nestedPath);
 
             if (!nestedReferences.isEmpty()) {
                 // Create a lazy proxy for the nested object and get its materialized copy
-                var objectFieldNode = (com.github.eddranca.datagenerator.node.ObjectFieldNode) fieldNode;
                 LazyObjectProxy nestedLazyProxy = new LazyObjectProxy(
                     objectFieldNode.getFields(),
                     nestedReferences,
@@ -70,7 +69,6 @@ public class LazyObjectProxy extends AbstractLazyProxy {
     private String buildFieldPath(String fieldName) {
         return objectPath.isEmpty() ? fieldName : objectPath + "." + fieldName;
     }
-
 
 
     /**

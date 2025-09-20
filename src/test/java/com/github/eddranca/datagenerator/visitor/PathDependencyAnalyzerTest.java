@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for PathDependencyAnalyzer to verify correct path analysis
@@ -68,8 +68,8 @@ class PathDependencyAnalyzerTest {
         // Users collection should have id and name referenced
         assertThat(referencedPaths).containsKey("users");
         Set<String> userPaths = referencedPaths.get("users");
-        assertThat(userPaths).contains("id", "name");
-        assertThat(userPaths).doesNotContain("email"); // email is not referenced
+        assertThat(userPaths).contains("id", "name")
+            .doesNotContain("email"); // email is not referenced
 
         // Posts collection should not have any references
         assertThat(referencedPaths).doesNotContainKey("posts");
@@ -113,14 +113,11 @@ class PathDependencyAnalyzerTest {
 
         assertThat(referencedPaths).containsKey("users");
         Set<String> userPaths = referencedPaths.get("users");
-        
-        // Should contain all referenced paths
-        assertThat(userPaths).contains("id", "address.street", "profile.social.twitter");
-        
-        // Should not contain unreferenced nested paths
-        assertThat(userPaths).doesNotContain("profile.bio", "address.city", "profile.social.linkedin");
-    }
 
+        // Should contain all referenced paths
+        assertThat(userPaths).contains("id", "address.street", "profile.social.twitter")
+            .doesNotContain("profile.bio", "address.city", "profile.social.linkedin");
+    }
 
 
     @Test
@@ -188,11 +185,9 @@ class PathDependencyAnalyzerTest {
 
         assertThat(referencedPaths).containsKey("users");
         Set<String> userPaths = referencedPaths.get("users");
-        
+
         // Should contain all referenced fields from both posts and comments
-        assertThat(userPaths).contains("id", "name", "email");
-        
-        // Should not contain unreferenced field
-        assertThat(userPaths).doesNotContain("bio");
+        assertThat(userPaths).contains("id", "name", "email")
+            .doesNotContain("bio");
     }
 }

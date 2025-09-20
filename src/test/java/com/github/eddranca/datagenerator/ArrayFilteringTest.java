@@ -19,33 +19,33 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testArrayWithExplicitSyntaxAndFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                  "excluded": {
-                    "count": 1,
-                    "item": {
-                      "name": {"gen": "choice", "options": ["Java", "Python"]}
-                    }
-                  },
-                  "projects": {
-                    "count": 5,
-                    "item": {
-                      "id": {"gen": "uuid"},
-                      "name": {"gen": "company.name"},
-                      "technologies": {
-                        "array": {
-                          "item": {
-                            "gen": "choice",
-                            "options": ["Java", "Python", "JavaScript", "React", "Docker", "AWS"],
-                            "filter": [{"ref": "excluded[0].name"}]
-                          },
-                          "minSize": 2,
-                          "maxSize": 4
-                        }
-                      }
+            {
+              "excluded": {
+                "count": 1,
+                "item": {
+                  "name": {"gen": "choice", "options": ["Java", "Python"]}
+                }
+              },
+              "projects": {
+                "count": 5,
+                "item": {
+                  "id": {"gen": "uuid"},
+                  "name": {"gen": "company.name"},
+                  "technologies": {
+                    "array": {
+                      "item": {
+                        "gen": "choice",
+                        "options": ["Java", "Python", "JavaScript", "React", "Docker", "AWS"],
+                        "filter": [{"ref": "excluded[0].name"}]
+                      },
+                      "minSize": 2,
+                      "maxSize": 4
                     }
                   }
                 }
-                """;
+              }
+            }
+            """;
 
         JsonNode dslNode = mapper.readTree(dsl);
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
@@ -74,28 +74,28 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testArrayWithCountSyntaxAndFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                  "bannedUser": {
-                    "count": 1,
-                    "item": {
-                      "role": {"gen": "choice", "options": ["admin", "user"]}
-                    }
-                  },
-                  "users": {
-                    "count": 8,
-                    "item": {
-                      "id": {"gen": "uuid"},
-                      "name": {"gen": "name.fullName"},
-                      "permissions": {
-                        "gen": "choice",
-                        "options": ["admin", "user", "guest", "moderator"],
-                        "count": 3,
-                        "filter": [{"ref": "bannedUser[0].role"}]
-                      }
-                    }
+            {
+              "bannedUser": {
+                "count": 1,
+                "item": {
+                  "role": {"gen": "choice", "options": ["admin", "user"]}
+                }
+              },
+              "users": {
+                "count": 8,
+                "item": {
+                  "id": {"gen": "uuid"},
+                  "name": {"gen": "name.fullName"},
+                  "permissions": {
+                    "gen": "choice",
+                    "options": ["admin", "user", "guest", "moderator"],
+                    "count": 3,
+                    "filter": [{"ref": "bannedUser[0].role"}]
                   }
                 }
-                """;
+              }
+            }
+            """;
 
         JsonNode dslNode = mapper.readTree(dsl);
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
@@ -124,36 +124,36 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testArrayWithMultipleFilters(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                  "restrictions": {
-                    "count": 1,
-                    "item": {
-                      "tech1": {"gen": "choice", "options": ["Java", "Python"]},
-                      "tech2": {"gen": "choice", "options": ["React", "Vue"]}
-                    }
-                  },
-                  "projects": {
-                    "count": 3,
-                    "item": {
-                      "id": {"gen": "uuid"},
-                      "technologies": {
-                        "array": {
-                          "item": {
-                            "gen": "choice",
-                            "options": ["Java", "Python", "JavaScript", "React", "Vue", "Docker"],
-                            "filter": [
-                              {"ref": "restrictions[0].tech1"},
-                              {"ref": "restrictions[0].tech2"}
-                            ]
-                          },
-                          "minSize": 2,
-                          "maxSize": 3
-                        }
-                      }
+            {
+              "restrictions": {
+                "count": 1,
+                "item": {
+                  "tech1": {"gen": "choice", "options": ["Java", "Python"]},
+                  "tech2": {"gen": "choice", "options": ["React", "Vue"]}
+                }
+              },
+              "projects": {
+                "count": 3,
+                "item": {
+                  "id": {"gen": "uuid"},
+                  "technologies": {
+                    "array": {
+                      "item": {
+                        "gen": "choice",
+                        "options": ["Java", "Python", "JavaScript", "React", "Vue", "Docker"],
+                        "filter": [
+                          {"ref": "restrictions[0].tech1"},
+                          {"ref": "restrictions[0].tech2"}
+                        ]
+                      },
+                      "minSize": 2,
+                      "maxSize": 3
                     }
                   }
                 }
-                """;
+              }
+            }
+            """;
 
         JsonNode dslNode = mapper.readTree(dsl);
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
@@ -183,34 +183,34 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testArrayWithTagBasedFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                  "blacklist": {
-                    "count": 1,
-                    "item": {
-                      "skill": {"gen": "choice", "options": ["Java", "Python"]}
-                    },
-                    "tags": ["restricted"]
-                  },
-                  "developers": {
-                    "count": 5,
-                    "item": {
-                      "id": {"gen": "uuid"},
-                      "name": {"gen": "name.fullName"},
-                      "skills": {
-                        "array": {
-                          "item": {
-                            "gen": "choice",
-                            "options": ["Java", "Python", "JavaScript", "React", "Docker", "AWS"],
-                            "filter": [{"ref": "byTag[restricted].skill"}]
-                          },
-                          "minSize": 2,
-                          "maxSize": 4
-                        }
-                      }
+            {
+              "blacklist": {
+                "count": 1,
+                "item": {
+                  "skill": {"gen": "choice", "options": ["Java", "Python"]}
+                },
+                "tags": ["restricted"]
+              },
+              "developers": {
+                "count": 5,
+                "item": {
+                  "id": {"gen": "uuid"},
+                  "name": {"gen": "name.fullName"},
+                  "skills": {
+                    "array": {
+                      "item": {
+                        "gen": "choice",
+                        "options": ["Java", "Python", "JavaScript", "React", "Docker", "AWS"],
+                        "filter": [{"ref": "byTag[restricted].skill"}]
+                      },
+                      "minSize": 2,
+                      "maxSize": 4
                     }
                   }
                 }
-                """;
+              }
+            }
+            """;
 
         JsonNode dslNode = mapper.readTree(dsl);
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
@@ -239,41 +239,41 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testNestedArraysWithFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                  "forbidden": {
-                    "count": 1,
-                    "item": {
-                      "framework": {"gen": "choice", "options": ["Spring", "Django"]}
-                    }
-                  },
-                  "teams": {
-                    "count": 2,
-                    "item": {
-                      "name": {"gen": "company.name"},
-                      "projects": {
-                        "array": {
-                          "item": {
-                            "name": {"gen": "string", "length": 8},
-                            "technologies": {
-                              "array": {
-                                "item": {
-                                  "gen": "choice",
-                                  "options": ["Spring", "Django", "Express", "FastAPI", "Rails"],
-                                  "filter": [{"ref": "forbidden[0].framework"}]
-                                },
-                                "minSize": 1,
-                                "maxSize": 2
-                              }
-                            }
-                          },
-                          "minSize": 1,
-                          "maxSize": 3
+            {
+              "forbidden": {
+                "count": 1,
+                "item": {
+                  "framework": {"gen": "choice", "options": ["Spring", "Django"]}
+                }
+              },
+              "teams": {
+                "count": 2,
+                "item": {
+                  "name": {"gen": "company.name"},
+                  "projects": {
+                    "array": {
+                      "item": {
+                        "name": {"gen": "string", "length": 8},
+                        "technologies": {
+                          "array": {
+                            "item": {
+                              "gen": "choice",
+                              "options": ["Spring", "Django", "Express", "FastAPI", "Rails"],
+                              "filter": [{"ref": "forbidden[0].framework"}]
+                            },
+                            "minSize": 1,
+                            "maxSize": 2
+                          }
                         }
-                      }
+                      },
+                      "minSize": 1,
+                      "maxSize": 3
                     }
                   }
                 }
-                """;
+              }
+            }
+            """;
 
         JsonNode dslNode = mapper.readTree(dsl);
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);

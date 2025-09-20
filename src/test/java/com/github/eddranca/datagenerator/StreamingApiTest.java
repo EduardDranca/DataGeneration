@@ -4,10 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test for the new streaming API functionality.
@@ -32,7 +31,7 @@ class StreamingApiTest extends ParameterizedGenerationTest {
 
         // Test streaming individual collection
         Stream<JsonNode> userStream = generation.streamJsonNodes("users");
-        List<JsonNode> users = userStream.collect(Collectors.toList());
+        List<JsonNode> users = userStream.toList();
 
         assertThat(users).hasSize(3);
         for (JsonNode user : users) {
@@ -68,12 +67,12 @@ class StreamingApiTest extends ParameterizedGenerationTest {
 
         // Test streaming all collections
         Map<String, Stream<JsonNode>> allStreams = generation.asJsonNodes();
-        
+
         assertThat(allStreams).containsKeys("users", "posts");
-        
-        List<JsonNode> users = allStreams.get("users").collect(Collectors.toList());
-        List<JsonNode> posts = allStreams.get("posts").collect(Collectors.toList());
-        
+
+        List<JsonNode> users = allStreams.get("users").toList();
+        List<JsonNode> posts = allStreams.get("posts").toList();
+
         assertThat(users).hasSize(2);
         assertThat(posts).hasSize(3);
     }
@@ -97,11 +96,11 @@ class StreamingApiTest extends ParameterizedGenerationTest {
 
         // Test streaming SQL inserts
         Map<String, Stream<String>> sqlStreams = generation.asSqlInserts();
-        
+
         assertThat(sqlStreams).containsKey("products");
-        
-        List<String> sqlStatements = sqlStreams.get("products").collect(Collectors.toList());
-        
+
+        List<String> sqlStatements = sqlStreams.get("products").toList();
+
         assertThat(sqlStatements).hasSize(2);
         for (String sql : sqlStatements) {
             assertThat(sql).contains("INSERT INTO products");
@@ -128,7 +127,7 @@ class StreamingApiTest extends ParameterizedGenerationTest {
 
         // Test that streaming works with both modes
         Stream<JsonNode> userStream = generation.streamJsonNodes("users");
-        List<JsonNode> users = userStream.collect(Collectors.toList());
+        List<JsonNode> users = userStream.toList();
 
         assertThat(users).hasSize(5);
         for (JsonNode user : users) {
@@ -139,7 +138,7 @@ class StreamingApiTest extends ParameterizedGenerationTest {
 
         // Test SQL streaming
         Stream<String> sqlStream = generation.streamSqlInserts("users");
-        List<String> sqlStatements = sqlStream.collect(Collectors.toList());
+        List<String> sqlStatements = sqlStream.toList();
 
         assertThat(sqlStatements).hasSize(5);
         for (String sql : sqlStatements) {

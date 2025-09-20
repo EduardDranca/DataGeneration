@@ -14,26 +14,26 @@ class TagValidationTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testValidTagSharing(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Alice", "Bob"]}
-                        },
-                        "tags": ["people"]
+            {
+                "users": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Alice", "Bob"]}
                     },
-                    "customers": {
-                        "name": "users",
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "email": {"gen": "choice", "options": ["alice@test.com", "bob@test.com"]}
-                        },
-                        "tags": ["people"]
-                    }
+                    "tags": ["people"]
+                },
+                "customers": {
+                    "name": "users",
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "email": {"gen": "choice", "options": ["alice@test.com", "bob@test.com"]}
+                    },
+                    "tags": ["people"]
                 }
-                """);
+            }
+            """);
 
         // Should succeed because both collections have the same final name "users"
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
@@ -44,25 +44,25 @@ class TagValidationTest extends ParameterizedGenerationTest {
     @Test
     void testInvalidTagSharing() throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Alice", "Bob"]}
-                        },
-                        "tags": ["people"]
+            {
+                "users": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Alice", "Bob"]}
                     },
-                    "products": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Product A", "Product B"]}
-                        },
-                        "tags": ["people"]
-                    }
+                    "tags": ["people"]
+                },
+                "products": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Product A", "Product B"]}
+                    },
+                    "tags": ["people"]
                 }
-                """);
+            }
+            """);
 
         // Should fail because different collections (users vs products) try to use the same tag
         assertThatThrownBy(() -> generateFromDslWithSeed(dslNode, 123L, false))
@@ -74,27 +74,27 @@ class TagValidationTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testValidTagSharingWithCustomNames(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "user_data": {
-                        "name": "people",
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Alice", "Bob"]}
-                        },
-                        "tags": ["humans"]
+            {
+                "user_data": {
+                    "name": "people",
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Alice", "Bob"]}
                     },
-                    "customer_data": {
-                        "name": "people",
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "email": {"gen": "choice", "options": ["alice@test.com", "bob@test.com"]}
-                        },
-                        "tags": ["humans"]
-                    }
+                    "tags": ["humans"]
+                },
+                "customer_data": {
+                    "name": "people",
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "email": {"gen": "choice", "options": ["alice@test.com", "bob@test.com"]}
+                    },
+                    "tags": ["humans"]
                 }
-                """);
+            }
+            """);
 
         // Should succeed because both collections have the same final name "people"
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
@@ -105,27 +105,27 @@ class TagValidationTest extends ParameterizedGenerationTest {
     @Test
     void testInvalidTagSharingWithCustomNames() throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "user_data": {
-                        "name": "people",
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Alice", "Bob"]}
-                        },
-                        "tags": ["entities"]
+            {
+                "user_data": {
+                    "name": "people",
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Alice", "Bob"]}
                     },
-                    "product_data": {
-                        "name": "items",
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Product A", "Product B"]}
-                        },
-                        "tags": ["entities"]
-                    }
+                    "tags": ["entities"]
+                },
+                "product_data": {
+                    "name": "items",
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Product A", "Product B"]}
+                    },
+                    "tags": ["entities"]
                 }
-                """);
+            }
+            """);
 
         // Should fail because different final collection names (people vs items) try to use the same tag
         assertThatThrownBy(() -> generateFromDslWithSeed(dslNode, 123L, false))
@@ -137,25 +137,25 @@ class TagValidationTest extends ParameterizedGenerationTest {
     @Test
     void testMultipleTagsValidation() throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Alice", "Bob"]}
-                        },
-                        "tags": ["people", "active"]
+            {
+                "users": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Alice", "Bob"]}
                     },
-                    "products": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Product A", "Product B"]}
-                        },
-                        "tags": ["items", "active"]
-                    }
+                    "tags": ["people", "active"]
+                },
+                "products": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Product A", "Product B"]}
+                    },
+                    "tags": ["items", "active"]
                 }
-                """);
+            }
+            """);
 
         // Should fail because "active" tag is used by different collections
         assertThatThrownBy(() -> generateFromDslWithSeed(dslNode, 123L, false))
@@ -167,18 +167,18 @@ class TagValidationTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testSingleCollectionMultipleTags(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Alice", "Bob"]},
-                            "type": {"gen": "choice", "options": ["admin", "user"]}
-                        },
-                        "tags": ["people", "active", "verified"]
-                    }
+            {
+                "users": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Alice", "Bob"]},
+                        "type": {"gen": "choice", "options": ["admin", "user"]}
+                    },
+                    "tags": ["people", "active", "verified"]
                 }
-                """);
+            }
+            """);
 
         // Should succeed - single collection can have multiple tags
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);

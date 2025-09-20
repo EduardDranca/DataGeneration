@@ -2,18 +2,15 @@ package com.github.eddranca.datagenerator.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.DslDataGenerator;
 import com.github.eddranca.datagenerator.IGeneration;
-import com.github.eddranca.datagenerator.Generation;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
 
+import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.asJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
-import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.*;
 
 /**
  * Integration tests for complex DSL scenarios including picks, filtering,
@@ -31,54 +28,54 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
     @BothImplementations
     void testPickWithReferencesAndFiltering(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "countries": {
-                        "count": 5,
-                        "tags": ["location"],
-                        "item": {
-                            "name": {"gen": "country.name"},
-                            "code": {"gen": "country.countryCode"},
-                            "continent": {"gen": "choice", "options": ["Europe", "Asia", "America", "Africa"]},
-                            "population": {"gen": "number", "min": 1000000, "max": 100000000}
-                        },
-                        "pick": {
-                            "firstCountry": 0,
-                            "secondCountry": 1,
-                            "lastCountry": 4
-                        }
+            {
+                "countries": {
+                    "count": 5,
+                    "tags": ["location"],
+                    "item": {
+                        "name": {"gen": "country.name"},
+                        "code": {"gen": "country.countryCode"},
+                        "continent": {"gen": "choice", "options": ["Europe", "Asia", "America", "Africa"]},
+                        "population": {"gen": "number", "min": 1000000, "max": 100000000}
                     },
-                    "cities": {
-                        "count": 10,
-                        "item": {
-                            "name": {"gen": "address.city"},
-                            "countryName": {"ref": "countries[*].name", "filter": [{"ref": "firstCountry.name"}]},
-                            "countryCode": {"ref": "countries[*].code"},
-                            "population": {"gen": "number", "min": 50000, "max": 10000000}
-                        }
-                    },
-                    "companies": {
-                        "count": 15,
-                        "item": {
-                            "name": {"gen": "company.name"},
-                            "headquarters": {"ref": "cities[*].name"},
-                            "country": {"ref": "byTag[location]"},
-                            "foundedYear": {"gen": "number", "min": 1900, "max": 2023},
-                            "employees": {"gen": "number", "min": 10, "max": 50000}
-                        }
-                    },
-                    "users": {
-                        "count": 25,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.fullName"},
-                            "email": {"gen": "internet.emailAddress"},
-                            "company": {"ref": "companies[*].name"},
-                            "homeCountry": {"ref": "lastCountry.name"},
-                            "age": {"gen": "number", "min": 18, "max": 65}
-                        }
+                    "pick": {
+                        "firstCountry": 0,
+                        "secondCountry": 1,
+                        "lastCountry": 4
+                    }
+                },
+                "cities": {
+                    "count": 10,
+                    "item": {
+                        "name": {"gen": "address.city"},
+                        "countryName": {"ref": "countries[*].name", "filter": [{"ref": "firstCountry.name"}]},
+                        "countryCode": {"ref": "countries[*].code"},
+                        "population": {"gen": "number", "min": 50000, "max": 10000000}
+                    }
+                },
+                "companies": {
+                    "count": 15,
+                    "item": {
+                        "name": {"gen": "company.name"},
+                        "headquarters": {"ref": "cities[*].name"},
+                        "country": {"ref": "byTag[location]"},
+                        "foundedYear": {"gen": "number", "min": 1900, "max": 2023},
+                        "employees": {"gen": "number", "min": 10, "max": 50000}
+                    }
+                },
+                "users": {
+                    "count": 25,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.fullName"},
+                        "email": {"gen": "internet.emailAddress"},
+                        "company": {"ref": "companies[*].name"},
+                        "homeCountry": {"ref": "lastCountry.name"},
+                        "age": {"gen": "number", "min": 18, "max": 65}
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = generateFromDsl(dsl, memoryOptimized);
 
@@ -117,62 +114,62 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
     @BothImplementations
     void testLargeScaleDataGeneration(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "regions": {
-                        "count": 5,
-                        "tags": ["geo"],
-                        "item": {
-                            "name": {"gen": "choice", "options": ["North", "South", "East", "West", "Central"]},
-                            "code": {"gen": "string", "length": 3}
-                        }
-                    },
-                    "countries": {
-                        "count": 25,
-                        "item": {
-                            "name": {"gen": "country.name"},
-                            "code": {"gen": "country.countryCode"},
-                            "region": {"ref": "regions[*].name"}
-                        }
-                    },
-                    "states": {
-                        "count": 100,
-                        "item": {
-                            "name": {"gen": "address.state"},
-                            "country": {"ref": "countries[*].name"},
-                            "population": {"gen": "number", "min": 100000, "max": 50000000}
-                        }
-                    },
-                    "cities": {
-                        "count": 500,
-                        "item": {
-                            "name": {"gen": "address.city"},
-                            "state": {"ref": "states[*].name"},
-                            "country": {"ref": "countries[*].name"},
-                            "population": {"gen": "number", "min": 10000, "max": 10000000}
-                        }
-                    },
-                    "companies": {
-                        "count": 200,
-                        "item": {
-                            "name": {"gen": "company.name"},
-                            "headquarters": {"ref": "cities[*].name"},
-                            "industry": {"gen": "choice", "options": ["Tech", "Finance", "Healthcare", "Manufacturing", "Retail"]},
-                            "employees": {"gen": "number", "min": 50, "max": 100000}
-                        }
-                    },
-                    "users": {
-                        "count": 1000,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.fullName"},
-                            "email": {"gen": "internet.emailAddress"},
-                            "company": {"ref": "companies[*].name"},
-                            "city": {"ref": "cities[*].name"},
-                            "age": {"gen": "number", "min": 18, "max": 70}
-                        }
+            {
+                "regions": {
+                    "count": 5,
+                    "tags": ["geo"],
+                    "item": {
+                        "name": {"gen": "choice", "options": ["North", "South", "East", "West", "Central"]},
+                        "code": {"gen": "string", "length": 3}
+                    }
+                },
+                "countries": {
+                    "count": 25,
+                    "item": {
+                        "name": {"gen": "country.name"},
+                        "code": {"gen": "country.countryCode"},
+                        "region": {"ref": "regions[*].name"}
+                    }
+                },
+                "states": {
+                    "count": 100,
+                    "item": {
+                        "name": {"gen": "address.state"},
+                        "country": {"ref": "countries[*].name"},
+                        "population": {"gen": "number", "min": 100000, "max": 50000000}
+                    }
+                },
+                "cities": {
+                    "count": 500,
+                    "item": {
+                        "name": {"gen": "address.city"},
+                        "state": {"ref": "states[*].name"},
+                        "country": {"ref": "countries[*].name"},
+                        "population": {"gen": "number", "min": 10000, "max": 10000000}
+                    }
+                },
+                "companies": {
+                    "count": 200,
+                    "item": {
+                        "name": {"gen": "company.name"},
+                        "headquarters": {"ref": "cities[*].name"},
+                        "industry": {"gen": "choice", "options": ["Tech", "Finance", "Healthcare", "Manufacturing", "Retail"]},
+                        "employees": {"gen": "number", "min": 50, "max": 100000}
+                    }
+                },
+                "users": {
+                    "count": 1000,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.fullName"},
+                        "email": {"gen": "internet.emailAddress"},
+                        "company": {"ref": "companies[*].name"},
+                        "city": {"ref": "cities[*].name"},
+                        "age": {"gen": "number", "min": 18, "max": 70}
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = generateFromDslWithSeed(dsl, 789L, memoryOptimized);
 
@@ -207,49 +204,49 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
     @BothImplementations
     void testComplexFilteringWithMultipleLevels(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "categories": {
-                        "count": 4,
-                        "item": {
-                            "name": {"gen": "choice", "options": ["Electronics", "Books", "Clothing", "Home"]},
-                            "priority": {"gen": "choice", "options": ["high", "medium", "low"]}
-                        },
-                        "pick": {
-                            "highPriorityCategory": 0,
-                            "lowPriorityCategory": 3
-                        }
+            {
+                "categories": {
+                    "count": 4,
+                    "item": {
+                        "name": {"gen": "choice", "options": ["Electronics", "Books", "Clothing", "Home"]},
+                        "priority": {"gen": "choice", "options": ["high", "medium", "low"]}
                     },
-                    "products": {
-                        "count": 20,
-                        "item": {
-                            "name": {"gen": "string", "length": 12},
-                            "category": {"ref": "categories[*].name", "filter": [{"ref": "highPriorityCategory.name"}]},
-                            "price": {"gen": "number", "min": 10, "max": 1000},
-                            "inStock": {"gen": "choice", "options": [true, false]}
-                        }
-                    },
-                    "orders": {
-                        "count": 50,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "product": {"ref": "products[*].name"},
-                            "quantity": {"gen": "number", "min": 1, "max": 10},
-                            "customerEmail": {"gen": "internet.emailAddress"},
-                            "status": {"gen": "choice", "options": ["pending", "shipped", "delivered", "cancelled"]}
-                        }
-                    },
-                    "reviews": {
-                        "count": 30,
-                        "item": {
-                            "orderId": {"ref": "orders[*].id"},
-                            "rating": {"gen": "number", "min": 1, "max": 5},
-                            "comment": {"gen": "string", "length": 50},
-                            "verified": {"gen": "choice", "options": [true, false]},
-                            "productCategory": {"ref": "lowPriorityCategory.name"}
-                        }
+                    "pick": {
+                        "highPriorityCategory": 0,
+                        "lowPriorityCategory": 3
+                    }
+                },
+                "products": {
+                    "count": 20,
+                    "item": {
+                        "name": {"gen": "string", "length": 12},
+                        "category": {"ref": "categories[*].name", "filter": [{"ref": "highPriorityCategory.name"}]},
+                        "price": {"gen": "number", "min": 10, "max": 1000},
+                        "inStock": {"gen": "choice", "options": [true, false]}
+                    }
+                },
+                "orders": {
+                    "count": 50,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "product": {"ref": "products[*].name"},
+                        "quantity": {"gen": "number", "min": 1, "max": 10},
+                        "customerEmail": {"gen": "internet.emailAddress"},
+                        "status": {"gen": "choice", "options": ["pending", "shipped", "delivered", "cancelled"]}
+                    }
+                },
+                "reviews": {
+                    "count": 30,
+                    "item": {
+                        "orderId": {"ref": "orders[*].id"},
+                        "rating": {"gen": "number", "min": 1, "max": 5},
+                        "comment": {"gen": "string", "length": 50},
+                        "verified": {"gen": "choice", "options": [true, false]},
+                        "productCategory": {"ref": "lowPriorityCategory.name"}
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = generateFromDslWithSeed(dsl, 999L, memoryOptimized);
 
@@ -292,50 +289,50 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
     @BothImplementations
     void testDynamicTagReferencesWithThisField(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 10,
-                        "item": {
-                            "name": {"gen": "name.firstName"},
-                            "role": {"gen": "choice", "options": ["admin", "user", "guest"]},
-                            "department": {"gen": "choice", "options": ["engineering", "marketing", "sales"]}
-                        }
-                    },
-                    "admin_resources": {
-                        "count": 5,
-                        "tags": ["admin"],
-                        "item": {
-                            "name": {"gen": "string", "length": 10},
-                            "type": {"gen": "choice", "options": ["server", "database", "application"]}
-                        }
-                    },
-                    "user_resources": {
-                        "count": 8,
-                        "tags": ["user"],
-                        "item": {
-                            "name": {"gen": "string", "length": 8},
-                            "type": {"gen": "choice", "options": ["document", "report", "dashboard"]}
-                        }
-                    },
-                    "guest_resources": {
-                        "count": 3,
-                        "tags": ["guest"],
-                        "item": {
-                            "name": {"gen": "string", "length": 6},
-                            "type": {"gen": "choice", "options": ["faq", "help", "tutorial"]}
-                        }
-                    },
-                    "permissions": {
-                        "count": 15,
-                        "item": {
-                            "userId": {"ref": "users[*].name"},
-                            "userRole": {"ref": "users[*].role"},
-                            "allowedResource": {"ref": "byTag[this.userRole]"},
-                            "accessLevel": {"gen": "choice", "options": ["read", "write", "execute"]}
-                        }
+            {
+                "users": {
+                    "count": 10,
+                    "item": {
+                        "name": {"gen": "name.firstName"},
+                        "role": {"gen": "choice", "options": ["admin", "user", "guest"]},
+                        "department": {"gen": "choice", "options": ["engineering", "marketing", "sales"]}
+                    }
+                },
+                "admin_resources": {
+                    "count": 5,
+                    "tags": ["admin"],
+                    "item": {
+                        "name": {"gen": "string", "length": 10},
+                        "type": {"gen": "choice", "options": ["server", "database", "application"]}
+                    }
+                },
+                "user_resources": {
+                    "count": 8,
+                    "tags": ["user"],
+                    "item": {
+                        "name": {"gen": "string", "length": 8},
+                        "type": {"gen": "choice", "options": ["document", "report", "dashboard"]}
+                    }
+                },
+                "guest_resources": {
+                    "count": 3,
+                    "tags": ["guest"],
+                    "item": {
+                        "name": {"gen": "string", "length": 6},
+                        "type": {"gen": "choice", "options": ["faq", "help", "tutorial"]}
+                    }
+                },
+                "permissions": {
+                    "count": 15,
+                    "item": {
+                        "userId": {"ref": "users[*].name"},
+                        "userRole": {"ref": "users[*].role"},
+                        "allowedResource": {"ref": "byTag[this.userRole]"},
+                        "accessLevel": {"gen": "choice", "options": ["read", "write", "execute"]}
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = generateFromDslWithSeed(dsl, 111L, memoryOptimized);
 
@@ -366,33 +363,33 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
     @BothImplementations
     void testSeedConsistencyWithComplexStructures(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "base_data": {
-                        "count": 5,
-                        "tags": ["base"],
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "value": {"gen": "number", "min": 1, "max": 100}
-                        },
-                        "pick": {
-                            "first": 0,
-                            "last": 4
-                        }
+            {
+                "base_data": {
+                    "count": 5,
+                    "tags": ["base"],
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "value": {"gen": "number", "min": 1, "max": 100}
                     },
-                    "derived_data": {
-                        "count": 10,
-                        "item": {
-                            "baseRef": {"ref": "base_data[*].id"},
-                            "filteredRef": {"ref": "base_data[*].value", "filter": [{"ref": "first.value"}]},
-                            "tagRef": {"ref": "byTag[base]"},
-                            "computed": {
-                                "nested": {"gen": "string", "length": 8},
-                                "choice": {"gen": "choice", "options": ["a", "b", "c"]}
-                            }
+                    "pick": {
+                        "first": 0,
+                        "last": 4
+                    }
+                },
+                "derived_data": {
+                    "count": 10,
+                    "item": {
+                        "baseRef": {"ref": "base_data[*].id"},
+                        "filteredRef": {"ref": "base_data[*].value", "filter": [{"ref": "first.value"}]},
+                        "tagRef": {"ref": "byTag[base]"},
+                        "computed": {
+                            "nested": {"gen": "string", "length": 8},
+                            "choice": {"gen": "choice", "options": ["a", "b", "c"]}
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         // Generate with same seed twice
         IGeneration generation1 = generateFromDslWithSeed(dsl, 222L, memoryOptimized);
@@ -412,19 +409,19 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
         String csvPath = "src/test/resources/test-users.csv";
 
         JsonNode dslNode = mapper.readTree(String.format("""
-                {
-                    "users_from_csv": {
-                        "count": 3,
-                        "item": {
-                            "...user": {
-                                "gen": "csv",
-                                "file": "%s",
-                                "sequential": true
-                            }
+            {
+                "users_from_csv": {
+                    "count": 3,
+                    "item": {
+                        "...user": {
+                            "gen": "csv",
+                            "file": "%s",
+                            "sequential": true
                         }
                     }
                 }
-                """, csvPath));
+            }
+            """, csvPath));
 
         IGeneration generation = generateFromDslWithSeed(dslNode, 42L, memoryOptimized);
 
@@ -454,19 +451,19 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
 
         // TODO: This should work with just "item": { "gen": "csv", ... } but currently requires the nested 'user' object
         JsonNode dslNode = mapper.readTree(String.format("""
-                {
-                    "users_picked": {
-                        "count": 3,
-                        "item": {
-                            "user": {
-                                "gen": "csv",
-                                "file": "%s",
-                                "sequential": true
-                            }
+            {
+                "users_picked": {
+                    "count": 3,
+                    "item": {
+                        "user": {
+                            "gen": "csv",
+                            "file": "%s",
+                            "sequential": true
                         }
                     }
                 }
-                """, csvPath));
+            }
+            """, csvPath));
 
         IGeneration generation = generateFromDslWithSeed(dslNode, 42L, memoryOptimized);
 

@@ -12,19 +12,19 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testBasicWeightedChoice(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                    "items": {
-                        "count": 1000,
-                        "item": {
-                            "type": {
-                                "gen": "choice",
-                                "options": ["rare", "common", "uncommon"],
-                                "weights": [0.1, 0.8, 0.1]
-                            }
+            {
+                "items": {
+                    "count": 1000,
+                    "item": {
+                        "type": {
+                            "gen": "choice",
+                            "options": ["rare", "common", "uncommon"],
+                            "weights": [0.1, 0.8, 0.1]
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration generation = createGenerator(memoryOptimized)
             .withSeed(1993L)
@@ -60,19 +60,19 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testWeightedChoiceWithDifferentWeights(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                    "products": {
-                        "count": 1000,
-                        "item": {
-                            "category": {
-                                "gen": "choice",
-                                "options": ["electronics", "books", "clothing", "home"],
-                                "weights": [5.0, 2.0, 1.0, 2.0]
-                            }
+            {
+                "products": {
+                    "count": 1000,
+                    "item": {
+                        "category": {
+                            "gen": "choice",
+                            "options": ["electronics", "books", "clothing", "home"],
+                            "weights": [5.0, 2.0, 1.0, 2.0]
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration generation = createGenerator(memoryOptimized)
             .withSeed(456L)
@@ -112,24 +112,24 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testWeightedChoiceWithComplexOptions(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                    "users": {
-                        "count": 500,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "role": {
-                                "gen": "choice",
-                                "options": [
-                                    {"gen": "choice", "options": ["admin", "super_admin"]},
-                                    {"gen": "choice", "options": ["user", "member"]},
-                                    "guest"
-                                ],
-                                "weights": [0.05, 0.9, 0.05]
-                            }
+            {
+                "users": {
+                    "count": 500,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "role": {
+                            "gen": "choice",
+                            "options": [
+                                {"gen": "choice", "options": ["admin", "super_admin"]},
+                                {"gen": "choice", "options": ["user", "member"]},
+                                "guest"
+                            ],
+                            "weights": [0.05, 0.9, 0.05]
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration generation = createGenerator(memoryOptimized)
             .withSeed(789L)
@@ -169,18 +169,18 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testUnweightedChoiceStillWorks(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                    "items": {
-                        "count": 300,
-                        "item": {
-                            "color": {
-                                "gen": "choice",
-                                "options": ["red", "green", "blue"]
-                            }
+            {
+                "items": {
+                    "count": 300,
+                    "item": {
+                        "color": {
+                            "gen": "choice",
+                            "options": ["red", "green", "blue"]
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration generation = createGenerator(memoryOptimized)
             .withSeed(999L)
@@ -213,19 +213,19 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testWeightedChoiceWithDecimalWeights(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                    "items": {
-                        "count": 1000,
-                        "item": {
-                            "priority": {
-                                "gen": "choice",
-                                "options": ["high", "medium", "low"],
-                                "weights": [0.15, 0.35, 0.50]
-                            }
+            {
+                "items": {
+                    "count": 1000,
+                    "item": {
+                        "priority": {
+                            "gen": "choice",
+                            "options": ["high", "medium", "low"],
+                            "weights": [0.15, 0.35, 0.50]
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration generation = createGenerator(memoryOptimized)
             .withSeed(111L)

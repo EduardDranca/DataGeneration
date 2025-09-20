@@ -20,18 +20,18 @@ public class InternetGenerator implements Generator {
     @Override
     public JsonNode generate(JsonNode options) {
         return mapper.valueToTree(
-                Map.of("emailAddress", faker.internet().emailAddress(),
-                        "domainName", faker.internet().domainName(),
-                        "url", faker.internet().url(),
-                        "username", faker.internet().username()));
+            Map.of("emailAddress", faker.internet().emailAddress(),
+                "domainName", faker.internet().domainName(),
+                "url", faker.internet().url(),
+                "username", faker.internet().username()));
     }
 
     @Override
     public Map<String, Supplier<JsonNode>> getFieldSuppliers(JsonNode options) {
         return Map.of(
-                "emailAddress", () -> mapper.valueToTree(faker.internet().emailAddress()),
-                "domainName", () -> mapper.valueToTree(faker.internet().domainName()),
-                "url", () -> mapper.valueToTree(faker.internet().url()),
-                "username", () -> mapper.valueToTree(faker.internet().username()));
+            "emailAddress", () -> mapper.valueToTree(faker.internet().emailAddress()),
+            "domainName", () -> mapper.valueToTree(faker.internet().domainName()),
+            "url", () -> mapper.valueToTree(faker.internet().url()),
+            "username", () -> mapper.valueToTree(faker.internet().username()));
     }
 }

@@ -16,15 +16,15 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     @Test
     void testValidationExceptionThrownForInvalidGenerator() throws Exception {
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "nonexistent.generator"}
-                        }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "nonexistent.generator"}
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -47,12 +47,12 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForMissingItemField() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": {
-                        "count": 2
-                    }
+            {
+                "users": {
+                    "count": 2
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -67,17 +67,17 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForInvalidChoiceOptions() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "items": {
-                        "count": 1,
-                        "item": {
-                            "status": {
-                                "gen": "choice"
-                            }
+            {
+                "items": {
+                    "count": 1,
+                    "item": {
+                        "status": {
+                            "gen": "choice"
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -92,16 +92,16 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForUndeclaredCollectionReference() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "name.firstName"},
-                            "country": {"ref": "countries[*].name"}
-                        }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "name.firstName"},
+                        "country": {"ref": "countries[*].name"}
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -124,16 +124,16 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForUndeclaredTagReference() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "name.firstName"},
-                            "randomItem": {"ref": "byTag[nonexistent]"}
-                        }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "name.firstName"},
+                        "randomItem": {"ref": "byTag[nonexistent]"}
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -156,16 +156,16 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForSimpleCollectionReference() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "name.firstName"},
-                            "product": {"ref": "products"}
-                        }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "name.firstName"},
+                        "product": {"ref": "products"}
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -188,16 +188,16 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForIndexedCollectionReference() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "name.firstName"},
-                            "firstCountry": {"ref": "countries[0]"}
-                        }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "name.firstName"},
+                        "firstCountry": {"ref": "countries[0]"}
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -220,16 +220,16 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForMalformedTagReference() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "name.firstName"},
-                            "randomItem": {"ref": "byTag["}
-                        }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "name.firstName"},
+                        "randomItem": {"ref": "byTag["}
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -252,16 +252,16 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForEmptyReference() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "name.firstName"},
-                            "emptyRef": {"ref": ""}
-                        }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "name.firstName"},
+                        "emptyRef": {"ref": ""}
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -284,26 +284,26 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForInvalidFilterType() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "countries": {
-                        "count": 3,
-                        "item": {
-                            "name": {"gen": "country.name"},
-                            "code": {"gen": "country.countryCode"}
-                        }
-                    },
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "name.firstName"},
-                            "country": {
-                                "ref": "countries[*].name",
-                                "filter": "not_an_array"
-                            }
+            {
+                "countries": {
+                    "count": 3,
+                    "item": {
+                        "name": {"gen": "country.name"},
+                        "code": {"gen": "country.countryCode"}
+                    }
+                },
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "name.firstName"},
+                        "country": {
+                            "ref": "countries[*].name",
+                            "filter": "not_an_array"
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -325,19 +325,19 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     @Test
     void testValidationExceptionThrownForInvalidPickIndex() throws Exception {
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "countries": {
-                        "count": 3,
-                        "item": {
-                            "name": {"gen": "country.name"}
-                        },
-                        "pick": {
-                            "firstCountry": 0,
-                            "outOfBounds": 5
-                        }
+            {
+                "countries": {
+                    "count": 3,
+                    "item": {
+                        "name": {"gen": "country.name"}
+                    },
+                    "pick": {
+                        "firstCountry": 0,
+                        "outOfBounds": 5
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -360,15 +360,15 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForNegativeCount() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": {
-                        "count": -1,
-                        "item": {
-                            "name": {"gen": "name.firstName"}
-                        }
+            {
+                "users": {
+                    "count": -1,
+                    "item": {
+                        "name": {"gen": "name.firstName"}
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -391,10 +391,10 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForInvalidCollectionStructure() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": "not_an_object"
-                }
-                """);
+            {
+                "users": "not_an_object"
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -417,13 +417,13 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForInvalidItemStructure() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": "not_an_object"
-                    }
+            {
+                "users": {
+                    "count": 2,
+                    "item": "not_an_object"
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -446,27 +446,27 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidReferencesDontThrowException() throws Exception {
 
         JsonNode validDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "countries": {
-                        "count": 3,
-                        "tags": ["country"],
-                        "item": {
-                            "name": {"gen": "country.name"},
-                            "code": {"gen": "country.countryCode"}
-                        }
-                    },
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "name.firstName"},
-                            "country": {"ref": "countries[*].name"},
-                            "countryByTag": {"ref": "byTag[country]"},
-                            "firstCountry": {"ref": "countries[0]"},
-                            "selfRef": {"ref": "this.name"}
-                        }
+            {
+                "countries": {
+                    "count": 3,
+                    "tags": ["country"],
+                    "item": {
+                        "name": {"gen": "country.name"},
+                        "code": {"gen": "country.countryCode"}
+                    }
+                },
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "name.firstName"},
+                        "country": {"ref": "countries[*].name"},
+                        "countryByTag": {"ref": "byTag[country]"},
+                        "firstCountry": {"ref": "countries[0]"},
+                        "selfRef": {"ref": "this.name"}
                     }
                 }
-                """);
+            }
+            """);
 
         // Should not throw any exception
         assertThatCode(() -> generateFromDslWithSeed(validDsl, 123L, false))
@@ -477,16 +477,16 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidDslDoesNotThrowException() throws Exception {
 
         JsonNode validDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.firstName"}
-                        }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.firstName"}
                     }
                 }
-                """);
+            }
+            """);
 
         // Should not throw any exception
         assertThatCode(() -> generateFromDslWithSeed(validDsl, 123L, false))
@@ -497,16 +497,16 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForInvalidTagsType() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "tags": "not_an_array",
-                        "item": {
-                            "name": {"gen": "name.firstName"}
-                        }
+            {
+                "users": {
+                    "count": 2,
+                    "tags": "not_an_array",
+                    "item": {
+                        "name": {"gen": "name.firstName"}
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -529,16 +529,16 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForInvalidPickType() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "pick": "not_an_object",
-                        "item": {
-                            "name": {"gen": "name.firstName"}
-                        }
+            {
+                "users": {
+                    "count": 2,
+                    "pick": "not_an_object",
+                    "item": {
+                        "name": {"gen": "name.firstName"}
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -561,18 +561,18 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForEmptyChoiceOptions() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "items": {
-                        "count": 1,
-                        "item": {
-                            "status": {
-                                "gen": "choice",
-                                "options": []
-                            }
+            {
+                "items": {
+                    "count": 1,
+                    "item": {
+                        "status": {
+                            "gen": "choice",
+                            "options": []
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -595,18 +595,18 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testValidationExceptionThrownForInvalidChoiceOptionsType() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "items": {
-                        "count": 1,
-                        "item": {
-                            "status": {
-                                "gen": "choice",
-                                "options": "not_an_array"
-                            }
+            {
+                "items": {
+                    "count": 1,
+                    "item": {
+                        "status": {
+                            "gen": "choice",
+                            "options": "not_an_array"
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)
@@ -629,19 +629,19 @@ class DslValidationExceptionTest extends ParameterizedGenerationTest {
     void testMultipleValidationErrors() throws Exception {
 
         JsonNode invalidDsl = OBJECT_MAPPER.readTree("""
-                {
-                    "users": {
-                        "count": -1,
-                        "item": {
-                            "name": {"gen": "nonexistent.generator"},
-                            "country": {"ref": "undeclared_collection"},
-                            "status": {
-                                "gen": "choice"
-                            }
+            {
+                "users": {
+                    "count": -1,
+                    "item": {
+                        "name": {"gen": "nonexistent.generator"},
+                        "country": {"ref": "undeclared_collection"},
+                        "status": {
+                            "gen": "choice"
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> generateFromDslWithSeed(invalidDsl, 123L, false))
             .isInstanceOf(DslValidationException.class)

@@ -29,31 +29,30 @@ import java.util.regex.Pattern;
 
 /**
  * Analyzes DSL nodes to determine which paths (fields) are referenced by other
- *
- *
- *
- *
- *
- *
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
+ * <p>
+ * <p>
+ * <p>
+ * <p>
+ * <p>
+ * <p>
  * collections.
- *
- *
+ * <p>
+ * <p>
  * This enables memory optimization by only generating referenced fields during
  * initial generation.
- *
- *
+ * <p>
+ * <p>
  * Supports nested path analysis like "users.address.street" to enable selective
  * generation
  * at any depth in the object hierarchy.
  */
 public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
-    private final Map<String, Set<String>> referencedPaths = new HashMap<>();
-
     // Pattern to extract collection and nested field path from reference strings
     private static final Pattern REFERENCE_PATTERN = Pattern.compile("^([^\\[.]+)(?:\\[[^\\]]*\\])?(?:\\.(.+))?$");
+    private final Map<String, Set<String>> referencedPaths = new HashMap<>();
 
     @Override
     public Void visitRoot(RootNode node) {
@@ -179,7 +178,7 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
     /**
      * Analyzes a reference string and extracts collection and field information.
      * Supports nested paths for deep field access.
-     *
+     * <p>
      * Examples:
      * - "users" -> collection="users", path=null (entire object)
      * - "users.name" -> collection="users", path="name"

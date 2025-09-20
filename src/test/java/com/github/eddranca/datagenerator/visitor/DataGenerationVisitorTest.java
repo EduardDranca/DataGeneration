@@ -29,17 +29,17 @@ class DataGenerationVisitorTest {
     @Test
     void testSimpleGeneration() throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.firstName"},
-                            "age": {"gen": "number", "min": 18, "max": 65}
-                        }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.firstName"},
+                        "age": {"gen": "number", "min": 18, "max": 65}
                     }
                 }
-                """);
+            }
+            """);
 
         DslTreeBuildResult buildResult = builder.build(dsl);
         assertThat(buildResult.hasErrors()).isFalse();
@@ -68,18 +68,18 @@ class DataGenerationVisitorTest {
     @Test
     void testChoiceGeneration() throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 5,
-                        "item": {
-                            "status": {
-                                "gen": "choice",
-                                "options": ["active", "inactive", "pending"]
-                            }
+            {
+                "items": {
+                    "count": 5,
+                    "item": {
+                        "status": {
+                            "gen": "choice",
+                            "options": ["active", "inactive", "pending"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         DslTreeBuildResult buildResult = builder.build(dsl);
         assertThat(buildResult.hasErrors()).isFalse();
@@ -100,18 +100,18 @@ class DataGenerationVisitorTest {
     @Test
     void testObjectGeneration() throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "profile": {
-                                "age": {"gen": "number", "min": 18, "max": 65},
-                                "city": {"gen": "address.city"}
-                            }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "profile": {
+                            "age": {"gen": "number", "min": 18, "max": 65},
+                            "city": {"gen": "address.city"}
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         DslTreeBuildResult buildResult = builder.build(dsl);
         assertThat(buildResult.hasErrors()).isFalse();
@@ -135,23 +135,23 @@ class DataGenerationVisitorTest {
     @Test
     void testReferenceGeneration() throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "countries": {
-                        "count": 3,
-                        "item": {
-                            "name": {"gen": "country.name"},
-                            "code": {"gen": "country.countryCode"}
-                        }
-                    },
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "name.firstName"},
-                            "country": {"ref": "countries[*].name"}
-                        }
+            {
+                "countries": {
+                    "count": 3,
+                    "item": {
+                        "name": {"gen": "country.name"},
+                        "code": {"gen": "country.countryCode"}
+                    }
+                },
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "name.firstName"},
+                        "country": {"ref": "countries[*].name"}
                     }
                 }
-                """);
+            }
+            """);
 
         DslTreeBuildResult buildResult = builder.build(dsl);
         assertThat(buildResult.hasErrors()).isFalse();
@@ -180,16 +180,16 @@ class DataGenerationVisitorTest {
     @Test
     void testSeedConsistency() throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.firstName"}
-                        }
+            {
+                "users": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.firstName"}
                     }
                 }
-                """);
+            }
+            """);
 
         // Generate with same seed twice using separate registries
         Random random1 = new Random(456L);

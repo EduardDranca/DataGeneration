@@ -52,7 +52,7 @@ class PhoneGeneratorTest {
     void testGeneratePhoneFormats(String format) throws Exception {
         JsonNode options = mapper.readTree("{\"format\": \"" + format + "\"}");
         JsonNode result = generator.generate(options);
-        
+
         assertThat(result.isTextual()).isTrue();
         assertThat(result.asText()).isNotEmpty();
 

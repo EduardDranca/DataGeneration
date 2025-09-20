@@ -48,7 +48,7 @@ class SequenceGeneratorTest {
     })
     void testGenerateSequences(int start, int increment, int expected1, int expected2, int expected3) throws Exception {
         JsonNode options = mapper.readTree("{\"start\": " + start + ", \"increment\": " + increment + "}");
-        
+
         JsonNode result1 = generator.generate(options);
         JsonNode result2 = generator.generate(options);
         JsonNode result3 = generator.generate(options);

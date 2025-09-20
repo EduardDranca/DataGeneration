@@ -3,7 +3,6 @@ package com.github.eddranca.datagenerator.examples;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.DslDataGenerator;
 import com.github.eddranca.datagenerator.IGeneration;
-import com.github.eddranca.datagenerator.Generation;
 import com.github.eddranca.datagenerator.generator.Generator;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.DisplayName;

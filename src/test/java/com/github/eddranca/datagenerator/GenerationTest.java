@@ -3,7 +3,6 @@ package com.github.eddranca.datagenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,29 +12,29 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 class GenerationTest extends ParameterizedGenerationTest {
 
     private static final String TEST_DSL = """
-            {
-                "countries": {
-                    "count": 3,
-                    "tags": ["country"],
-                    "item": {
-                        "name": {"gen": "country.name"},
-                        "isoCode": {"gen": "country.countryCode"},
-                        "id": {"gen": "choice", "options": ["Romania", "Brasil"]},
-                        "embargoed": {"gen": "choice", "options": [true, false, false, false]}
-                    }
-                },
-                "companies": {
-                    "count": 10,
-                    "tags": ["company"],
-                    "item": {
-                        "id": {"gen": "uuid"},
-                        "name": {"gen": "company.name"},
-                        "countryCode": {"ref": "countries[*].isoCode", "filter": [{"ref": "countries[0].isoCode"}]},
-                        "ctrName": {"ref": "countries[*].id", "filter": ["Romania"]}
-                    }
+        {
+            "countries": {
+                "count": 3,
+                "tags": ["country"],
+                "item": {
+                    "name": {"gen": "country.name"},
+                    "isoCode": {"gen": "country.countryCode"},
+                    "id": {"gen": "choice", "options": ["Romania", "Brasil"]},
+                    "embargoed": {"gen": "choice", "options": [true, false, false, false]}
+                }
+            },
+            "companies": {
+                "count": 10,
+                "tags": ["company"],
+                "item": {
+                    "id": {"gen": "uuid"},
+                    "name": {"gen": "company.name"},
+                    "countryCode": {"ref": "countries[*].isoCode", "filter": [{"ref": "countries[0].isoCode"}]},
+                    "ctrName": {"ref": "countries[*].id", "filter": ["Romania"]}
                 }
             }
-            """;
+        }
+        """;
 
     @BothImplementations
     void testAsJsonNode(boolean memoryOptimized) throws Exception {
@@ -140,17 +139,6 @@ class GenerationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementations
-    void testAsSqlInsertsNonExistentTable(boolean memoryOptimized) throws Exception {
-        IGeneration generation = generateFromDsl(TEST_DSL, memoryOptimized);
-        Map<String, String> sqlMap = new HashMap<>();
-        // Non-existent table should result in empty map
-
-        assertThat(sqlMap)
-            .isNotNull()
-            .isEmpty();
-    }
-
-    @BothImplementations
     void testJsonAndJsonNodeConsistency(boolean memoryOptimized) throws Exception {
         IGeneration generation = generateFromDsl(TEST_DSL, memoryOptimized);
         String jsonString = createLegacyJsonString(generation);
@@ -167,27 +155,26 @@ class GenerationTest extends ParameterizedGenerationTest {
     }
 
 
-
     @BothImplementations
     void testSqlGenerationWithComplexObjects(boolean memoryOptimized) throws Exception {
         String complexDsl = """
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.firstName"},
-                            "profile": {
-                                "age": {"gen": "number", "min": 18, "max": 65},
-                                "address": {
-                                    "street": {"gen": "address.streetAddress"},
-                                    "city": {"gen": "address.city"}
-                                }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.firstName"},
+                        "profile": {
+                            "age": {"gen": "number", "min": 18, "max": 65},
+                            "address": {
+                                "street": {"gen": "address.streetAddress"},
+                                "city": {"gen": "address.city"}
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration complexGeneration = generateFromDsl(complexDsl, memoryOptimized);
         Map<String, String> sqlMap = collectAllSqlInserts(complexGeneration);
@@ -222,16 +209,16 @@ class GenerationTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testSingleItemGeneration(boolean memoryOptimized) throws Exception {
         String singleItemDsl = """
-                {
-                    "items": {
-                        "count": 1,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "value": {"gen": "string", "length": 5}
-                        }
+            {
+                "items": {
+                    "count": 1,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "value": {"gen": "string", "length": 5}
                     }
                 }
-                """;
+            }
+            """;
 
         IGeneration singleGeneration = generateFromDsl(singleItemDsl, memoryOptimized);
         JsonNode collectionsNode = createLegacyJsonNode(singleGeneration);

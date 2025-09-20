@@ -2,13 +2,10 @@ package com.github.eddranca.datagenerator.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.DslDataGenerator;
 import com.github.eddranca.datagenerator.IGeneration;
-import com.github.eddranca.datagenerator.Generation;
-import org.junit.jupiter.api.Test;
 
+import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.asJsonNode;
 import static org.assertj.core.api.Assertions.assertThat;
-import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.*;
 
 /**
  * Integration tests for various generators working together in DSL scenarios.

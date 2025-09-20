@@ -15,20 +15,20 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testDefaultFilteringBehaviorReturnsNull(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "restrictedChoice": {
-                                "gen": "choice",
-                                "options": ["A", "B"],
-                                "filter": ["A", "B"]
-                            }
+            {
+                "items": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "restrictedChoice": {
+                            "gen": "choice",
+                            "options": ["A", "B"],
+                            "filter": ["A", "B"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
         List<JsonNode> items = generation.streamJsonNodes("items").toList();
@@ -44,20 +44,20 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testThrowExceptionFilteringBehaviorForGenerators(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "restrictedChoice": {
-                                "gen": "choice",
-                                "options": ["A", "B"],
-                                "filter": ["A", "B"]
-                            }
+            {
+                "items": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "restrictedChoice": {
+                            "gen": "choice",
+                            "options": ["A", "B"],
+                            "filter": ["A", "B"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> createGenerator(memoryOptimized)
             .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
@@ -70,25 +70,25 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testThrowExceptionFilteringBehaviorForReferences(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "reference_data": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "choice", "options": ["Alice", "Bob"]}
-                        }
-                    },
-                    "filtered_items": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {
-                                "ref": "reference_data[*].name",
-                                "filter": ["Alice", "Bob"]
-                            }
+            {
+                "reference_data": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "choice", "options": ["Alice", "Bob"]}
+                    }
+                },
+                "filtered_items": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {
+                            "ref": "reference_data[*].name",
+                            "filter": ["Alice", "Bob"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         assertThatThrownBy(() -> createGenerator(memoryOptimized)
             .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
@@ -101,21 +101,21 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testCustomMaxFilteringRetries(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "number": {
-                                "gen": "number",
-                                "min": 1,
-                                "max": 3,
-                                "filter": [1]
-                            }
+            {
+                "items": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "number": {
+                            "gen": "number",
+                            "min": 1,
+                            "max": 3,
+                            "filter": [1]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         // With only 2 possible values (1, 2) and filtering out 1,
         // we should be able to generate 2 consistently
@@ -161,21 +161,21 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
     @BothImplementations
     void testSuccessfulFilteringWithCustomRetries(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 10,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "number": {
-                                "gen": "number",
-                                "min": 1,
-                                "max": 10,
-                                "filter": [1, 2, 3, 4, 5]
-                            }
+            {
+                "items": {
+                    "count": 10,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "number": {
+                            "gen": "number",
+                            "min": 1,
+                            "max": 10,
+                            "filter": [1, 2, 3, 4, 5]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         IGeneration generation = createGenerator(memoryOptimized)
             .withMaxFilteringRetries(200) // Higher retry count

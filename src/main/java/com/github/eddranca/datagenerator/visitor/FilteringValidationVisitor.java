@@ -29,6 +29,7 @@ import java.util.List;
  * actually generating data. This is used in lazy mode to ensure filtering
  * exceptions are thrown early, maintaining API compatibility.
  */
+// TODO: What is this, this barely does anything
 public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
     private final GenerationContext context;
 
@@ -103,7 +104,7 @@ public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
     public Void visitTagReference(TagReferenceNode node) {
         // Validate reference filtering
         if (!node.getFilters().isEmpty()) {
-            validateReferenceFiltering(node.getFilters(), "TagReference");
+            validateReferenceFiltering(node.getFilters());
         }
         return null;
     }
@@ -112,7 +113,7 @@ public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
     public Void visitIndexedReference(IndexedReferenceNode node) {
         // Validate reference filtering
         if (!node.getFilters().isEmpty()) {
-            validateReferenceFiltering(node.getFilters(), "IndexedReference");
+            validateReferenceFiltering(node.getFilters());
         }
         return null;
     }
@@ -121,7 +122,7 @@ public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
     public Void visitArrayFieldReference(ArrayFieldReferenceNode node) {
         // Validate reference filtering
         if (!node.getFilters().isEmpty()) {
-            validateReferenceFiltering(node.getFilters(), "ArrayFieldReference");
+            validateReferenceFiltering(node.getFilters());
         }
         return null;
     }
@@ -130,7 +131,7 @@ public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
     public Void visitSelfReference(SelfReferenceNode node) {
         // Validate reference filtering
         if (!node.getFilters().isEmpty()) {
-            validateReferenceFiltering(node.getFilters(), "SelfReference");
+            validateReferenceFiltering(node.getFilters());
         }
         return null;
     }
@@ -139,7 +140,7 @@ public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
     public Void visitSimpleReference(SimpleReferenceNode node) {
         // Validate reference filtering
         if (!node.getFilters().isEmpty()) {
-            validateReferenceFiltering(node.getFilters(), "SimpleReference");
+            validateReferenceFiltering(node.getFilters());
         }
         return null;
     }
@@ -148,7 +149,7 @@ public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
     public Void visitPickReference(PickReferenceNode node) {
         // Validate reference filtering
         if (!node.getFilters().isEmpty()) {
-            validateReferenceFiltering(node.getFilters(), "PickReference");
+            validateReferenceFiltering(node.getFilters());
         }
         return null;
     }
@@ -184,7 +185,6 @@ public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
     private void validateGeneratedFieldFiltering(GeneratedFieldNode node) {
         // For now, we'll skip validation of generated fields since it's complex
         // The main issue we're trying to solve is choice fields with all options filtered
-        return;
     }
 
     /**
@@ -272,9 +272,9 @@ public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
      * Validates reference filtering by attempting to perform a test resolution.
      * This tries to catch cases where references would have no valid values after filtering.
      */
-    private void validateReferenceFiltering(List<FilterNode> filters, String referenceType) {
+    private void validateReferenceFiltering(List<FilterNode> filters) {
         List<JsonNode> filterValues = computeFilteredValues(filters);
-        
+
         if (filterValues.isEmpty()) {
             return; // No filtering, so no issue
         }
@@ -282,12 +282,12 @@ public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
         // The most reliable way to validate reference filtering is to actually try
         // to perform the reference resolution and see if it fails. However, this
         // requires the referenced collections to be available.
-        
+
         // For now, we'll implement a conservative approach: if there are filters
         // on a reference, we'll assume it might be problematic and let the actual
         // generation handle the validation. This is not ideal, but it's better than
         // trying to implement complex reference resolution logic here.
-        
+
         // The key insight is that reference filtering validation is much more complex
         // than choice field validation because it depends on the actual data in
         // other collections. The proper solution would be to:
@@ -295,14 +295,13 @@ public class FilteringValidationVisitor implements DslNodeVisitor<Void> {
         // 2. Look up the referenced collection definition
         // 3. Analyze what values that collection can produce
         // 4. Check if all those values would be filtered out
-        
+
         // For now, we'll skip reference validation in the validation phase
         // and rely on the actual generation to catch these issues.
         // This means reference filtering exceptions will be thrown during
         // stream consumption rather than during .generate(), which is not
         // ideal but is acceptable as a temporary solution.
-        
+
         // TODO: Implement proper reference filtering validation
-        return;
     }
 }

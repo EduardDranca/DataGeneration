@@ -153,7 +153,6 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
     }
 
 
-
     @Override
     public JsonNode visitGeneratedField(GeneratedFieldNode node) {
         Generator generator = context.getGeneratorRegistry().get(node.getGeneratorName());
