@@ -230,8 +230,8 @@ public class DslDataGenerator {
          * @param file the DSL file to process
          * @return a Generation.Builder for further configuration
          */
-        public EagerGeneration.Builder fromFile(File file) {
-            return new EagerGeneration.Builder(build(), file);
+        public AbstractGeneration.Builder fromFile(File file) {
+            return new AbstractGeneration.Builder(build(), file);
         }
 
         /**
@@ -240,7 +240,7 @@ public class DslDataGenerator {
          * @param filePath the path to the DSL file
          * @return a Generation.Builder for further configuration
          */
-        public EagerGeneration.Builder fromFile(String filePath) {
+        public AbstractGeneration.Builder fromFile(String filePath) {
             return fromFile(new File(filePath));
         }
 
@@ -250,7 +250,7 @@ public class DslDataGenerator {
          * @param path the path to the DSL file
          * @return a Generation.Builder for further configuration
          */
-        public EagerGeneration.Builder fromFile(Path path) {
+        public AbstractGeneration.Builder fromFile(Path path) {
             return fromFile(path.toFile());
         }
 
@@ -260,8 +260,8 @@ public class DslDataGenerator {
          * @param jsonString the DSL JSON as a string
          * @return a Generation.Builder for further configuration
          */
-        public EagerGeneration.Builder fromJsonString(String jsonString) {
-            return new EagerGeneration.Builder(build(), jsonString);
+        public AbstractGeneration.Builder fromJsonString(String jsonString) {
+            return new AbstractGeneration.Builder(build(), jsonString);
         }
 
         /**
@@ -270,8 +270,8 @@ public class DslDataGenerator {
          * @param jsonNode the DSL as a JsonNode
          * @return a Generation.Builder for further configuration
          */
-        public EagerGeneration.Builder fromJsonNode(JsonNode jsonNode) {
-            return new EagerGeneration.Builder(build(), jsonNode);
+        public AbstractGeneration.Builder fromJsonNode(JsonNode jsonNode) {
+            return new AbstractGeneration.Builder(build(), jsonNode);
         }
 
         /**
