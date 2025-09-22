@@ -24,8 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 /**
  * Analyzes DSL nodes to determine which paths (fields) are referenced by other collections.
@@ -37,9 +36,7 @@ import java.util.regex.Pattern;
  * at any depth in the object hierarchy.
  */
 public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
-    // Pattern to extract collection and nested field path from reference strings
-    // TODO: This shouldn't be necessary.
-    private static final Pattern REFERENCE_PATTERN = Pattern.compile("^([^\\[.]+)(?:\\[[^\\]]*\\])?(?:\\.(.+))?$");
+    // Clean implementation using proper node getters - no regex parsing needed!
     private final Map<String, Set<String>> referencedPaths = new HashMap<>();
 
     @Override
@@ -66,25 +63,50 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitSimpleReference(SimpleReferenceNode node) {
-        analyzeReference(node.getReferenceString());
+        String collectionName = node.getCollectionName();
+        String fieldName = node.getFieldName();
+
+        if (fieldName != null && !fieldName.isEmpty()) {
+            addReferencedPath(collectionName, fieldName);
+        } else {
+            // Entire object referenced
+            addReferencedPath(collectionName, "*");
+        }
         return null;
     }
 
     @Override
     public Void visitArrayFieldReference(ArrayFieldReferenceNode node) {
-        analyzeReference(node.getReferenceString());
+        addReferencedPath(node.getCollectionName(), node.getFieldName());
         return null;
     }
 
     @Override
     public Void visitIndexedReference(IndexedReferenceNode node) {
-        // IndexedReference doesn't have getReferenceString, skip for now
+        String collectionName = node.getCollectionName();
+        String fieldName = node.getFieldName();
+
+        if (fieldName != null && !fieldName.isEmpty()) {
+            addReferencedPath(collectionName, fieldName);
+        } else {
+            // Entire object referenced
+            addReferencedPath(collectionName, "*");
+        }
         return null;
     }
 
     @Override
     public Void visitTagReference(TagReferenceNode node) {
-        analyzeReference(node.getReferenceString());
+        // For tag references, we use the tag expression as the collection identifier
+        String collectionName = "byTag[" + node.getTagExpression() + "]";
+        String fieldName = node.getFieldName();
+
+        if (fieldName != null && !fieldName.isEmpty()) {
+            addReferencedPath(collectionName, fieldName);
+        } else {
+            // Entire object referenced
+            addReferencedPath(collectionName, "*");
+        }
         return null;
     }
 
@@ -110,16 +132,15 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitReferenceSpreadField(ReferenceSpreadFieldNode node) {
-        // Analyze the base reference
-        String baseRef = node.getReferenceNode().getReferenceString();
-        String collection = extractCollection(baseRef);
+        // Get collection name from the reference node using proper getters
+        String collectionName = getCollectionNameFromReferenceNode(node.getReferenceNode());
 
-        if (collection != null) {
+        if (collectionName != null) {
             // For spread fields, we need specific fields
             for (String field : node.getFields()) {
                 // Handle field mappings like "name:firstName" -> we want "firstName"
                 String actualField = field.contains(":") ? field.split(":", 2)[1] : field;
-                addReferencedPath(collection, actualField);
+                addReferencedPath(collectionName, actualField);
             }
         }
         return null;
@@ -164,45 +185,20 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
     }
 
     /**
-     * Analyzes a reference string and extracts collection and field information.
-     * Supports nested paths for deep field access.
-     * <p>
-     * Examples:
-     * - "users" -> collection="users", path=null (entire object)
-     * - "users.name" -> collection="users", path="name"
-     * - "users.address.street" -> collection="users", path="address.street"
-     * - "users[*].profile.bio" -> collection="users", path="profile.bio"
-     * - "byTag[premium].name" -> collection="byTag[premium]", path="name"
+     * Helper method to get collection name from any reference node type.
+     * Now uses proper getters instead of string parsing - no more regex needed!
      */
-    private void analyzeReference(String referenceString) {
-        if (referenceString == null || referenceString.isEmpty()) {
-            return;
+    private String getCollectionNameFromReferenceNode(Object referenceNode) {
+        if (referenceNode instanceof SimpleReferenceNode simpleReferenceNode) {
+            return simpleReferenceNode.getCollectionName();
+        } else if (referenceNode instanceof ArrayFieldReferenceNode arrayFieldReferenceNode) {
+            return arrayFieldReferenceNode.getCollectionName();
+        } else if (referenceNode instanceof IndexedReferenceNode indexedReferenceNode) {
+            return indexedReferenceNode.getCollectionName();
+        } else if (referenceNode instanceof TagReferenceNode tagReferenceNode) {
+            return "byTag[" + tagReferenceNode.getTagExpression() + "]";
         }
-
-        Matcher matcher = REFERENCE_PATTERN.matcher(referenceString);
-        if (matcher.matches()) {
-            String collection = matcher.group(1);
-            String path = matcher.group(2);
-
-            if (path != null && !path.isEmpty()) {
-                addReferencedPath(collection, path);
-            } else {
-                // Entire object referenced
-                addReferencedPath(collection, "*");
-            }
-        }
-    }
-
-    /**
-     * Extracts just the collection name from a reference string.
-     */
-    private String extractCollection(String referenceString) {
-        if (referenceString == null || referenceString.isEmpty()) {
-            return null;
-        }
-
-        Matcher matcher = REFERENCE_PATTERN.matcher(referenceString);
-        return matcher.matches() ? matcher.group(1) : null;
+        return null;
     }
 
     private void addReferencedPath(String collection, String path) {

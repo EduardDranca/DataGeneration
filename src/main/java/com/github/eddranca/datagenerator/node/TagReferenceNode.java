@@ -36,6 +36,14 @@ public class TagReferenceNode extends AbstractReferenceNode {
         return isDynamicTag ? tagExpression.substring(THIS_PREFIX.length()) : tagExpression;
     }
 
+    public String getTagExpression() {
+        return tagExpression;
+    }
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
     @Override
     public String getReferenceString() {
         String base = "byTag[" + tagExpression + "]";

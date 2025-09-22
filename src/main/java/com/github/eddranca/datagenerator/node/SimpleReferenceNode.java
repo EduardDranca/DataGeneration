@@ -24,6 +24,14 @@ public class SimpleReferenceNode extends AbstractReferenceNode {
         return !fieldName.isEmpty();
     }
 
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
     @Override
     public String getReferenceString() {
         return hasFieldName() ? collectionName + "." + fieldName : collectionName;

@@ -42,6 +42,18 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
         return isWildcardIndex;
     }
 
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public String getIndex() {
+        return index;
+    }
+
     @Override
     public String getReferenceString() {
         String base = collectionName + "[" + index + "]";
