@@ -2,7 +2,7 @@ package com.github.eddranca.datagenerator.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.IGeneration;
+import com.github.eddranca.datagenerator.Generation;
 import com.github.eddranca.datagenerator.ParameterizedGenerationTest;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -36,7 +36,7 @@ class SequenceGeneratorIntegrationTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         assertThat(collections).containsKey("items");
@@ -62,7 +62,7 @@ class SequenceGeneratorIntegrationTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 456L, memoryOptimized);
+        Generation generation = generateFromDslWithSeed(dsl, 456L, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         assertThat(collections).containsKey("items");
@@ -99,7 +99,7 @@ class SequenceGeneratorIntegrationTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 789L, memoryOptimized);
+        Generation generation = generateFromDslWithSeed(dsl, 789L, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         assertThat(collections).containsKey("items");
@@ -124,7 +124,7 @@ class SequenceGeneratorIntegrationTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 999L, memoryOptimized);
+        Generation generation = generateFromDslWithSeed(dsl, 999L, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         assertThat(collections).containsKey("items");

@@ -37,7 +37,7 @@ public abstract class ParameterizedGenerationTest {
     /**
      * Generates data from DSL string with the specified memory optimization setting.
      */
-    protected IGeneration generateFromDsl(String dsl, boolean memoryOptimized) throws IOException {
+    protected Generation generateFromDsl(String dsl, boolean memoryOptimized) throws IOException {
         return createGenerator(memoryOptimized)
             .fromJsonString(dsl)
             .generate();
@@ -46,7 +46,7 @@ public abstract class ParameterizedGenerationTest {
     /**
      * Generates data from DSL JsonNode with the specified memory optimization setting.
      */
-    protected IGeneration generateFromDsl(JsonNode dslNode, boolean memoryOptimized) throws IOException {
+    protected Generation generateFromDsl(JsonNode dslNode, boolean memoryOptimized) throws IOException {
         return createGenerator(memoryOptimized)
             .fromJsonNode(dslNode)
             .generate();
@@ -55,7 +55,7 @@ public abstract class ParameterizedGenerationTest {
     /**
      * Generates data from DSL JsonNode with a custom seed and memory optimization setting.
      */
-    protected IGeneration generateFromDslWithSeed(JsonNode dslNode, long seed, boolean memoryOptimized) throws IOException {
+    protected Generation generateFromDslWithSeed(JsonNode dslNode, long seed, boolean memoryOptimized) throws IOException {
         DslDataGenerator.Builder builder = DslDataGenerator.create().withSeed(seed);
         if (memoryOptimized) {
             builder = builder.withMemoryOptimization();
@@ -66,7 +66,7 @@ public abstract class ParameterizedGenerationTest {
     /**
      * Generates data from DSL string with a custom seed and memory optimization setting.
      */
-    protected IGeneration generateFromDslWithSeed(String dsl, long seed, boolean memoryOptimized) throws IOException {
+    protected Generation generateFromDslWithSeed(String dsl, long seed, boolean memoryOptimized) throws IOException {
         DslDataGenerator.Builder builder = DslDataGenerator.create().withSeed(seed);
         if (memoryOptimized) {
             builder = builder.withMemoryOptimization();
@@ -79,7 +79,7 @@ public abstract class ParameterizedGenerationTest {
      * Collects all JSON node streams into a Map<String, List<JsonNode>> format.
      * This helps tests that were written for the old API to work with minimal changes.
      */
-    protected Map<String, List<JsonNode>> collectAllJsonNodes(IGeneration generation) {
+    protected Map<String, List<JsonNode>> collectAllJsonNodes(Generation generation) {
         Map<String, Stream<JsonNode>> streams = generation.asJsonNodes();
         Map<String, List<JsonNode>> collections = new HashMap<>();
 
@@ -94,7 +94,7 @@ public abstract class ParameterizedGenerationTest {
      * Utility method to create a JsonNode that mimics the old asJsonNode() behavior.
      * This creates an ObjectNode with collection names as keys and arrays as values.
      */
-    protected JsonNode createLegacyJsonNode(IGeneration generation) {
+    protected JsonNode createLegacyJsonNode(Generation generation) {
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         ObjectNode root = mapper.createObjectNode();
@@ -112,7 +112,7 @@ public abstract class ParameterizedGenerationTest {
     /**
      * Utility method to create a JSON string that mimics the old asJson() behavior.
      */
-    protected String createLegacyJsonString(IGeneration generation) throws IOException {
+    protected String createLegacyJsonString(Generation generation) throws IOException {
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         return mapper.writeValueAsString(collections);
@@ -122,7 +122,7 @@ public abstract class ParameterizedGenerationTest {
      * Utility method to convert SQL streams to the old Map<String, String> format.
      * This collects all SQL streams and joins them with newlines.
      */
-    protected Map<String, String> collectAllSqlInserts(IGeneration generation) {
+    protected Map<String, String> collectAllSqlInserts(Generation generation) {
         Map<String, Stream<String>> sqlStreams = generation.asSqlInserts();
         Map<String, String> sqlMap = new HashMap<>();
 
@@ -158,7 +158,7 @@ public abstract class ParameterizedGenerationTest {
         /**
          * Mimics the old asJson() method behavior.
          */
-        public static String asJson(IGeneration generation) throws IOException {
+        public static String asJson(Generation generation) throws IOException {
             Map<String, List<JsonNode>> collections = new HashMap<>();
             Map<String, Stream<JsonNode>> streams = generation.asJsonNodes();
 
@@ -172,7 +172,7 @@ public abstract class ParameterizedGenerationTest {
         /**
          * Mimics the old asJsonNode() method behavior.
          */
-        public static JsonNode asJsonNode(IGeneration generation) {
+        public static JsonNode asJsonNode(Generation generation) {
             Map<String, List<JsonNode>> collections = new HashMap<>();
             Map<String, Stream<JsonNode>> streams = generation.asJsonNodes();
 
@@ -196,7 +196,7 @@ public abstract class ParameterizedGenerationTest {
         /**
          * Mimics the old asSqlInserts() method behavior.
          */
-        public static Map<String, String> asSqlInserts(IGeneration generation) {
+        public static Map<String, String> asSqlInserts(Generation generation) {
             Map<String, Stream<String>> sqlStreams = generation.asSqlInserts();
             Map<String, String> sqlMap = new HashMap<>();
 

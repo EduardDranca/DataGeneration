@@ -27,7 +27,7 @@ class StreamingApiTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
 
         // Test streaming individual collection
         Stream<JsonNode> userStream = generation.streamJsonNodes("users");
@@ -63,7 +63,7 @@ class StreamingApiTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
 
         // Test streaming all collections
         Map<String, Stream<JsonNode>> allStreams = generation.asJsonNodes();
@@ -92,7 +92,7 @@ class StreamingApiTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
 
         // Test streaming SQL inserts
         Map<String, Stream<String>> sqlStreams = generation.asSqlInserts();
@@ -123,7 +123,7 @@ class StreamingApiTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
 
         // Test that streaming works with both modes
         Stream<JsonNode> userStream = generation.streamJsonNodes("users");

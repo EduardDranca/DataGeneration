@@ -35,7 +35,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
@@ -87,7 +87,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
@@ -150,7 +150,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
@@ -225,7 +225,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> tasks = collections.get("tasks");
@@ -260,7 +260,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> orders = collections.get("orders");

@@ -42,7 +42,7 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
         List<JsonNode> users = generation.streamJsonNodes("users").toList();
 
         assertThat(users)
@@ -78,7 +78,7 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
         List<JsonNode> users = generation.streamJsonNodes("users").toList();
         JsonNode user = users.get(0);
 
@@ -115,7 +115,7 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
         List<JsonNode> users = generation.streamJsonNodes("users").toList();
         JsonNode user = users.get(0);
         JsonNode numbers = user.get("numbers");
@@ -153,7 +153,7 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
         List<JsonNode> users = generation.streamJsonNodes("users").toList();
         JsonNode user = users.get(0);
         JsonNode contacts = user.get("contacts");
@@ -189,7 +189,7 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
         List<JsonNode> users = generation.streamJsonNodes("users").toList();
         JsonNode user = users.get(0);
         JsonNode emptyList = user.get("emptyList");

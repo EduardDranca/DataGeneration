@@ -30,7 +30,7 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
         List<JsonNode> items = generation.streamJsonNodes("items").toList();
 
         assertThat(items).hasSize(5);
@@ -59,10 +59,15 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
             }
             """);
 
-        assertThatThrownBy(() -> createGenerator(memoryOptimized)
-            .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
-            .fromJsonNode(dslNode)
-            .generate())
+        assertThatThrownBy(() -> {
+            Generation generation = createGenerator(memoryOptimized)
+                .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
+                .fromJsonNode(dslNode)
+                .generate();
+
+            // Force evaluation by consuming the stream
+            generation.streamJsonNodes("items").forEach(item -> {});
+        })
             .isInstanceOf(FilteringException.class)
             .hasMessageContaining("All choice options were filtered out");
     }
@@ -90,10 +95,15 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
             }
             """);
 
-        assertThatThrownBy(() -> createGenerator(memoryOptimized)
-            .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
-            .fromJsonNode(dslNode)
-            .generate())
+        assertThatThrownBy(() -> {
+            Generation generation = createGenerator(memoryOptimized)
+                .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
+                .fromJsonNode(dslNode)
+                .generate();
+
+            // Force evaluation by consuming the stream
+            generation.streamJsonNodes("filtered_items").forEach(item -> {});
+        })
             .isInstanceOf(FilteringException.class)
             .hasMessageContaining("has no valid values after filtering");
     }
@@ -119,7 +129,7 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
 
         // With only 2 possible values (1, 2) and filtering out 1,
         // we should be able to generate 2 consistently
-        IGeneration generation = createGenerator(memoryOptimized)
+        Generation generation = createGenerator(memoryOptimized)
             .withMaxFilteringRetries(10) // Lower retry count
             .fromJsonNode(dslNode)
             .generate();
@@ -177,7 +187,7 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = createGenerator(memoryOptimized)
+        Generation generation = createGenerator(memoryOptimized)
             .withMaxFilteringRetries(200) // Higher retry count
             .withFilteringBehavior(FilteringBehavior.RETURN_NULL)
             .fromJsonNode(dslNode)

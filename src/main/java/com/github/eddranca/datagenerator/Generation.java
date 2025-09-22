@@ -1,241 +1,153 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.github.eddranca.datagenerator.util.SqlInsertGenerator;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public class Generation implements IGeneration {
-    private final Map<String, List<JsonNode>> collections;
-    private final ObjectMapper mapper = new ObjectMapper();
-
-    Generation(Map<String, List<JsonNode>> collectionsMap) {
-        this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        this.collections = new HashMap<>(collectionsMap);
-    }
-
-    @Override
-    public Set<String> getCollectionNames() {
-        return collections.keySet();
-    }
-
-    @Override
-    public int getCollectionSize(String collectionName) {
-        List<JsonNode> collection = collections.get(collectionName);
-        if (collection == null) {
-            throw new IllegalArgumentException("Collection '" + collectionName + "' not found");
-        }
-        return collection.size();
-    }
-
-    @Override
-    public Stream<JsonNode> streamJsonNodes(String collectionName) {
-        List<JsonNode> collection = collections.get(collectionName);
-        if (collection == null) {
-            throw new IllegalArgumentException("Collection '" + collectionName + "' not found");
-        }
-        return collection.stream();
-    }
-
-    @Override
-    public Map<String, Stream<JsonNode>> asJsonNodes() {
-        Map<String, Stream<JsonNode>> streams = new HashMap<>();
-        for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
-            streams.put(entry.getKey(), entry.getValue().stream());
-        }
-        return streams;
-    }
-
-    @Override
-    public Map<String, Stream<JsonNode>> asJsonNodes(String... collectionNames) {
-        Map<String, Stream<JsonNode>> streams = new HashMap<>();
-
-        Set<String> includeCollections = null;
-        if (collectionNames != null && collectionNames.length > 0) {
-            includeCollections = new HashSet<>(Arrays.asList(collectionNames));
-        }
-
-        for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
-            String collectionName = entry.getKey();
-            if (includeCollections == null || includeCollections.contains(collectionName)) {
-                streams.put(collectionName, entry.getValue().stream());
-            }
-        }
-        return streams;
-    }
-
-    @Override
-    public Map<String, Stream<String>> asSqlInserts() {
-        return asSqlInserts((String[]) null);
-    }
-
-    @Override
-    public Map<String, Stream<String>> asSqlInserts(String... collectionNames) {
-        Map<String, Stream<String>> sqlStreams = new HashMap<>();
-
-        Set<String> includeCollections = null;
-        if (collectionNames != null && collectionNames.length > 0) {
-            includeCollections = new HashSet<>(Arrays.asList(collectionNames));
-        }
-
-        for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
-            String tableName = entry.getKey();
-
-            if (includeCollections != null && !includeCollections.contains(tableName)) {
-                continue;
-            }
-
-            Stream<String> sqlStream = entry.getValue().stream()
-                .map(item -> SqlInsertGenerator.generateSqlInsert(tableName, item));
-            sqlStreams.put(tableName, sqlStream);
-        }
-        return sqlStreams;
-    }
+/**
+ * Interface for generated data that can be output in various formats.
+ *
+ * <p>
+ * This interface provides a unified API for both normal and memory-optimized
+ * data generation implementations. The memory-optimized implementation uses
+ * lazy
+ * evaluation to reduce memory usage for large datasets.
+ *
+ * <p>
+ * Key features:
+ * <ul>
+ * <li>Streaming JSON node generation</li>
+ * <li>Streaming SQL INSERT statement generation</li>
+ * <li>Memory-efficient processing for large datasets</li>
+ * <li>Collection metadata access</li>
+ * </ul>
+ */
+public interface Generation {
 
     /**
-     * Generates SQL INSERT statements as a stream for the specified collection.
-     * This method is memory-efficient for large datasets as it generates and processes
-     * items one at a time instead of loading everything into memory.
+     * Returns the names of all generated collections.
      *
-     * @param collectionName the name of the collection to stream
-     * @return a stream of SQL INSERT statements
+     * <p>
+     * This method provides a way to discover what collections were generated
+     * without exposing the internal collection structure.
+     *
+     * @return Set of collection names
+     */
+    Set<String> getCollectionNames();
+
+    /**
+     * Returns the number of items in the specified collection.
+     *
+     * <p>
+     * This method provides a way to inspect collection sizes without
+     * exposing the internal collection structure.
+     *
+     * @param collectionName name of the collection
+     * @return number of items in the collection
      * @throws IllegalArgumentException if the collection doesn't exist
      */
-    public Stream<String> streamSqlInserts(String collectionName) {
-        List<JsonNode> collection = collections.get(collectionName);
-        if (collection == null) {
-            throw new IllegalArgumentException("Collection '" + collectionName + "' not found");
-        }
+    int getCollectionSize(String collectionName);
 
-        return collection.stream()
-            .map(item -> SqlInsertGenerator.generateSqlInsert(collectionName, item));
+    /**
+     * Streams individual JsonNode items from a specific collection.
+     *
+     * <p>
+     * <strong>Memory-efficient:</strong> This method generates items on-demand
+     * without loading the entire collection into memory, making it ideal for
+     * large datasets or when using memory optimization.
+     *
+     * @param collectionName name of the collection to stream
+     * @return Stream of JsonNode items, one per generated item
+     * @throws IllegalArgumentException if the collection doesn't exist
+     */
+    Stream<JsonNode> streamJsonNodes(String collectionName);
+
+    /**
+     * Returns streams of JsonNode items for all collections.
+     *
+     * <p>
+     * Each collection is represented as a separate stream, allowing for
+     * memory-efficient processing of multiple collections.
+     *
+     * @return Map where keys are collection names and values are streams of
+     * JsonNode items
+     */
+    Map<String, Stream<JsonNode>> asJsonNodes();
+
+    /**
+     * Returns streams of JsonNode items for specified collections only.
+     *
+     * <p>
+     * This method allows selective streaming, useful when only certain
+     * collections are needed.
+     *
+     * @param collectionNames names of collections to stream, or empty for all
+     * @return Map where keys are collection names and values are streams of
+     * JsonNode items
+     */
+    Map<String, Stream<JsonNode>> asJsonNodes(String... collectionNames);
+
+    /**
+     * Returns streams of SQL INSERT statements for all collections.
+     *
+     * <p>
+     * Each collection becomes a table, and each item becomes a row.
+     * Complex nested objects are serialized as JSON strings.
+     * Each stream contains individual INSERT statements for that collection.
+     *
+     * @return Map where keys are table names and values are streams of SQL INSERT
+     * statements
+     */
+    Map<String, Stream<String>> asSqlInserts();
+
+    /**
+     * Returns streams of SQL INSERT statements for specified collections only.
+     *
+     * <p>
+     * This method allows selective SQL generation, useful when some collections
+     * are used only as reference data.
+     *
+     * @param collectionNames names of collections to generate SQL for, or empty for
+     *                        all
+     * @return Map where keys are table names and values are streams of SQL INSERT
+     * statements
+     */
+    Map<String, Stream<String>> asSqlInserts(String... collectionNames);
+
+    /**
+     * Generates SQL INSERT statements as a stream for memory-efficient processing.
+     *
+     * <p>
+     * <strong>Recommended for large datasets:</strong> This method processes items
+     * one at a time without loading everything into memory, making it ideal for
+     * large datasets or when using memory optimization.
+     *
+     * @param collectionName name of the collection to stream
+     * @return Stream of SQL INSERT statements, one per item
+     * @throws IllegalArgumentException if the collection doesn't exist
+     */
+    Stream<String> streamSqlInserts(String collectionName);
+
+    /**
+     * Convenience method to check if a collection exists.
+     *
+     * @param collectionName name of the collection to check
+     * @return true if the collection exists, false otherwise
+     */
+    default boolean hasCollection(String collectionName) {
+        return getCollectionNames().contains(collectionName);
     }
 
     /**
-     * Fluent builder for generation operations.
+     * Convenience method to get the total number of items across all collections.
+     *
+     * @return total number of items across all collections
      */
-    public static class Builder {
-        private final DslDataGenerator generator;
-        private final File file;
-        private final String jsonString;
-        private final JsonNode jsonNode;
-
-
-        Builder(DslDataGenerator generator, File file) {
-            this.generator = generator;
-            this.file = file;
-            this.jsonString = null;
-            this.jsonNode = null;
-        }
-
-        Builder(DslDataGenerator generator, String jsonString) {
-            this.generator = generator;
-            this.file = null;
-            this.jsonString = jsonString;
-            this.jsonNode = null;
-        }
-
-        Builder(DslDataGenerator generator, JsonNode jsonNode) {
-            this.generator = generator;
-            this.file = null;
-            this.jsonString = null;
-            this.jsonNode = jsonNode;
-        }
-
-
-        /**
-         * Generates the data based on the configured DSL source.
-         *
-         * @return the generated data
-         * @throws IOException                                                        if file reading fails or JSON parsing fails
-         * @throws com.github.eddranca.datagenerator.exception.DslValidationException if DSL validation fails
-         */
-        public IGeneration generate() throws IOException {
-            if (file != null) {
-                return generator.generateInternal(file);
-            } else if (jsonString != null) {
-                return generator.generateInternal(jsonString);
-            } else if (jsonNode != null) {
-                return generator.generateInternal(jsonNode);
-            } else {
-                throw new IllegalStateException("No DSL source configured");
-            }
-        }
-
-        /**
-         * Generates the data and returns SQL INSERT statement streams for all collections.
-         *
-         * @return a map of table names to SQL INSERT statement streams
-         * @throws IOException if file reading fails
-         */
-        public Map<String, Stream<String>> generateAsSql() throws IOException {
-            return generate().asSqlInserts();
-        }
-
-        /**
-         * Generates the data and returns SQL INSERT statement streams for specified collections only.
-         *
-         * @param collectionNames the names of collections to generate SQL for
-         * @return a map of table names to SQL INSERT statement streams
-         * @throws IOException if file reading fails
-         */
-        public Map<String, Stream<String>> generateAsSql(String... collectionNames) throws IOException {
-            return generate().asSqlInserts(collectionNames);
-        }
-
-        /**
-         * Generates the data and returns JsonNode streams for all collections.
-         *
-         * @return a map of collection names to JsonNode streams
-         * @throws IOException if file reading fails
-         */
-        public Map<String, Stream<JsonNode>> generateAsJson() throws IOException {
-            return generate().asJsonNodes();
-        }
-
-        /**
-         * Generates the data and returns JsonNode streams for specified collections only.
-         *
-         * @param collectionNames the names of collections to generate JSON for
-         * @return a map of collection names to JsonNode streams
-         * @throws IOException if file reading fails
-         */
-        public Map<String, Stream<JsonNode>> generateAsJson(String... collectionNames) throws IOException {
-            return generate().asJsonNodes(collectionNames);
-        }
-
-        /**
-         * Generates the data and returns a JsonNode stream for a single collection.
-         *
-         * @param collectionName the name of the collection to stream
-         * @return a stream of JsonNode items
-         * @throws IOException if file reading fails
-         * @throws IllegalArgumentException if the collection doesn't exist
-         */
-        public Stream<JsonNode> streamJsonNodes(String collectionName) throws IOException {
-            return generate().streamJsonNodes(collectionName);
-        }
-
-        /**
-         * Generates the data and returns a SQL INSERT stream for a single collection.
-         *
-         * @param collectionName the name of the collection to stream
-         * @return a stream of SQL INSERT statements
-         * @throws IOException if file reading fails
-         * @throws IllegalArgumentException if the collection doesn't exist
-         */
-        public Stream<String> streamSqlInserts(String collectionName) throws IOException {
-            return generate().streamSqlInserts(collectionName);
-        }
+    default int getTotalItemCount() {
+        return getCollectionNames().stream()
+            .mapToInt(this::getCollectionSize)
+            .sum();
     }
 }

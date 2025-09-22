@@ -2,7 +2,7 @@ package com.github.eddranca.datagenerator.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.IGeneration;
+import com.github.eddranca.datagenerator.Generation;
 import com.github.eddranca.datagenerator.ParameterizedGenerationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -52,7 +52,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
             }
             """;
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 12345L, memoryOptimized);
+        Generation generation = generateFromDslWithSeed(dsl, 12345L, memoryOptimized);
 
         JsonNode result = asJsonNode(generation);
 
@@ -126,7 +126,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
             }
             """;
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 54321L, memoryOptimized);
+        Generation generation = generateFromDslWithSeed(dsl, 54321L, memoryOptimized);
 
         JsonNode result = asJsonNode(generation);
 
@@ -184,7 +184,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                 """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+            Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode usersArray = collectionsNode.get("users");
@@ -224,7 +224,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                 """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+            Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode messagesArray = collectionsNode.get("messages");
@@ -268,7 +268,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                 """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+            Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode companiesArray = collectionsNode.get("companies");
@@ -311,7 +311,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                 """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+            Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode usersArray = collectionsNode.get("users");
@@ -349,7 +349,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                 """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+            Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
             JsonNode collectionsNode = asJsonNode(generation);
             JsonNode projectsArray = collectionsNode.get("projects");

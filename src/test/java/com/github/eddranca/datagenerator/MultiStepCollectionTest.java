@@ -47,7 +47,7 @@ class MultiStepCollectionTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
@@ -138,7 +138,7 @@ class MultiStepCollectionTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
@@ -221,7 +221,7 @@ class MultiStepCollectionTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
@@ -303,7 +303,7 @@ class MultiStepCollectionTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 

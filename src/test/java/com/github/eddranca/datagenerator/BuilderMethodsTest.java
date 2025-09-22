@@ -93,7 +93,7 @@ class BuilderMethodsTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
 
         // Test hasCollection()
         assertThat(generation.hasCollection("users")).isTrue();

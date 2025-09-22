@@ -37,7 +37,7 @@ class ReferenceSpreadTest extends ParameterizedGenerationTest {
                 }
                 """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
         List<JsonNode> orders = collections.get("orders");
@@ -84,7 +84,7 @@ class ReferenceSpreadTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> orders = collections.get("orders");
 
@@ -127,7 +127,7 @@ class ReferenceSpreadTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> orders = collections.get("orders");
 
@@ -170,7 +170,7 @@ class ReferenceSpreadTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
         List<JsonNode> orders = collections.get("orders");

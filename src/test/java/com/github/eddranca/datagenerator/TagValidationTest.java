@@ -36,7 +36,7 @@ class TagValidationTest extends ParameterizedGenerationTest {
             """);
 
         // Should succeed because both collections have the same final name "users"
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         assertThat(generation).isNotNull();
     }
@@ -97,7 +97,7 @@ class TagValidationTest extends ParameterizedGenerationTest {
             """);
 
         // Should succeed because both collections have the same final name "people"
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         assertThat(generation).isNotNull();
     }
@@ -181,7 +181,7 @@ class TagValidationTest extends ParameterizedGenerationTest {
             """);
 
         // Should succeed - single collection can have multiple tags
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         assertThat(generation).isNotNull();
         assertThat(generation.getCollectionSize("users")).isEqualTo(5);

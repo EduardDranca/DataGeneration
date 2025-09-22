@@ -2,7 +2,7 @@ package com.github.eddranca.datagenerator.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.IGeneration;
+import com.github.eddranca.datagenerator.Generation;
 
 import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.asJsonNode;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +38,7 @@ class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.Paramet
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         JsonNode result = asJsonNode(generation);
 
@@ -107,7 +107,7 @@ class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.Paramet
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        IGeneration generation = generateFromDslWithSeed(dslNode, 456L, memoryOptimized);
+        Generation generation = generateFromDslWithSeed(dslNode, 456L, memoryOptimized);
 
         JsonNode result = asJsonNode(generation);
         JsonNode testData = result.get("booleanTest");
@@ -152,7 +152,7 @@ class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.Paramet
 
         JsonNode dslNode = mapper.readTree(simpleDsl);
 
-        IGeneration generation = generateFromDslWithSeed(dslNode, 789L, memoryOptimized);
+        Generation generation = generateFromDslWithSeed(dslNode, 789L, memoryOptimized);
 
         JsonNode result = asJsonNode(generation);
         JsonNode testData = result.get("loremTest");
@@ -197,7 +197,7 @@ class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.Paramet
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        IGeneration generation = generateFromDslWithSeed(dslNode, 999L, memoryOptimized);
+        Generation generation = generateFromDslWithSeed(dslNode, 999L, memoryOptimized);
 
         JsonNode result = asJsonNode(generation);
         JsonNode contacts = result.get("contacts");

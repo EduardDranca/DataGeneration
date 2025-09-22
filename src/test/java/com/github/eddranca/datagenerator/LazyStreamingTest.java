@@ -39,7 +39,7 @@ class LazyStreamingTest {
             """;
 
         // Test with memory optimization enabled
-        IGeneration generation = DslDataGenerator.create()
+        Generation generation = DslDataGenerator.create()
             .withMemoryOptimization()
             .fromJsonString(dsl)
             .generate();
@@ -66,7 +66,7 @@ class LazyStreamingTest {
             """;
 
         // Test without memory optimization (default)
-        IGeneration generation = DslDataGenerator.create()
+        Generation generation = DslDataGenerator.create()
             .fromJsonString(dsl)
             .generate();
 
@@ -112,7 +112,7 @@ class LazyStreamingTest {
 
         // Test with memory optimization - demonstrates streaming capability with large
         // datasets
-        IGeneration optimizedGeneration = DslDataGenerator.create()
+        Generation optimizedGeneration = DslDataGenerator.create()
             .withMemoryOptimization()
             .fromJsonString(dsl)
             .generate();
@@ -167,13 +167,13 @@ class LazyStreamingTest {
 
         // Test with memory optimization - only referenced nested fields should be
         // generated
-        IGeneration optimizedGeneration = DslDataGenerator.create()
+        Generation optimizedGeneration = DslDataGenerator.create()
             .withMemoryOptimization()
             .fromJsonString(dsl)
             .generate();
 
         // Test without memory optimization for comparison
-        IGeneration fullGeneration = DslDataGenerator.create()
+        Generation fullGeneration = DslDataGenerator.create()
             .fromJsonString(dsl)
             .generate();
 

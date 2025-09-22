@@ -1,8 +1,6 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.eddranca.datagenerator.util.SqlInsertGenerator;
 import com.github.eddranca.datagenerator.visitor.LazyItemProxy;
 
@@ -41,21 +39,11 @@ import java.util.stream.Stream;
  *     .forEach(sql -> database.execute(sql));
  * }</pre>
  */
-public class LazyGeneration implements IGeneration {
+public class LazyGeneration implements Generation {
     private final Map<String, List<LazyItemProxy>> lazyCollections;
-    private final ObjectMapper mapper = new ObjectMapper();
 
     LazyGeneration(Map<String, List<LazyItemProxy>> lazyCollectionsMap) {
-        this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
         this.lazyCollections = new HashMap<>(lazyCollectionsMap);
-    }
-
-    /**
-     * Returns the lazy collections for internal use.
-     * This is package-private for use by the data generator.
-     */
-    Map<String, List<LazyItemProxy>> getLazyCollections() {
-        return lazyCollections;
     }
 
     @Override

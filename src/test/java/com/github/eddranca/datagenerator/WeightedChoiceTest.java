@@ -26,7 +26,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = createGenerator(memoryOptimized)
+        Generation generation = createGenerator(memoryOptimized)
             .withSeed(1993L)
             .fromJsonString(dsl)
             .generate();
@@ -74,7 +74,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = createGenerator(memoryOptimized)
+        Generation generation = createGenerator(memoryOptimized)
             .withSeed(456L)
             .fromJsonString(dsl)
             .generate();
@@ -131,7 +131,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = createGenerator(memoryOptimized)
+        Generation generation = createGenerator(memoryOptimized)
             .withSeed(789L)
             .fromJsonString(dsl)
             .generate();
@@ -182,7 +182,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = createGenerator(memoryOptimized)
+        Generation generation = createGenerator(memoryOptimized)
             .withSeed(999L)
             .fromJsonString(dsl)
             .generate();
@@ -227,7 +227,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = createGenerator(memoryOptimized)
+        Generation generation = createGenerator(memoryOptimized)
             .withSeed(111L)
             .fromJsonString(dsl)
             .generate();

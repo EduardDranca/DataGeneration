@@ -2,7 +2,7 @@ package com.github.eddranca.datagenerator.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.IGeneration;
+import com.github.eddranca.datagenerator.Generation;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.util.List;
@@ -77,7 +77,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             }
             """);
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
@@ -171,7 +171,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             }
             """);
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 789L, memoryOptimized);
+        Generation generation = generateFromDslWithSeed(dsl, 789L, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
@@ -248,7 +248,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             }
             """);
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 999L, memoryOptimized);
+        Generation generation = generateFromDslWithSeed(dsl, 999L, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
@@ -334,7 +334,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             }
             """);
 
-        IGeneration generation = generateFromDslWithSeed(dsl, 111L, memoryOptimized);
+        Generation generation = generateFromDslWithSeed(dsl, 111L, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
@@ -392,8 +392,8 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             """);
 
         // Generate with same seed twice
-        IGeneration generation1 = generateFromDslWithSeed(dsl, 222L, memoryOptimized);
-        IGeneration generation2 = generateFromDslWithSeed(dsl, 222L, memoryOptimized);
+        Generation generation1 = generateFromDslWithSeed(dsl, 222L, memoryOptimized);
+        Generation generation2 = generateFromDslWithSeed(dsl, 222L, memoryOptimized);
 
         // Results should be identical
         assertThat(asJson(generation1)).isEqualTo(asJson(generation2));
@@ -423,7 +423,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             }
             """, csvPath));
 
-        IGeneration generation = generateFromDslWithSeed(dslNode, 42L, memoryOptimized);
+        Generation generation = generateFromDslWithSeed(dslNode, 42L, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users_from_csv");
@@ -465,7 +465,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             }
             """, csvPath));
 
-        IGeneration generation = generateFromDslWithSeed(dslNode, 42L, memoryOptimized);
+        Generation generation = generateFromDslWithSeed(dslNode, 42L, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users_picked");

@@ -36,7 +36,7 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
 
         // OLD WAY: generation.asJsonNode()
         // NEW WAY: Use utility method to get the same format
@@ -80,7 +80,7 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
 
         // OLD WAY: generation.asJson()
         // NEW WAY: Use utility method to get the same format
@@ -105,7 +105,7 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
 
         // OLD WAY: generation.asSqlInserts() returned Map<String, String>
         // NEW WAY: Use utility method to get the same format
@@ -140,7 +140,7 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
             }
             """;
 
-        IGeneration generation = generateFromDsl(dsl, memoryOptimized);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
 
         // NEW UTILITY: Get collections as Map<String, List<JsonNode>>
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);

@@ -48,7 +48,7 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
             """;
 
         JsonNode dslNode = mapper.readTree(dsl);
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> excluded = collections.get("excluded");
@@ -98,7 +98,7 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
             """;
 
         JsonNode dslNode = mapper.readTree(dsl);
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> bannedUsers = collections.get("bannedUser");
@@ -156,7 +156,7 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
             """;
 
         JsonNode dslNode = mapper.readTree(dsl);
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> restrictions = collections.get("restrictions");
@@ -213,7 +213,7 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
             """;
 
         JsonNode dslNode = mapper.readTree(dsl);
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> blacklist = collections.get("blacklist");
@@ -276,7 +276,7 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
             """;
 
         JsonNode dslNode = mapper.readTree(dsl);
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> forbidden = collections.get("forbidden");

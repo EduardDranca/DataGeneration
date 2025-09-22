@@ -310,6 +310,19 @@ public class GenerationContext {
     }
 
     /**
+     * Handles reference resolution failure according to the configured filtering behavior.
+     * This provides consistent error handling for both filtering and reference failures.
+     * <p>
+     * This is a CORE utility method that typed reference nodes should use.
+     */
+    public JsonNode handleReferenceFailure(String message) {
+        if (filteringBehavior == FilteringBehavior.THROW_EXCEPTION) {
+            throw new FilteringException("Reference resolution failed: " + message);
+        }
+        return mapper.nullNode();
+    }
+
+    /**
      * Gets the next sequential index for a reference field node.
      * Each reference field node maintains its own counter for round-robin access.
      * <p>

@@ -31,7 +31,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         List<JsonNode> products = generation.streamJsonNodes("products").toList();
 
@@ -84,7 +84,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         List<JsonNode> orders = generation.streamJsonNodes("orders").toList();
 
@@ -139,7 +139,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         List<JsonNode> users = generation.streamJsonNodes("users").toList();
 

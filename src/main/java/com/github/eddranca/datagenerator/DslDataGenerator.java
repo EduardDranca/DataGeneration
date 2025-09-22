@@ -36,7 +36,7 @@ public class DslDataGenerator {
         this.filteringBehavior = builder.filteringBehavior;
         this.memoryOptimizationEnabled = builder.memoryOptimizationEnabled;
         this.generatorRegistry = builder.generatorRegistry != null ? builder.generatorRegistry
-            : GeneratorRegistry.withDefaultGenerators(new Faker(random));
+                : GeneratorRegistry.withDefaultGenerators(new Faker(random));
 
         // Add custom generators if any
         if (builder.customGenerators != null) {
@@ -55,11 +55,10 @@ public class DslDataGenerator {
         return new Builder();
     }
 
-
     /**
      * Internal generation method used by the fluent API for files.
      */
-    IGeneration generateInternal(File file) throws IOException {
+    Generation generateInternal(File file) throws IOException {
         if (!file.exists() || !file.isFile()) {
             throw new IllegalArgumentException("File not found: " + file.getPath());
         }
@@ -71,7 +70,7 @@ public class DslDataGenerator {
     /**
      * Internal generation method used by the fluent API for JSON strings.
      */
-    IGeneration generateInternal(String jsonString) throws IOException {
+    Generation generateInternal(String jsonString) throws IOException {
         JsonNode root = mapper.readTree(jsonString);
         return generateFromJsonNode(root);
     }
@@ -79,7 +78,7 @@ public class DslDataGenerator {
     /**
      * Internal generation method used by the fluent API for JsonNodes.
      */
-    IGeneration generateInternal(JsonNode jsonNode) {
+    Generation generateInternal(JsonNode jsonNode) {
         return generateFromJsonNode(jsonNode);
     }
 
@@ -87,7 +86,7 @@ public class DslDataGenerator {
      * Common generation logic for all input types using the new visitor
      * architecture.
      */
-    private IGeneration generateFromJsonNode(JsonNode root) {
+    private Generation generateFromJsonNode(JsonNode root) {
         // Build and validate the DSL tree
         DslTreeBuilder treeBuilder = new DslTreeBuilder(generatorRegistry);
         DslTreeBuildResult buildResult = treeBuilder.build(root);
@@ -105,11 +104,12 @@ public class DslDataGenerator {
 
         // Generate data using the visitor
         GenerationContext context = new GenerationContext(generatorRegistry, random, maxFilteringRetries,
-            filteringBehavior);
+                filteringBehavior);
 
         // Enable memory optimization if requested
         if (memoryOptimizationEnabled) {
-            // Initialize with empty referenced paths - they will be populated during analysis
+            // Initialize with empty referenced paths - they will be populated during
+            // analysis
             context.enableMemoryOptimization(new HashMap<>());
         }
 
@@ -126,44 +126,10 @@ public class DslDataGenerator {
                 lazyCollections.put(entry.getKey(), entry.getValue());
             }
 
-            // Perform a dry run of the first item in each collection
-            // to trigger any reference filtering exceptions early
-            performDryRunValidation(lazyCollections);
-
             return new LazyGeneration(lazyCollections);
         } else {
             // Normal generation
-            return new Generation(context.getNamedCollections());
-        }
-    }
-
-
-
-    /**
-     * Performs a dry run validation by attempting to generate the first item
-     * from each lazy collection. This helps catch reference filtering issues
-     * that can't be detected in the static validation phase.
-     */
-    // TODO: Maybe we can rethink this approach to avoid generating items here
-    private void performDryRunValidation(Map<String, List<com.github.eddranca.datagenerator.visitor.LazyItemProxy>> lazyCollections) {
-        for (Map.Entry<String, List<com.github.eddranca.datagenerator.visitor.LazyItemProxy>> entry : lazyCollections.entrySet()) {
-            List<com.github.eddranca.datagenerator.visitor.LazyItemProxy> collection = entry.getValue();
-            if (collection.size() > 0) {
-                try {
-                    // Try to get the first item - this will trigger any filtering exceptions
-                    com.github.eddranca.datagenerator.visitor.LazyItemProxy firstItem = collection.get(0);
-                    // Try to materialize the first item to trigger any reference resolution
-                    firstItem.getMaterializedCopy();
-                } catch (Exception e) {
-                    // If getting the first item fails, it's likely a filtering issue
-                    // Re-throw the exception to fail fast during .generate()
-                    if (e instanceof RuntimeException) {
-                        throw (RuntimeException) e;
-                    } else {
-                        throw new RuntimeException("Dry run validation failed: " + e.getMessage(), e);
-                    }
-                }
-            }
+            return new EagerGeneration(context.getNamedCollections());
         }
     }
 
@@ -267,8 +233,8 @@ public class DslDataGenerator {
          * @param file the DSL file to process
          * @return a Generation.Builder for further configuration
          */
-        public Generation.Builder fromFile(File file) {
-            return new Generation.Builder(build(), file);
+        public EagerGeneration.Builder fromFile(File file) {
+            return new EagerGeneration.Builder(build(), file);
         }
 
         /**
@@ -277,7 +243,7 @@ public class DslDataGenerator {
          * @param filePath the path to the DSL file
          * @return a Generation.Builder for further configuration
          */
-        public Generation.Builder fromFile(String filePath) {
+        public EagerGeneration.Builder fromFile(String filePath) {
             return fromFile(new File(filePath));
         }
 
@@ -287,7 +253,7 @@ public class DslDataGenerator {
          * @param path the path to the DSL file
          * @return a Generation.Builder for further configuration
          */
-        public Generation.Builder fromFile(Path path) {
+        public EagerGeneration.Builder fromFile(Path path) {
             return fromFile(path.toFile());
         }
 
@@ -297,8 +263,8 @@ public class DslDataGenerator {
          * @param jsonString the DSL JSON as a string
          * @return a Generation.Builder for further configuration
          */
-        public Generation.Builder fromJsonString(String jsonString) {
-            return new Generation.Builder(build(), jsonString);
+        public EagerGeneration.Builder fromJsonString(String jsonString) {
+            return new EagerGeneration.Builder(build(), jsonString);
         }
 
         /**
@@ -307,8 +273,8 @@ public class DslDataGenerator {
          * @param jsonNode the DSL as a JsonNode
          * @return a Generation.Builder for further configuration
          */
-        public Generation.Builder fromJsonNode(JsonNode jsonNode) {
-            return new Generation.Builder(build(), jsonNode);
+        public EagerGeneration.Builder fromJsonNode(JsonNode jsonNode) {
+            return new EagerGeneration.Builder(build(), jsonNode);
         }
 
         /**

@@ -48,7 +48,7 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> referenceData = collections.get("reference_data");
@@ -125,7 +125,7 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> categories = collections.get("categories");
@@ -195,7 +195,7 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = generateFromDsl(dslNode, memoryOptimized);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> referenceNames = collections.get("reference_names");
@@ -252,7 +252,7 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = createGenerator(memoryOptimized)
+        Generation generation = createGenerator(memoryOptimized)
             .withFilteringBehavior(FilteringBehavior.RETURN_NULL)
             .fromJsonNode(dslNode)
             .generate();
@@ -313,7 +313,7 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
             }
             """);
 
-        IGeneration generation = createGenerator(memoryOptimized)
+        Generation generation = createGenerator(memoryOptimized)
             .withCustomGenerator("customFiltering", customFilteringGenerator)
             .fromJsonNode(dslNode)
             .generate();
