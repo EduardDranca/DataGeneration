@@ -213,11 +213,19 @@ public class DslDataGenerator {
         }
 
         /**
-         * Enables memory optimization for lazy field materialization.
-         * This can significantly reduce memory usage when generating large datasets
-         * where only some fields are referenced by other collections.
+         * Enables memory optimization using lazy field materialization.
+         * Only referenced fields are initially generated; other fields are created on-demand during streaming.
+         * This reduces memory usage when generating large datasets.
+         *
+         * <p><strong>Consistency behavior:</strong> Streaming the same collection multiple times
+         * will yield different results. Processing order affects generated data.
+         * Not suitable for parallel processing.
+         *
+         * <p>Use when memory usage is a concern and you need to stream data once.
+         * For consistent results, always use {@link #withSeed(long)} and process sequentially.
          *
          * @return this builder for method chaining
+         * @see LazyGeneration
          */
         public Builder withMemoryOptimization() {
             this.memoryOptimizationEnabled = true;

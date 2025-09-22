@@ -82,7 +82,50 @@ java -cp ".:../../target/classes:../../target/dependency/*" examples.MemoryOptim
 
 | Approach | Memory Usage | Generation Speed | Best For |
 |----------|--------------|------------------|----------|
-| Normal | High | Fast | Small to medium datasets |
-| Memory Optimized | Low (up to 90% savings) | Slightly slower | Large datasets, memory-constrained environments |
+| Normal | High         | Fast | Small to medium datasets |
+| Memory Optimized | Low          | Slightly slower | Large datasets, memory-constrained environments |
+
+## Important: Consistency Behavior
+
+**Lazy generation is not consistent like eager generation:**
+
+- **Multiple streams**: Streaming the same collection twice will yield different results since data is generated on-demand
+- **Order dependency**: Streaming collections in different orders can produce different results
+- **Parallel processing**: Using parallel streams will produce inconsistent results
+
+### Ensuring Consistency
+
+If you need consistent results with memory optimization:
+
+```java
+// CONSISTENT: Generate all results sequentially in the same order
+Generation result = DslDataGenerator.create()
+    .withMemoryOptimization()
+    .withSeed(123L)  // Always use a seed for reproducibility
+    .fromJsonString(dsl)
+    .generate();
+
+// Process collections in a consistent order
+result.getCollectionNames().stream()
+    .sorted()  // Ensure consistent ordering
+    .forEach(collectionName -> {
+        result.streamSqlInserts(collectionName)
+            .forEach(sql -> database.execute(sql));
+    });
+
+// INCONSISTENT: Multiple streams of the same collection
+Stream<String> firstStream = result.streamSqlInserts("users");
+Stream<String> secondStream = result.streamSqlInserts("users"); // Different results!
+
+// INCONSISTENT: Parallel processing
+result.streamJsonNodes("users")
+    .parallel()  // Will produce inconsistent results
+    .forEach(this::processUser);
+```
+
+### When to Use Each Approach
+
+- **Use Eager Generation** when you need consistent, repeatable results or multiple access to the same data
+- **Use Memory Optimization** when processing large datasets once in a streaming fashion where memory efficiency is more important than consistency
 
 The memory optimization is most beneficial when generating large datasets where only a subset of fields are referenced by other collections.

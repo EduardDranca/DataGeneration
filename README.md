@@ -234,6 +234,29 @@ Stream<String> userSqlInserts = result.streamSqlInserts("users");
 
 ## Advanced Features
 
+### Memory Optimization
+For large datasets, enable memory optimization to reduce memory usage by not generating unreferenced fields until needed:
+
+```java
+Generation result = DslDataGenerator.create()
+    .withMemoryOptimization()  // Enable lazy generation
+    .withSeed(123L)           // Always use seed for reproducibility
+    .fromJsonString(dsl)
+    .generate();
+
+// Stream data efficiently without loading everything into memory
+result.streamSqlInserts("users")
+    .forEach(sql -> database.execute(sql));
+```
+
+**Important**: Memory optimization uses lazy generation, which means:
+- Streaming the same collection multiple times yields different results
+- Processing order affects the generated data
+- Not suitable for parallel processing
+- Best for one-time streaming of large datasets
+
+See the [Memory Optimization Example](examples/04-memory-optimization/) for detailed usage.
+
 ### Custom Generators
 ```java
 Generator employeeIdGenerator = (options) -> {
