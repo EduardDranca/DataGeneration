@@ -64,7 +64,7 @@
 
         <!-- Dependency versions -->
         <jackson.version>2.17.1</jackson.version>
-        <datafaker.version>2.4.4</datafaker.version>
+        <datafaker.version>2.5.0</datafaker.version>
         <junit.version>5.10.2</junit.version>
         <mockito.version>5.20.0</mockito.version>
         <assertj.version>3.24.2</assertj.version>
