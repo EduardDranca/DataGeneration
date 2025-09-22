@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -113,7 +114,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
             .map(order -> order.get("userId").asText())
             .toList();
 
-        List<String> expectedUserIds = java.util.stream.IntStream.range(0, 6)
+        List<String> expectedUserIds = IntStream.range(0, 6)
             .mapToObj(i -> validUserIds[i % validUserIds.length])
             .toList();
 
@@ -168,7 +169,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
             .map(order -> order.get("sequentialUserId").intValue())
             .toList();
 
-        List<Integer> expectedSequentialIds = java.util.stream.IntStream.range(0, 6)
+        List<Integer> expectedSequentialIds = IntStream.range(0, 6)
             .map(i -> userIds[i % userIds.length])
             .boxed()
             .toList();
@@ -181,7 +182,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
             .map(order -> order.get("randomUserId").intValue())
             .toList();
 
-        List<Integer> validUserIdsList = java.util.Arrays.stream(userIds).boxed().toList();
+        List<Integer> validUserIdsList = Arrays.stream(userIds).boxed().toList();
 
         assertThat(actualRandomIds)
             .as("Random references should all be valid user IDs")

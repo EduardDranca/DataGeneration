@@ -6,6 +6,7 @@ import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Random;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,8 +62,8 @@ class UuidGeneratorTest {
     @Test
     void testSeedConsistency() {
         // Create two generators with the same seed
-        Faker faker1 = new Faker(new java.util.Random(123L));
-        Faker faker2 = new Faker(new java.util.Random(123L));
+        Faker faker1 = new Faker(new Random(123L));
+        Faker faker2 = new Faker(new Random(123L));
 
         UuidGenerator gen1 = new UuidGenerator(faker1);
         UuidGenerator gen2 = new UuidGenerator(faker2);

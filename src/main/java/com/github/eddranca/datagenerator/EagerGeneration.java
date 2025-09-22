@@ -1,120 +1,23 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.eddranca.datagenerator.util.SqlInsertGenerator;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
-public class EagerGeneration implements Generation {
-    private final Map<String, List<JsonNode>> collections;
+public class EagerGeneration extends AbstractGeneration<JsonNode> {
 
     EagerGeneration(Map<String, List<JsonNode>> collectionsMap) {
-        this.collections = new HashMap<>(collectionsMap);
+        super(collectionsMap);
     }
 
     @Override
-    public Set<String> getCollectionNames() {
-        return collections.keySet();
-    }
-
-    @Override
-    public int getCollectionSize(String collectionName) {
-        List<JsonNode> collection = collections.get(collectionName);
-        if (collection == null) {
-            throw new IllegalArgumentException("Collection '" + collectionName + "' not found");
-        }
-        return collection.size();
-    }
-
-    @Override
-    public Stream<JsonNode> streamJsonNodes(String collectionName) {
-        List<JsonNode> collection = collections.get(collectionName);
-        if (collection == null) {
-            throw new IllegalArgumentException("Collection '" + collectionName + "' not found");
-        }
-        return collection.stream();
-    }
-
-    @Override
-    public Map<String, Stream<JsonNode>> asJsonNodes() {
-        Map<String, Stream<JsonNode>> streams = new HashMap<>();
-        for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
-            streams.put(entry.getKey(), entry.getValue().stream());
-        }
-        return streams;
-    }
-
-    @Override
-    public Map<String, Stream<JsonNode>> asJsonNodes(String... collectionNames) {
-        Map<String, Stream<JsonNode>> streams = new HashMap<>();
-
-        Set<String> includeCollections = null;
-        if (collectionNames != null && collectionNames.length > 0) {
-            includeCollections = new HashSet<>(Arrays.asList(collectionNames));
-        }
-
-        for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
-            String collectionName = entry.getKey();
-            if (includeCollections == null || includeCollections.contains(collectionName)) {
-                streams.put(collectionName, entry.getValue().stream());
-            }
-        }
-        return streams;
-    }
-
-    @Override
-    public Map<String, Stream<String>> asSqlInserts() {
-        return asSqlInserts((String[]) null);
-    }
-
-    @Override
-    public Map<String, Stream<String>> asSqlInserts(String... collectionNames) {
-        Map<String, Stream<String>> sqlStreams = new HashMap<>();
-
-        Set<String> includeCollections = null;
-        if (collectionNames != null && collectionNames.length > 0) {
-            includeCollections = new HashSet<>(Arrays.asList(collectionNames));
-        }
-
-        for (Map.Entry<String, List<JsonNode>> entry : collections.entrySet()) {
-            String tableName = entry.getKey();
-
-            if (includeCollections != null && !includeCollections.contains(tableName)) {
-                continue;
-            }
-
-            Stream<String> sqlStream = entry.getValue().stream()
-                    .map(item -> SqlInsertGenerator.generateSqlInsert(tableName, item));
-            sqlStreams.put(tableName, sqlStream);
-        }
-        return sqlStreams;
-    }
-
-    /**
-     * Generates SQL INSERT statements as a stream for the specified collection.
-     * This method is memory-efficient for large datasets as it generates and processes
-     * items one at a time instead of loading everything into memory.
-     *
-     * @param collectionName the name of the collection to stream
-     * @return a stream of SQL INSERT statements
-     * @throws IllegalArgumentException if the collection doesn't exist
-     */
-    public Stream<String> streamSqlInserts(String collectionName) {
-        List<JsonNode> collection = collections.get(collectionName);
-        if (collection == null) {
-            throw new IllegalArgumentException("Collection '" + collectionName + "' not found");
-        }
-
-        return collection.stream()
-                .map(item -> SqlInsertGenerator.generateSqlInsert(collectionName, item));
+    protected JsonNode toJsonNode(JsonNode item) {
+        // For eager generation, items are already JsonNodes
+        return item;
     }
 
     /**

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -117,10 +118,10 @@ class GenerationTest extends ParameterizedGenerationTest {
 
         // Get SQL for specific collections by collecting their streams
         Map<String, String> companiesSqlMap = new HashMap<>();
-        companiesSqlMap.put("companies", generation.streamSqlInserts("companies").collect(java.util.stream.Collectors.joining("\n")));
+        companiesSqlMap.put("companies", generation.streamSqlInserts("companies").collect(Collectors.joining("\n")));
 
         Map<String, String> countriesSqlMap = new HashMap<>();
-        countriesSqlMap.put("countries", generation.streamSqlInserts("countries").collect(java.util.stream.Collectors.joining("\n")));
+        countriesSqlMap.put("countries", generation.streamSqlInserts("countries").collect(Collectors.joining("\n")));
 
         assertThat(companiesSqlMap)
             .isNotNull()

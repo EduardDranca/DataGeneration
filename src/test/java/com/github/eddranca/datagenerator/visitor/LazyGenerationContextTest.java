@@ -40,7 +40,6 @@ class LazyGenerationContextTest {
     private Sequential mockSequentialNode;
 
 
-
     @Mock
     private LazyItemProxy mockLazyItem;
 

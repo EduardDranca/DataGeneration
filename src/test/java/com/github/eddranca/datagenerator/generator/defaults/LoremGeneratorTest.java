@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -117,7 +118,7 @@ class LoremGeneratorTest {
         List<JsonNode> filters = Collections.singletonList(mapper.valueToTree(textToFilter));
 
         // Try a few times to see if filtering works
-        boolean foundDifferent = java.util.stream.IntStream.range(0, 5)
+        boolean foundDifferent = IntStream.range(0, 5)
             .mapToObj(i -> generator.generateWithFilter(options, filters))
             .anyMatch(result -> result.isTextual() && !result.asText().equals(textToFilter));
 

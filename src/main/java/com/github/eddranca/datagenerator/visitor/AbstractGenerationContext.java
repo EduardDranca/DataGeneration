@@ -87,7 +87,7 @@ public abstract class AbstractGenerationContext<T> {
      * Creates and registers a collection based on the context's strategy.
      * Each context implements its own approach (eager vs lazy).
      *
-     * @param node the collection node to process
+     * @param node    the collection node to process
      * @param visitor the visitor for generating items
      * @return the result JsonNode for the visitor
      */
@@ -96,8 +96,8 @@ public abstract class AbstractGenerationContext<T> {
     /**
      * Registers a pick from the specified collection.
      *
-     * @param alias the pick alias
-     * @param index the index to pick
+     * @param alias          the pick alias
+     * @param index          the index to pick
      * @param collectionName the name of the collection to pick from
      */
     public abstract void registerPickFromCollection(String alias, int index, String collectionName);
