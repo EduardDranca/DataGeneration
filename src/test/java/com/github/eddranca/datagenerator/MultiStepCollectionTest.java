@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class MultiStepCollectionTest extends ParameterizedGenerationTest {
 
-    @BothImplementations
+    @BothImplementationsTest
     void testMultiStepCollectionGeneration(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -102,7 +102,7 @@ class MultiStepCollectionTest extends ParameterizedGenerationTest {
             });
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testMultiStepCollectionWithReferences(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -186,7 +186,7 @@ class MultiStepCollectionTest extends ParameterizedGenerationTest {
             });
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testMultiStepCollectionWithTags(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -256,7 +256,7 @@ class MultiStepCollectionTest extends ParameterizedGenerationTest {
             });
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testReferenceIndividualCollectionSteps(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {

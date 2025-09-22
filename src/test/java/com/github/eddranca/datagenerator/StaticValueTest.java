@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class StaticValueTest extends ParameterizedGenerationTest {
 
-    @BothImplementations
+    @BothImplementationsTest
     void testBasicStaticValues(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -57,7 +57,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
         }
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testComplexStaticValues(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -117,7 +117,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
         }
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testMixedStaticAndDynamicFields(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {

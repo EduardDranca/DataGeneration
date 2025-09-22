@@ -37,7 +37,7 @@ class GenerationTest extends ParameterizedGenerationTest {
         }
         """;
 
-    @BothImplementations
+    @BothImplementationsTest
     void testAsJsonNode(boolean memoryOptimized) throws Exception {
         Generation generation = generateFromDsl(TEST_DSL, memoryOptimized);
         JsonNode collectionsNode = createLegacyJsonNode(generation);
@@ -55,7 +55,7 @@ class GenerationTest extends ParameterizedGenerationTest {
         assertThat(countries.size()).isGreaterThan(0);
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testGetCollectionsAsJsonNode(boolean memoryOptimized) throws Exception {
         Generation generation = generateFromDsl(TEST_DSL, memoryOptimized);
         JsonNode collectionsNode = createLegacyJsonNode(generation);
@@ -69,7 +69,7 @@ class GenerationTest extends ParameterizedGenerationTest {
         assertThat(collectionsNode.get("countries").isEmpty()).isFalse();
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testAsJson(boolean memoryOptimized) throws Exception {
         Generation generation = generateFromDsl(TEST_DSL, memoryOptimized);
         String json = createLegacyJsonString(generation);
@@ -83,7 +83,7 @@ class GenerationTest extends ParameterizedGenerationTest {
         assertThatNoException().isThrownBy(() -> mapper.readTree(json));
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testAsJsonNodeStructure(boolean memoryOptimized) throws Exception {
         Generation generation = generateFromDsl(TEST_DSL, memoryOptimized);
         JsonNode jsonNode = createLegacyJsonNode(generation);
@@ -95,7 +95,7 @@ class GenerationTest extends ParameterizedGenerationTest {
         assertThat(jsonNode.get("countries").isArray()).isTrue();
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testAsSqlInsertsAll(boolean memoryOptimized) throws Exception {
         Generation generation = generateFromDsl(TEST_DSL, memoryOptimized);
         Map<String, String> sqlMap = collectAllSqlInserts(generation);
@@ -112,7 +112,7 @@ class GenerationTest extends ParameterizedGenerationTest {
         assertThat(countriesSql).contains("INSERT INTO countries");
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testAsSqlInsertsSpecificTable(boolean memoryOptimized) throws Exception {
         Generation generation = generateFromDsl(TEST_DSL, memoryOptimized);
 
@@ -139,7 +139,7 @@ class GenerationTest extends ParameterizedGenerationTest {
         assertThat(countriesSql).contains("INSERT INTO countries");
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testJsonAndJsonNodeConsistency(boolean memoryOptimized) throws Exception {
         Generation generation = generateFromDsl(TEST_DSL, memoryOptimized);
         String jsonString = createLegacyJsonString(generation);
@@ -156,7 +156,7 @@ class GenerationTest extends ParameterizedGenerationTest {
     }
 
 
-    @BothImplementations
+    @BothImplementationsTest
     void testSqlGenerationWithComplexObjects(boolean memoryOptimized) throws Exception {
         String complexDsl = """
             {
@@ -190,7 +190,7 @@ class GenerationTest extends ParameterizedGenerationTest {
         assertThat(sql.contains("'{") || sql.contains("\"{")).isTrue();
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testEmptyGeneration(boolean memoryOptimized) throws Exception {
         String emptyDsl = "{}";
         Generation emptyGeneration = generateFromDsl(emptyDsl, memoryOptimized);
@@ -207,7 +207,7 @@ class GenerationTest extends ParameterizedGenerationTest {
         assertThat(json.equals("{}") || json.equals("{ }")).isTrue();
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testSingleItemGeneration(boolean memoryOptimized) throws Exception {
         String singleItemDsl = """
             {

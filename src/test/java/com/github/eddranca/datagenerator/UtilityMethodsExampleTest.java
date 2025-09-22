@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
 
-    @BothImplementations
+    @BothImplementationsTest
     void testLegacyJsonNodeFormat(boolean memoryOptimized) throws IOException {
         String dsl = """
             {
@@ -66,7 +66,7 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
         }
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testLegacyJsonStringFormat(boolean memoryOptimized) throws IOException {
         String dsl = """
             {
@@ -91,7 +91,7 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
         assertThat(jsonString).contains("\"type\" : \"test\"");
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testLegacySqlFormat(boolean memoryOptimized) throws IOException {
         String dsl = """
             {
@@ -126,7 +126,7 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
         assertThat(statements[1]).startsWith("INSERT INTO users");
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testCollectAllJsonNodesFormat(boolean memoryOptimized) throws IOException {
         String dsl = """
             {

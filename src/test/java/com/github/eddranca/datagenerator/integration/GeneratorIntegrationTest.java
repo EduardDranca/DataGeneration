@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.ParameterizedGenerationTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
-    @BothImplementations
+    @BothImplementationsTest
     void testMultipleGeneratorsInDsl(boolean memoryOptimized) throws Exception {
 
         String dsl = """
@@ -90,7 +90,7 @@ class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.Paramet
         }
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testBooleanProbabilityDistribution(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
@@ -133,7 +133,7 @@ class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.Paramet
             .isBetween(85, 95);
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testLoremGeneratorVariations(boolean memoryOptimized) throws Exception {
         // Test simple lorem generation (this works)
         String simpleDsl = """
@@ -177,7 +177,7 @@ class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.Paramet
         }
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testPhoneGeneratorFormats(boolean memoryOptimized) throws Exception {
         String dsl = """
             {

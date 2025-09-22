@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class StreamingApiTest extends ParameterizedGenerationTest {
 
-    @BothImplementations
+    @BothImplementationsTest
     void testStreamJsonNodes(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
@@ -42,7 +42,7 @@ class StreamingApiTest extends ParameterizedGenerationTest {
         }
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testAsJsonNodeStreams(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
@@ -77,7 +77,7 @@ class StreamingApiTest extends ParameterizedGenerationTest {
         assertThat(posts).hasSize(3);
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testAsSqlInsertStreams(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
@@ -108,7 +108,7 @@ class StreamingApiTest extends ParameterizedGenerationTest {
         }
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testStreamingWithSqlGeneration(boolean memoryOptimized) throws Exception {
         String dsl = """
             {

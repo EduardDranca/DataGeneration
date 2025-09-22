@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TagValidationTest extends ParameterizedGenerationTest {
 
-    @BothImplementations
+    @BothImplementationsTest
     void testValidTagSharing(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -71,7 +71,7 @@ class TagValidationTest extends ParameterizedGenerationTest {
             .hasMessageContaining("cannot be redeclared by collection 'products'");
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testValidTagSharingWithCustomNames(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -164,7 +164,7 @@ class TagValidationTest extends ParameterizedGenerationTest {
             .hasMessageContaining("cannot be redeclared by collection 'products'");
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testSingleCollectionMultipleTags(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {

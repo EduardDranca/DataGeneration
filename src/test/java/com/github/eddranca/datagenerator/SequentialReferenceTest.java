@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class SequentialReferenceTest extends ParameterizedGenerationTest {
 
-    @BothImplementations
+    @BothImplementationsTest
     void testBasicSequentialReference(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -60,7 +60,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
                     .toList());
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testSequentialReferenceWithFiltering(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -124,7 +124,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
             .doesNotContain(bannedUserId);
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testRandomVsSequentialReference(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -190,7 +190,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
             .allSatisfy(randomId -> assertThat(validUserIdsList).contains(randomId));
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testSequentialReferenceWithTaggedCollections(boolean memoryOptimized)
         throws IOException {
         JsonNode dslNode = mapper.readTree("""
@@ -239,7 +239,7 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
             .allSatisfy(assignedTo -> assertThat(assignedTo).isBetween(1, 4));
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testSequentialReferenceDefaultBehavior(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {

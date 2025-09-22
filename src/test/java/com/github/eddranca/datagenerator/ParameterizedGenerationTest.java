@@ -141,7 +141,7 @@ public abstract class ParameterizedGenerationTest {
     @Retention(RetentionPolicy.RUNTIME)
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    protected @interface BothImplementations {
+    protected @interface BothImplementationsTest {
     }
 
     /**

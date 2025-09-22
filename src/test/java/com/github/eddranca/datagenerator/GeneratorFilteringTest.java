@@ -14,7 +14,7 @@ import static org.assertj.core.data.Offset.offset;
 
 class GeneratorFilteringTest extends ParameterizedGenerationTest {
 
-    @BothImplementations
+    @BothImplementationsTest
     void testBasicGeneratorFiltering(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -90,7 +90,7 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
             .hasSizeGreaterThan(1);
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testGeneratorFilteringWithComplexOptions(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -162,7 +162,7 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
             .doesNotContain(excludedCategory);
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testGeneratorFilteringWithPathExtraction(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -234,7 +234,7 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
             .hasSizeGreaterThan(1);
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testGeneratorFilteringFallbackToNull(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -270,7 +270,7 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
 
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testCustomGeneratorWithNativeFiltering(boolean memoryOptimized) throws IOException {
         // Create a custom generator that supports native filtering
         Generator customFilteringGenerator = new Generator() {

@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ArrayIntegrationTest extends com.github.eddranca.datagenerator.ParameterizedGenerationTest {
 
-    @BothImplementations
+    @BothImplementationsTest
     void testComplexArrayScenario(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
@@ -99,7 +99,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
             });
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testArrayWithReferences(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
@@ -165,7 +165,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
             objectMapper = new ObjectMapper();
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testCountSyntaxWithChoiceGenerator(boolean memoryOptimized) throws Exception {
             String dsl = """
                 {
@@ -206,7 +206,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                 });
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testCountSyntaxWithLiteralValues(boolean memoryOptimized) throws Exception {
             String dsl = """
                 {
@@ -246,7 +246,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                 );
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testCountSyntaxWithComplexObjects(boolean memoryOptimized) throws Exception {
             String dsl = """
                 {
@@ -292,7 +292,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
                 });
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testCountZeroGeneratesEmptyArray(boolean memoryOptimized) throws Exception {
             String dsl = """
                 {
@@ -327,7 +327,7 @@ class ArrayIntegrationTest extends com.github.eddranca.datagenerator.Parameteriz
             assertThat(emptyTags).isEmpty();
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testCountSyntaxWithNestedObjects(boolean memoryOptimized) throws Exception {
             String dsl = """
                 {

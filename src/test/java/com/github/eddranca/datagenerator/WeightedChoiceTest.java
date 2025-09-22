@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class WeightedChoiceTest extends ParameterizedGenerationTest {
 
-    @BothImplementations
+    @BothImplementationsTest
     void testBasicWeightedChoice(boolean memoryOptimized) throws IOException {
         String dsl = """
             {
@@ -57,7 +57,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
             .as("Uncommon count should be around 100, got: " + uncommonCount).isTrue();
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testWeightedChoiceWithDifferentWeights(boolean memoryOptimized) throws IOException {
         String dsl = """
             {
@@ -109,7 +109,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
             .isTrue();
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testWeightedChoiceWithComplexOptions(boolean memoryOptimized) throws IOException {
         String dsl = """
             {
@@ -166,7 +166,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
             .isTrue();
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testUnweightedChoiceStillWorks(boolean memoryOptimized) throws IOException {
         String dsl = """
             {
@@ -210,7 +210,7 @@ class WeightedChoiceTest extends ParameterizedGenerationTest {
             .isTrue();
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testWeightedChoiceWithDecimalWeights(boolean memoryOptimized) throws IOException {
         String dsl = """
             {

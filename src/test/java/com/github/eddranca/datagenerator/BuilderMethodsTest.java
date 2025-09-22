@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class BuilderMethodsTest extends ParameterizedGenerationTest {
 
-    @BothImplementations
+    @BothImplementationsTest
     void testBuilderGenerateAsJsonMethods(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
@@ -46,7 +46,7 @@ class BuilderMethodsTest extends ParameterizedGenerationTest {
         assertThat(specificJsonStreams.get("users").count()).isEqualTo(2);
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testBuilderStreamMethods(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
@@ -72,7 +72,7 @@ class BuilderMethodsTest extends ParameterizedGenerationTest {
         assertThat(sqlStream.count()).isEqualTo(3);
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testIGenerationConvenienceMethods(boolean memoryOptimized) throws Exception {
         String dsl = """
             {

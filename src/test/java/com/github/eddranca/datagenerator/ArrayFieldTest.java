@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ArrayFieldTest extends ParameterizedGenerationTest {
 
-    @BothImplementations
+    @BothImplementationsTest
     void testFixedSizeArray(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
@@ -59,7 +59,7 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
             });
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testVariableSizeArray(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
@@ -93,7 +93,7 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
             );
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testArrayWithGeneratedItems(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
@@ -130,7 +130,7 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
             });
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testArrayWithObjectItems(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
@@ -171,7 +171,7 @@ class ArrayFieldTest extends ParameterizedGenerationTest {
             });
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testEmptyArray(boolean memoryOptimized) throws Exception {
         String dsl = """
             {

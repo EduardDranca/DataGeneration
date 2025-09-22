@@ -50,7 +50,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
     @Nested
     class SeedConsistencyTests extends ParameterizedGenerationTest {
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSeedConsistencyBasic(boolean memoryOptimized) throws IOException {
             JsonNode dslNode = mapper.readTree(
                 """
@@ -84,7 +84,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             assertThat(asJson(generation1)).isEqualTo(asJson(generation2));
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSeedConsistencyWithCustomGenerators(boolean memoryOptimized) throws IOException {
             Generator customGenerator = options -> mapper.valueToTree("CUSTOM_FIXED_VALUE");
 
@@ -120,7 +120,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             assertThat(asJson(generation1)).isEqualTo(asJson(generation2));
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testDifferentSeedsProduceDifferentResults(boolean memoryOptimized) throws IOException {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -141,7 +141,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             assertThat(asJson(generation1)).isNotEqualTo(asJson(generation2));
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSeedConsistencyWithFluentAPI(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -216,7 +216,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
     @Nested
     class FilteringTests extends ParameterizedGenerationTest {
 
-        @BothImplementations
+        @BothImplementationsTest
         void testOriginalSpreadTestFiltering(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree(
                 """
@@ -262,7 +262,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             }
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testTagReferenceWithFiltering(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree(
                 """
@@ -346,7 +346,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
 
     @Nested
     class SelfReferenceTests extends ParameterizedGenerationTest {
-        @BothImplementations
+        @BothImplementationsTest
         void testSelfReferenceValidation(boolean memoryOptimized) throws Exception {
             // Test valid simple self-reference
             JsonNode validDsl = mapper.readTree("""
@@ -437,7 +437,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
     @Nested
     class SpreadOperatorTests extends ParameterizedGenerationTest {
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSpreadOperatorBasic(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -477,7 +477,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             }
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSpreadOperatorWithFieldMapping(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -517,7 +517,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                 });
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSpreadOperatorWithComplexObjects(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -558,7 +558,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                 .contains("companyName", "address", "contact");
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testMultipleSpreadOperators(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -606,7 +606,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             }
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSpreadOperatorWithoutFieldsUsesAllFields(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -651,7 +651,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             }
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSpreadOperatorSqlGeneration(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -681,7 +681,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                 .contains("INSERT INTO companies", "companyName", "address");
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testCsvGeneratorSpreadIntegration(boolean memoryOptimized) throws Exception {
             String csvPath = "src/test/resources/test.csv";
 
@@ -724,7 +724,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
     @Nested
     class SqlGenerationTests extends ParameterizedGenerationTest {
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSqlInsertsWithComplexObjects(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -767,7 +767,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             validateAllSqlStatements(usersSql, "users", 2);
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSqlSubsetGeneration(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -825,7 +825,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             validateSqlColumns(companiesSql, "companies", "id", "name");
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSqlGenerationWithAllTables(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -863,7 +863,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             validateAllSqlStatements(countriesSql, "countries", 2);
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSqlGenerationWithSpecialCharacters(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree(
                 """
@@ -897,7 +897,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             }
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSqlGenerationWithNullValues(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -925,7 +925,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                 .contains("id", "optionalField");
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSqlGenerationValidatesWithParser(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -958,7 +958,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                 "id", "firstName", "lastName", "email", "age", "salary", "active");
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSqlGenerationSyntaxValidation(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree(
                 """
@@ -991,7 +991,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                 "string_field", "number_field", "float_field", "boolean_field", "null_field", "special_chars");
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testSqlGenerationWithNumericValues(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -1017,7 +1017,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             validateSqlColumns(metricsSql, "metrics", "id", "score", "active");
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testFloatGeneratorWithDecimalsConfiguration(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {
@@ -1234,7 +1234,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                 .contains("CUSTOM_VALUE_", "customField");
         }
 
-        @BothImplementations
+        @BothImplementationsTest
         void testJsonNodeMethods(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree("""
                 {

@@ -25,7 +25,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
         mapper = new ObjectMapper();
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testPickWithReferencesAndFiltering(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
             {
@@ -111,7 +111,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             );
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testLargeScaleDataGeneration(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
             {
@@ -201,7 +201,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             .hasSizeGreaterThan(100000); // Should be substantial JSON
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testComplexFilteringWithMultipleLevels(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
             {
@@ -286,7 +286,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             });
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testDynamicTagReferencesWithThisField(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
             {
@@ -360,7 +360,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             });
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testSeedConsistencyWithComplexStructures(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
             {
@@ -404,7 +404,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
         assertThat(collections1.get("derived_data")).hasSize(10);
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testCsvGeneratorUsersIntegration(boolean memoryOptimized) throws Exception {
         String csvPath = "src/test/resources/test-users.csv";
 
@@ -445,7 +445,7 @@ class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.Parame
             );
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testCsvGeneratorPickFieldIntegration(boolean memoryOptimized) throws Exception {
         String csvPath = "src/test/resources/test-users.csv";
 

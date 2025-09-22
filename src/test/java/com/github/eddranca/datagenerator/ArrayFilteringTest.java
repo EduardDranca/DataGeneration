@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class ArrayFilteringTest extends ParameterizedGenerationTest {
 
-    @BothImplementations
+    @BothImplementationsTest
     void testArrayWithExplicitSyntaxAndFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
             {
@@ -71,7 +71,7 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
         });
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testArrayWithCountSyntaxAndFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
             {
@@ -121,7 +121,7 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
         });
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testArrayWithMultipleFilters(boolean memoryOptimized) throws IOException {
         String dsl = """
             {
@@ -180,7 +180,7 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
         });
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testArrayWithTagBasedFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
             {
@@ -236,7 +236,7 @@ class ArrayFilteringTest extends ParameterizedGenerationTest {
         });
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testNestedArraysWithFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
             {

@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FilteringConfigurationTest extends ParameterizedGenerationTest {
 
-    @BothImplementations
+    @BothImplementationsTest
     void testDefaultFilteringBehaviorReturnsNull(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -41,7 +41,7 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
             .allSatisfy(choice -> assertThat(choice.isNull()).isTrue());
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testThrowExceptionFilteringBehaviorForGenerators(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -73,7 +73,7 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
             .hasMessageContaining("All choice options were filtered out");
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testThrowExceptionFilteringBehaviorForReferences(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -110,7 +110,7 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
             .hasMessageContaining("has no valid values after filtering");
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testCustomMaxFilteringRetries(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
@@ -170,7 +170,7 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
         assertThat(generator).isNotNull();
     }
 
-    @BothImplementations
+    @BothImplementationsTest
     void testSuccessfulFilteringWithCustomRetries(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {
