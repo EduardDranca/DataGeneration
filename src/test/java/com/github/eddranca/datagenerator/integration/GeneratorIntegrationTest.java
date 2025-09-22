@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator.integration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.Generation;
+import com.github.eddranca.datagenerator.ParameterizedGenerationTest;
 
 import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.asJsonNode;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration tests for various generators working together in DSL scenarios.
  * Tests the interaction between boolean, lorem, phone, and other generators.
  */
-class GeneratorIntegrationTest extends com.github.eddranca.datagenerator.ParameterizedGenerationTest {
+class GeneratorIntegrationTest extends ParameterizedGenerationTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @BothImplementationsTest

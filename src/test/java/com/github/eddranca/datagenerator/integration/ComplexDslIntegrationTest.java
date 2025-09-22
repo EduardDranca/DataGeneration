@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator.integration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.Generation;
+import com.github.eddranca.datagenerator.ParameterizedGenerationTest;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.util.List;
@@ -16,7 +17,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
  * Integration tests for complex DSL scenarios including picks, filtering,
  * multiple collections, and advanced reference patterns.
  */
-class ComplexDslIntegrationTest extends com.github.eddranca.datagenerator.ParameterizedGenerationTest {
+class ComplexDslIntegrationTest extends ParameterizedGenerationTest {
 
     private ObjectMapper mapper;
 

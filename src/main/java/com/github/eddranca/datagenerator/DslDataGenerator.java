@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.builder.DslTreeBuilder;
+import com.github.eddranca.datagenerator.exception.DataGenerationException;
 import com.github.eddranca.datagenerator.exception.DslValidationException;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
@@ -12,14 +13,14 @@ import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 import com.github.eddranca.datagenerator.visitor.DataGenerationVisitor;
 import com.github.eddranca.datagenerator.visitor.EagerGenerationContext;
 import com.github.eddranca.datagenerator.visitor.LazyGenerationContext;
-import com.github.eddranca.datagenerator.visitor.LazyItemProxy;
 import net.datafaker.Faker;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -117,16 +118,17 @@ public class DslDataGenerator {
         DataGenerationVisitor<?> visitor = new DataGenerationVisitor<>(context);
 
         rootNode.accept(visitor);
+        return getGeneration(context);
+    }
 
-        // Return the appropriate Generation implementation based on memory optimization
-        if (memoryOptimizationEnabled) {
-            // For memory optimization, use the lazy collections directly
-            LazyGenerationContext lazyContext = (LazyGenerationContext) context;
-            Map<String, List<LazyItemProxy>> lazyCollections = lazyContext.getLazyNamedCollections();
-            return new LazyGeneration(lazyCollections);
-        } else {
-            // Normal generation
-            return new EagerGeneration(context.getNamedCollections());
+    private <T> Generation getGeneration(AbstractGenerationContext<T> context) {
+        try {
+            Constructor<? extends Generation> constructor = memoryOptimizationEnabled
+                ? LazyGeneration.class.getDeclaredConstructor(Map.class)
+                : EagerGeneration.class.getDeclaredConstructor(Map.class);
+            return constructor.newInstance(context.getNamedCollections());
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new DataGenerationException("Could not create Generation instance.", e);
         }
     }
 

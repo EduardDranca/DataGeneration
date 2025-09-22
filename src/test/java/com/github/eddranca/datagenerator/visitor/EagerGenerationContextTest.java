@@ -49,7 +49,7 @@ class EagerGenerationContextTest {
 
     @Test
     void testConstructorWithDefaults() {
-        AbstractGenerationContext defaultContext = new EagerGenerationContext(mockGeneratorRegistry, mockRandom);
+        AbstractGenerationContext<?> defaultContext = new EagerGenerationContext(mockGeneratorRegistry, mockRandom);
 
         assertThat(defaultContext.getGeneratorRegistry()).isEqualTo(mockGeneratorRegistry);
         assertThat(defaultContext.getRandom()).isEqualTo(mockRandom);
@@ -58,7 +58,7 @@ class EagerGenerationContextTest {
 
     @Test
     void testConstructorWithCustomSettings() {
-        AbstractGenerationContext customContext = new EagerGenerationContext(
+        AbstractGenerationContext<?> customContext = new EagerGenerationContext(
             mockGeneratorRegistry,
             mockRandom,
             10,
@@ -176,20 +176,6 @@ class EagerGenerationContextTest {
     void testGetNamedPickReturnsNullForNonExistent() {
         JsonNode retrieved = context.getNamedPick("nonExistentPick");
         assertThat(retrieved).isNull();
-    }
-
-    @Test
-    void testGetNamedCollectionsReturnsCopy() {
-        JsonNode item = mapper.valueToTree("value");
-        context.registerCollection("testCollection", List.of(item));
-
-        Map<String, List<JsonNode>> collections = context.getNamedCollections();
-        assertThat(collections).hasSize(1);
-        assertThat(collections.get("testCollection")).hasSize(1);
-
-        // Modify the returned map - should not affect internal state
-        collections.clear();
-        assertThat(context.getCollection("testCollection")).hasSize(1);
     }
 
     @Test
@@ -352,7 +338,7 @@ class EagerGenerationContextTest {
 
     @Test
     void testHandleFilteringFailureWithReturnNull() {
-        AbstractGenerationContext nullContext = new EagerGenerationContext(
+        AbstractGenerationContext<JsonNode> nullContext = new EagerGenerationContext(
             mockGeneratorRegistry,
             mockRandom,
             5,
@@ -366,7 +352,7 @@ class EagerGenerationContextTest {
 
     @Test
     void testHandleFilteringFailureWithThrowException() {
-        AbstractGenerationContext exceptionContext = new EagerGenerationContext(
+        AbstractGenerationContext<JsonNode> exceptionContext = new EagerGenerationContext(
             mockGeneratorRegistry,
             mockRandom,
             5,

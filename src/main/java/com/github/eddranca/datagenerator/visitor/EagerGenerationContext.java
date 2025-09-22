@@ -92,7 +92,7 @@ public class EagerGenerationContext extends AbstractGenerationContext<JsonNode> 
 
     @Override
     public Map<String, List<JsonNode>> getNamedCollections() {
-        return new HashMap<>(namedCollections);
+        return namedCollections;
     }
 
     @Override

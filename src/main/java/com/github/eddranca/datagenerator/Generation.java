@@ -14,15 +14,8 @@ import java.util.stream.Stream;
  * data generation implementations. The memory-optimized implementation uses
  * lazy
  * evaluation to reduce memory usage for large datasets.
+ * see {@link LazyGeneration} and {@link EagerGeneration}
  *
- * <p>
- * Key features:
- * <ul>
- * <li>Streaming JSON node generation</li>
- * <li>Streaming SQL INSERT statement generation</li>
- * <li>Memory-efficient processing for large datasets</li>
- * <li>Collection metadata access</li>
- * </ul>
  */
 public interface Generation {
 
@@ -138,16 +131,5 @@ public interface Generation {
      */
     default boolean hasCollection(String collectionName) {
         return getCollectionNames().contains(collectionName);
-    }
-
-    /**
-     * Convenience method to get the total number of items across all collections.
-     *
-     * @return total number of items across all collections
-     */
-    default int getTotalItemCount() {
-        return getCollectionNames().stream()
-            .mapToInt(this::getCollectionSize)
-            .sum();
     }
 }

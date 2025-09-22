@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.node.DslNode;
+import com.github.eddranca.datagenerator.node.ObjectFieldNode;
 
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +19,7 @@ public class LazyObjectProxy extends AbstractLazyProxy {
 
     public LazyObjectProxy(Map<String, DslNode> fieldNodes,
                            Set<String> referencedPaths,
-                           DataGenerationVisitor visitor,
+                           DataGenerationVisitor<LazyItemProxy> visitor,
                            String objectPath) {
         super(fieldNodes, referencedPaths, visitor);
         this.objectPath = objectPath;
@@ -43,7 +44,7 @@ public class LazyObjectProxy extends AbstractLazyProxy {
     protected JsonNode generateFieldValue(String fieldName, DslNode fieldNode) {
         // If this field node represents a nested object and has sub-references,
         // create another LazyObjectProxy for it
-        if (fieldNode instanceof com.github.eddranca.datagenerator.node.ObjectFieldNode objectFieldNode) {
+        if (fieldNode instanceof ObjectFieldNode objectFieldNode) {
             String nestedPath = buildFieldPath(fieldName);
             Set<String> nestedReferences = getReferencesWithPrefix(nestedPath);
 

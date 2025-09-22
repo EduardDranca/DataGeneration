@@ -20,17 +20,6 @@ public class NestedPathUtils {
         if (fieldPath == null || fieldPath.isEmpty()) {
             return node;
         }
-
-        JsonNode current = node;
-        String[] pathParts = fieldPath.split("\\.");
-
-        for (String part : pathParts) {
-            current = current.path(part);
-            if (current.isMissingNode()) {
-                return current; // Return missing node if any part of the path is missing
-            }
-        }
-
-        return current;
+        return node.path(fieldPath);
     }
 }

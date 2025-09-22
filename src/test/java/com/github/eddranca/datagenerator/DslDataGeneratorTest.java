@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.builder.DslTreeBuilder;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
+import com.github.eddranca.datagenerator.validation.DslTreeBuildResult;
 import net.datafaker.Faker;
 import net.datafaker.providers.base.Address;
 import net.datafaker.providers.base.Company;
@@ -397,7 +398,7 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
             // Test using DslTreeBuilder directly to check validation
             DslTreeBuilder builder = new DslTreeBuilder(GeneratorRegistry.withDefaultGenerators(new Faker()));
 
-            com.github.eddranca.datagenerator.validation.DslTreeBuildResult result = builder.build(invalidDsl);
+            DslTreeBuildResult result = builder.build(invalidDsl);
 
             // Should have validation errors
             assertThat(result.hasErrors())

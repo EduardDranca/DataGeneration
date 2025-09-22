@@ -28,22 +28,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Analyzes DSL nodes to determine which paths (fields) are referenced by other
+ * Analyzes DSL nodes to determine which paths (fields) are referenced by other collections.
  * <p>
- * <p>
- * <p>
- * <p>
- * <p>
- * <p>
- * <p>
- * <p>
- * <p>
- * collections.
- * <p>
- * <p>
- * This enables memory optimization by only generating referenced fields during
- * initial generation.
- * <p>
+ * This enables memory optimization by only generating referenced fields during the initial generation.
  * <p>
  * Supports nested path analysis like "users.address.street" to enable selective
  * generation
@@ -51,6 +38,7 @@ import java.util.regex.Pattern;
  */
 public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
     // Pattern to extract collection and nested field path from reference strings
+    // TODO: This shouldn't be necessary.
     private static final Pattern REFERENCE_PATTERN = Pattern.compile("^([^\\[.]+)(?:\\[[^\\]]*\\])?(?:\\.(.+))?$");
     private final Map<String, Set<String>> referencedPaths = new HashMap<>();
 

@@ -99,8 +99,5 @@ class BuilderMethodsTest extends ParameterizedGenerationTest {
         assertThat(generation.hasCollection("users")).isTrue();
         assertThat(generation.hasCollection("orders")).isTrue();
         assertThat(generation.hasCollection("nonexistent")).isFalse();
-
-        // Test getTotalItemCount()
-        assertThat(generation.getTotalItemCount()).isEqualTo(7); // 2 users + 5 orders
     }
 }

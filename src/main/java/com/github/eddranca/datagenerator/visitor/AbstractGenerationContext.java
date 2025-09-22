@@ -79,7 +79,7 @@ public abstract class AbstractGenerationContext<T> {
 
     public abstract JsonNode getNamedPick(String name);
 
-    public abstract Map<String, List<JsonNode>> getNamedCollections();
+    public abstract Map<String, List<T>> getNamedCollections();
 
     public abstract boolean isMemoryOptimizationEnabled();
 

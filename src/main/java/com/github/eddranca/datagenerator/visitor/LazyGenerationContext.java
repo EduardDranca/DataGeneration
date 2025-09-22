@@ -74,13 +74,6 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
         }
     }
 
-    /**
-     * Gets the lazy collections for memory-optimized generation.
-     */
-    public Map<String, List<LazyItemProxy>> getLazyNamedCollections() {
-        return new HashMap<>(lazyNamedCollections);
-    }
-
     @Override
     public void registerPick(String name, JsonNode value) {
         namedPicks.put(name, value);
@@ -139,15 +132,8 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
     }
 
     @Override
-    public Map<String, List<JsonNode>> getNamedCollections() {
-        Map<String, List<JsonNode>> result = new HashMap<>();
-
-        // Materialize all lazy collections
-        for (Map.Entry<String, List<LazyItemProxy>> entry : lazyNamedCollections.entrySet()) {
-            result.put(entry.getKey(), materializeLazyCollection(entry.getValue()));
-        }
-
-        return result;
+    public Map<String, List<LazyItemProxy>> getNamedCollections() {
+        return lazyNamedCollections;
     }
 
     /**

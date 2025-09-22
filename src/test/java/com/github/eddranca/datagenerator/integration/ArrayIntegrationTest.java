@@ -12,7 +12,7 @@ import java.util.stream.StreamSupport;
 import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.asJsonNode;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ArrayIntegrationTest extends com.github.eddranca.datagenerator.ParameterizedGenerationTest {
+class ArrayIntegrationTest extends ParameterizedGenerationTest {
 
     @BothImplementationsTest
     void testComplexArrayScenario(boolean memoryOptimized) throws Exception {

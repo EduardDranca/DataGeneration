@@ -86,7 +86,7 @@ class LazyGenerationContextTest {
         List<LazyItemProxy> collection = List.of(mockLazyItem);
         context.registerCollection("testCollection", collection);
 
-        Map<String, List<LazyItemProxy>> collections = context.getLazyNamedCollections();
+        Map<String, List<LazyItemProxy>> collections = context.getNamedCollections();
         assertThat(collections).containsKey("testCollection");
         assertThat(collections.get("testCollection")).hasSize(1);
         assertThat(collections.get("testCollection").get(0)).isEqualTo(mockLazyItem);
@@ -103,7 +103,7 @@ class LazyGenerationContextTest {
         context.registerCollection("testCollection", collection1);
         context.registerCollection("testCollection", collection2);
 
-        Map<String, List<LazyItemProxy>> collections = context.getLazyNamedCollections();
+        Map<String, List<LazyItemProxy>> collections = context.getNamedCollections();
         assertThat(collections).containsKey("testCollection");
 
         // Should be merged into a single list
@@ -223,31 +223,6 @@ class LazyGenerationContextTest {
     void testGetNamedPickReturnsNullForNonExistent() {
         JsonNode retrieved = context.getNamedPick("nonExistentPick");
         assertThat(retrieved).isNull();
-    }
-
-    @Test
-    void testGetNamedCollectionsMaterializesAllCollections() {
-        ObjectNode value1 = mapper.createObjectNode().put("value", "value1");
-        ObjectNode value2 = mapper.createObjectNode().put("value", "value2");
-
-        LazyItemProxy item1 = mock(LazyItemProxy.class);
-        LazyItemProxy item2 = mock(LazyItemProxy.class);
-        when(item1.getMaterializedCopy()).thenReturn(value1);
-        when(item2.getMaterializedCopy()).thenReturn(value2);
-
-        List<LazyItemProxy> collection1 = List.of(item1);
-        List<LazyItemProxy> collection2 = List.of(item2);
-
-        context.registerCollection("collection1", collection1);
-        context.registerCollection("collection2", collection2);
-
-        Map<String, List<JsonNode>> collections = context.getNamedCollections();
-
-        assertThat(collections).hasSize(2);
-        assertThat(collections.get("collection1")).hasSize(1);
-        assertThat(collections.get("collection1").get(0)).isEqualTo(value1);
-        assertThat(collections.get("collection2")).hasSize(1);
-        assertThat(collections.get("collection2").get(0)).isEqualTo(value2);
     }
 
     @Test
