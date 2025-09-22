@@ -54,19 +54,19 @@
         <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 
         <!-- Plugin versions -->
-        <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
+        <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
-        <maven-javadoc-plugin.version>3.10.1</maven-javadoc-plugin.version>
+        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
         <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
         <sonar-maven-plugin.version>5.2.0.4988</sonar-maven-plugin.version>
 
         <!-- Dependency versions -->
         <jackson.version>2.17.1</jackson.version>
-        <datafaker.version>2.4.4</datafaker.version>
+        <datafaker.version>2.5.0</datafaker.version>
         <junit.version>5.10.2</junit.version>
-        <mockito.version>5.8.0</mockito.version>
+        <mockito.version>5.20.0</mockito.version>
         <assertj.version>3.24.2</assertj.version>
         <jsqlparser.version>4.7</jsqlparser.version>
         <opencsv.version>5.12.0</opencsv.version>
