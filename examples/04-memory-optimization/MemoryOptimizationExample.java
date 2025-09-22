@@ -60,8 +60,8 @@ public class MemoryOptimizationExample {
         
         long optimizedTime = System.currentTimeMillis() - startTime;
         System.out.printf("✓ Generated in %d ms\\n", optimizedTime);
-        System.out.printf("✓ Users collection size: %d\\n", optimizedGeneration.getCollections().get("users").size());
-        System.out.printf("✓ Posts collection size: %d\\n", optimizedGeneration.getCollections().get("posts").size());
+        System.out.printf("✓ Users collection size: %d\\n", optimizedGeneration.getCollectionSize("users"));
+        System.out.printf("✓ Posts collection size: %d\\n", optimizedGeneration.getCollectionSize("posts"));
         
         // Demonstrate streaming (memory efficient)
         System.out.println("\\n--- Streaming first 3 posts (memory efficient) ---");

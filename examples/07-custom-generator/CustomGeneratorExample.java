@@ -7,7 +7,9 @@ import com.github.eddranca.datagenerator.Generation;
 import com.github.eddranca.datagenerator.generator.Generator;
 import net.datafaker.Faker;
 
+import java.io.File;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  * Example demonstrating custom generator implementation and usage.
@@ -97,12 +99,19 @@ public class CustomGeneratorExample {
                     .generate();
 
             System.out.println("\n=== Generated JSON ===");
-            System.out.println(result.asJson());
+            // Convert streams to JSON for display
+            ObjectMapper mapper2 = new ObjectMapper();
+            var jsonResult = mapper2.createObjectNode();
+            result.asJsonNodes().forEach((collectionName, stream) -> {
+                var items = stream.collect(Collectors.toList());
+                jsonResult.set(collectionName, mapper2.valueToTree(items));
+            });
+            System.out.println(mapper2.writerWithDefaultPrettyPrinter().writeValueAsString(jsonResult));
 
             System.out.println("\n=== Generated SQL ===");
-            result.asSqlInserts().forEach((table, sql) -> {
+            result.asSqlInserts().forEach((table, sqlStream) -> {
                 System.out.println("-- Table: " + table);
-                System.out.println(sql);
+                sqlStream.forEach(System.out::println);
                 System.out.println();
             });
 

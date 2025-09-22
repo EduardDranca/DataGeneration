@@ -102,37 +102,6 @@ abstract class AbstractLazyProxy {
         return referencedPaths.stream().anyMatch(path -> path.startsWith(prefixWithDot));
     }
 
-    // Common accessor methods
-    public JsonNode get(String fieldName) {
-        if (materializedFieldNames.contains(fieldName)) {
-            return delegate.get(fieldName);
-        }
-
-        if (fieldNodes.containsKey(fieldName)) {
-            materializeField(fieldName);
-            return delegate.get(fieldName);
-        }
-
-        return null;
-    }
-
-    public JsonNode path(String fieldName) {
-        JsonNode result = get(fieldName);
-        return result != null ? result : delegate.missingNode();
-    }
-
-    public boolean has(String fieldName) {
-        return fieldNodes.containsKey(fieldName) || delegate.has(fieldName);
-    }
-
-    public int size() {
-        return delegate.size();
-    }
-
-    public boolean isEmpty() {
-        return delegate.isEmpty();
-    }
-
     /**
      * Materializes all remaining fields.
      */

@@ -1,7 +1,11 @@
 package examples;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.DslDataGenerator;
 import com.github.eddranca.datagenerator.Generation;
+
+import java.io.File;
+import java.util.stream.Collectors;
 
 /**
  * Educational system example with schools, students, courses, and enrollments
@@ -16,12 +20,20 @@ public class EducationalSystemExample {
                     .generate();
 
             System.out.println("=== Generated JSON ===");
-            System.out.println(result.asJson());
+            // Convert streams to JSON for display
+            ObjectMapper mapper = new ObjectMapper();
+            var jsonResult = mapper.createObjectNode();
+            result.asJsonNodes().forEach((collectionName, stream) -> {
+                var items = stream.collect(Collectors.toList());
+                jsonResult.set(collectionName, mapper.valueToTree(items));
+            });
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonResult));
 
             System.out.println("\n=== Generated SQL ===");
-            result.asSqlInserts().forEach((table, sql) -> {
+            result.asSqlInserts().forEach((table, sqlStream) -> {
                 System.out.println("-- Table: " + table);
-                System.out.println(sql);
+                sqlStream.forEach(System.out::println);
+                System.out.println();
             });
 
         } catch (Exception e) {

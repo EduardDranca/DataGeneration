@@ -85,9 +85,9 @@ Generation result = DslDataGenerator.create()
     .generate();
 
 // Multiple output formats
-List<JsonNode> users = result.getCollection("users");  // Get specific collection
-JsonNode json = result.asJsonNode();                   // Full JSON structure
-Map<String, String> sqlInserts = result.asSqlInserts(); // SQL inserts
+Stream<JsonNode> users = result.streamJsonNodes("users");  // Stream specific collection
+Map<String, Stream<JsonNode>> jsonStreams = result.asJsonNodes(); // All collections as streams
+Map<String, Stream<String>> sqlInserts = result.asSqlInserts(); // SQL inserts as streams
 ```
 
 ## Key Features
@@ -195,17 +195,18 @@ Reference collections by tags for flexible relationships:
 ```java
 Generation result = DslDataGenerator.create().fromJsonString(dsl).generate();
 
-// Java Collections
-List<JsonNode> users = result.getCollection("users");
+// Collection metadata
 boolean hasUsers = result.hasCollection("users");
 int userCount = result.getCollectionSize("users");
+Set<String> collectionNames = result.getCollectionNames();
 
-// JSON
-JsonNode json = result.asJsonNode();
-String jsonString = result.asJson();
+// Streaming data (memory efficient)
+Stream<JsonNode> users = result.streamJsonNodes("users");
+Map<String, Stream<JsonNode>> allCollections = result.asJsonNodes();
 
-// SQL Inserts
-Map<String, String> sqlInserts = result.asSqlInserts();
+// SQL Inserts as streams
+Map<String, Stream<String>> sqlInserts = result.asSqlInserts();
+Stream<String> userSqlInserts = result.streamSqlInserts("users");
 ```
 
 ## Built-in Generators
