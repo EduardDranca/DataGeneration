@@ -41,7 +41,7 @@ public class ArrayFieldReferenceNode extends AbstractReferenceNode {
     }
 
     @Override
-    public JsonNode resolve(AbstractGenerationContext context, JsonNode currentItem, List<JsonNode> filterValues) {
+    public JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues) {
         List<JsonNode> collection = context.getCollection(collectionName);
 
         // Apply filtering based on the field values

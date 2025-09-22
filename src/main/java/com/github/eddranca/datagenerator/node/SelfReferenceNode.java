@@ -29,7 +29,7 @@ public class SelfReferenceNode extends AbstractReferenceNode {
     }
 
     @Override
-    public JsonNode resolve(AbstractGenerationContext context, JsonNode currentItem, List<JsonNode> filterValues) {
+    public JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues) {
         if (currentItem == null) {
             return context.getMapper().nullNode();
         }

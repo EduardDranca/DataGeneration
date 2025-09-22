@@ -49,7 +49,7 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
     }
 
     @Override
-    public JsonNode resolve(AbstractGenerationContext context, JsonNode currentItem, List<JsonNode> filterValues) {
+    public JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues) {
         List<JsonNode> collection = context.getCollection(collectionName);
 
         if (isWildcardIndex()) {
@@ -59,7 +59,7 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
         }
     }
 
-    private JsonNode resolveWildcardIndex(AbstractGenerationContext context, List<JsonNode> collection, List<JsonNode> filterValues) {
+    private JsonNode resolveWildcardIndex(AbstractGenerationContext<?> context, List<JsonNode> collection, List<JsonNode> filterValues) {
         // Apply filtering for wildcard index
         if (filterValues != null && !filterValues.isEmpty()) {
             collection = context.applyFiltering(collection, hasFieldName() ? fieldName : "", filterValues);
@@ -77,7 +77,7 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
         return hasFieldName() ? NestedPathUtils.extractNestedField(selected, fieldName) : selected;
     }
 
-    private JsonNode resolveNumericIndex(AbstractGenerationContext context, List<JsonNode> collection, List<JsonNode> filterValues) {
+    private JsonNode resolveNumericIndex(AbstractGenerationContext<?> context, List<JsonNode> collection, List<JsonNode> filterValues) {
         // Numeric index - direct access
         if (numericIndex >= collection.size()) {
             return context.getMapper().nullNode();

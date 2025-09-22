@@ -30,7 +30,7 @@ public class SimpleReferenceNode extends AbstractReferenceNode {
     }
 
     @Override
-    public JsonNode resolve(AbstractGenerationContext context, JsonNode currentItem, List<JsonNode> filterValues) {
+    public JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues) {
         // Get the collection
         List<JsonNode> collection = context.getCollection(collectionName);
 

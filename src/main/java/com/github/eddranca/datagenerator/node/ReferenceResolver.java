@@ -18,5 +18,5 @@ interface ReferenceResolver {
      * @param filterValues values to exclude from the result (null if no filtering)
      * @return the resolved value
      */
-    JsonNode resolve(AbstractGenerationContext context, JsonNode currentItem, List<JsonNode> filterValues);
+    JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues);
 }

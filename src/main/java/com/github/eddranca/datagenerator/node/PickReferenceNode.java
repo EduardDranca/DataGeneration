@@ -30,7 +30,7 @@ public class PickReferenceNode extends AbstractReferenceNode {
     }
 
     @Override
-    public JsonNode resolve(AbstractGenerationContext context, JsonNode currentItem, List<JsonNode> filterValues) {
+    public JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues) {
         JsonNode pick = context.getNamedPick(pickName);
         if (pick == null) {
             return context.getMapper().nullNode();

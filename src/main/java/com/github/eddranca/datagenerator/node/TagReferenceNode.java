@@ -43,7 +43,7 @@ public class TagReferenceNode extends AbstractReferenceNode {
     }
 
     @Override
-    public JsonNode resolve(AbstractGenerationContext context, JsonNode currentItem, List<JsonNode> filterValues) {
+    public JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues) {
         // Resolve the tag value
         String tag = isDynamicTag ? resolveTagValue(currentItem) : tagExpression;
 
