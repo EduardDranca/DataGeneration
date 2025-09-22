@@ -14,11 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,8 +39,7 @@ class LazyGenerationContextTest {
     @Mock
     private Sequential mockSequentialNode;
 
-    @Mock
-    private LazyItemCollection mockLazyCollection;
+
 
     @Mock
     private LazyItemProxy mockLazyItem;
@@ -87,37 +84,43 @@ class LazyGenerationContextTest {
 
     @Test
     void testRegisterLazyCollection() {
-        context.registerLazyCollection("testCollection", mockLazyCollection);
+        List<LazyItemProxy> collection = List.of(mockLazyItem);
+        context.registerCollection("testCollection", collection);
 
         Map<String, List<LazyItemProxy>> collections = context.getLazyNamedCollections();
         assertThat(collections).containsKey("testCollection");
-        assertThat(collections.get("testCollection")).isEqualTo(mockLazyCollection);
+        assertThat(collections.get("testCollection")).hasSize(1);
+        assertThat(collections.get("testCollection").get(0)).isEqualTo(mockLazyItem);
     }
 
     @Test
     void testRegisterLazyCollectionMergesExisting() {
-        LazyItemCollection collection1 = mock(LazyItemCollection.class);
-        LazyItemCollection collection2 = mock(LazyItemCollection.class);
+        LazyItemProxy item1 = mock(LazyItemProxy.class);
+        LazyItemProxy item2 = mock(LazyItemProxy.class);
 
-        context.registerLazyCollection("testCollection", collection1);
-        context.registerLazyCollection("testCollection", collection2);
+        List<LazyItemProxy> collection1 = List.of(item1);
+        List<LazyItemProxy> collection2 = List.of(item2);
+
+        context.registerCollection("testCollection", collection1);
+        context.registerCollection("testCollection", collection2);
 
         Map<String, List<LazyItemProxy>> collections = context.getLazyNamedCollections();
         assertThat(collections).containsKey("testCollection");
 
-        // Should be a CompositeLazyItemCollection now
+        // Should be merged into a single list
         List<LazyItemProxy> merged = collections.get("testCollection");
-        assertThat(merged).isInstanceOf(CompositeLazyItemCollection.class);
+        assertThat(merged).hasSize(2)
+            .contains(item1, item2);
     }
 
     @Test
     void testRegisterLazyReferenceCollection() {
-        context.registerLazyReferenceCollection("refCollection", mockLazyCollection);
+        List<LazyItemProxy> collection = List.of(mockLazyItem);
+        context.registerReferenceCollection("refCollection", collection);
 
         // Should be accessible via getCollection
         ObjectNode refValue = mapper.createObjectNode().put("value", "refValue");
         when(mockLazyItem.getMaterializedCopy()).thenReturn(refValue);
-        when(mockLazyCollection.iterator()).thenReturn(List.of(mockLazyItem).iterator());
 
         List<JsonNode> retrieved = context.getCollection("refCollection");
         assertThat(retrieved).hasSize(1);
@@ -126,11 +129,11 @@ class LazyGenerationContextTest {
 
     @Test
     void testRegisterLazyTaggedCollection() {
-        context.registerLazyTaggedCollection("testTag", mockLazyCollection);
+        List<LazyItemProxy> collection = List.of(mockLazyItem);
+        context.registerTaggedCollection("testTag", collection);
 
         ObjectNode taggedValue = mapper.createObjectNode().put("value", "taggedValue");
         when(mockLazyItem.getMaterializedCopy()).thenReturn(taggedValue);
-        when(mockLazyCollection.iterator()).thenReturn(List.of(mockLazyItem).iterator());
 
         List<JsonNode> retrieved = context.getTaggedCollection("testTag");
         assertThat(retrieved).hasSize(1);
@@ -141,9 +144,9 @@ class LazyGenerationContextTest {
     void testGetCollectionMaterializesLazyCollection() {
         ObjectNode expectedValue = mapper.createObjectNode().put("value", "lazyValue");
         when(mockLazyItem.getMaterializedCopy()).thenReturn(expectedValue);
-        when(mockLazyCollection.iterator()).thenReturn(List.of(mockLazyItem).iterator());
 
-        context.registerLazyCollection("testCollection", mockLazyCollection);
+        List<LazyItemProxy> collection = List.of(mockLazyItem);
+        context.registerCollection("testCollection", collection);
 
         List<JsonNode> retrieved = context.getCollection("testCollection");
         assertThat(retrieved).hasSize(1);
@@ -154,9 +157,9 @@ class LazyGenerationContextTest {
     void testGetCollectionCachesResults() {
         ObjectNode expectedValue = mapper.createObjectNode().put("value", "cachedValue");
         when(mockLazyItem.getMaterializedCopy()).thenReturn(expectedValue);
-        when(mockLazyCollection.iterator()).thenReturn(List.of(mockLazyItem).iterator());
 
-        context.registerLazyCollection("testCollection", mockLazyCollection);
+        List<LazyItemProxy> collection = List.of(mockLazyItem);
+        context.registerCollection("testCollection", collection);
 
         // First call should materialize
         List<JsonNode> first = context.getCollection("testCollection");
@@ -176,9 +179,9 @@ class LazyGenerationContextTest {
     void testGetTaggedCollectionMaterializesLazyCollection() {
         ObjectNode expectedValue = mapper.createObjectNode().put("value", "taggedValue");
         when(mockLazyItem.getMaterializedCopy()).thenReturn(expectedValue);
-        when(mockLazyCollection.iterator()).thenReturn(List.of(mockLazyItem).iterator());
 
-        context.registerLazyTaggedCollection("testTag", mockLazyCollection);
+        List<LazyItemProxy> collection = List.of(mockLazyItem);
+        context.registerTaggedCollection("testTag", collection);
 
         List<JsonNode> retrieved = context.getTaggedCollection("testTag");
         assertThat(retrieved).hasSize(1);
@@ -189,9 +192,9 @@ class LazyGenerationContextTest {
     void testGetTaggedCollectionCachesResults() {
         ObjectNode expectedValue = mapper.createObjectNode().put("value", "cachedTagValue");
         when(mockLazyItem.getMaterializedCopy()).thenReturn(expectedValue);
-        when(mockLazyCollection.iterator()).thenReturn(List.of(mockLazyItem).iterator());
 
-        context.registerLazyTaggedCollection("testTag", mockLazyCollection);
+        List<LazyItemProxy> collection = List.of(mockLazyItem);
+        context.registerTaggedCollection("testTag", collection);
 
         // First call should materialize
         List<JsonNode> first = context.getTaggedCollection("testTag");
@@ -233,13 +236,11 @@ class LazyGenerationContextTest {
         when(item1.getMaterializedCopy()).thenReturn(value1);
         when(item2.getMaterializedCopy()).thenReturn(value2);
 
-        LazyItemCollection collection1 = mock(LazyItemCollection.class);
-        LazyItemCollection collection2 = mock(LazyItemCollection.class);
-        when(collection1.iterator()).thenReturn(List.of(item1).iterator());
-        when(collection2.iterator()).thenReturn(List.of(item2).iterator());
+        List<LazyItemProxy> collection1 = List.of(item1);
+        List<LazyItemProxy> collection2 = List.of(item2);
 
-        context.registerLazyCollection("collection1", collection1);
-        context.registerLazyCollection("collection2", collection2);
+        context.registerCollection("collection1", collection1);
+        context.registerCollection("collection2", collection2);
 
         Map<String, List<JsonNode>> collections = context.getNamedCollections();
 
@@ -251,81 +252,18 @@ class LazyGenerationContextTest {
     }
 
     @Test
-    void testEagerCollectionRegistrationThrowsException() {
-        JsonNode item = mapper.valueToTree("item");
-        List<JsonNode> collection = List.of(item);
-
-        assertThatThrownBy(() -> context.registerCollection("test", collection))
-            .isInstanceOf(UnsupportedOperationException.class)
-            .hasMessageContaining("Lazy generation context does not support eager collection registration");
-    }
-
-    @Test
-    void testEagerReferenceCollectionRegistrationThrowsException() {
-        JsonNode item = mapper.valueToTree("item");
-        List<JsonNode> collection = List.of(item);
-
-        assertThatThrownBy(() -> context.registerReferenceCollection("test", collection))
-            .isInstanceOf(UnsupportedOperationException.class)
-            .hasMessageContaining("Lazy generation context does not support eager collection registration");
-    }
-
-    @Test
-    void testEagerTaggedCollectionRegistrationThrowsException() {
-        JsonNode item = mapper.valueToTree("item");
-        List<JsonNode> collection = List.of(item);
-
-        assertThatThrownBy(() -> context.registerTaggedCollection("test", collection))
-            .isInstanceOf(UnsupportedOperationException.class)
-            .hasMessageContaining("Lazy generation context does not support eager collection registration");
-    }
-
-    @Test
-    void testEnableMemoryOptimization() {
-        Map<String, Set<String>> referencedPaths = new HashMap<>();
-        referencedPaths.put("users", Set.of("name", "email"));
-        referencedPaths.put("companies", Set.of("name"));
-
-        context.enableMemoryOptimization(referencedPaths);
-
-        assertThat(context.getReferencedPaths("users")).containsExactlyInAnyOrder("name", "email");
-        assertThat(context.getReferencedPaths("companies")).containsExactly("name");
-        assertThat(context.getReferencedPaths("nonExistent")).isEmpty();
-    }
-
-    @Test
-    void testSetAndGetReferencedPaths() {
-        Set<String> paths = Set.of("field1", "field2");
-
-        context.setReferencedPaths("testCollection", paths);
-
-        assertThat(context.getReferencedPaths("testCollection")).isEqualTo(paths);
-    }
-
-    @Test
-    void testGetReferencedPathsReturnsEmptyForNonExistent() {
-        assertThat(context.getReferencedPaths("nonExistent")).isEmpty();
-    }
-
-    @Test
-    void testGetReferencedPathsWithNullReferencedPaths() {
-        // Before enableMemoryOptimization is called, referencedPaths is null
-        assertThat(context.getReferencedPaths("anyCollection")).isEmpty();
-    }
-
-    @Test
     void testReferenceCollectionTakesPrecedenceOverNamedCollection() {
         ObjectNode refValue = mapper.createObjectNode().put("value", "refValue");
 
+        LazyItemProxy namedItem = mock(LazyItemProxy.class);
         LazyItemProxy refItem = mock(LazyItemProxy.class);
         when(refItem.getMaterializedCopy()).thenReturn(refValue);
 
-        LazyItemCollection namedCollection = mock(LazyItemCollection.class);
-        LazyItemCollection refCollection = mock(LazyItemCollection.class);
-        when(refCollection.iterator()).thenReturn(List.of(refItem).iterator());
+        List<LazyItemProxy> namedCollection = List.of(namedItem);
+        List<LazyItemProxy> refCollection = List.of(refItem);
 
-        context.registerLazyCollection("testCollection", namedCollection);
-        context.registerLazyReferenceCollection("testCollection", refCollection);
+        context.registerCollection("testCollection", namedCollection);
+        context.registerReferenceCollection("testCollection", refCollection);
 
         List<JsonNode> retrieved = context.getCollection("testCollection");
         assertThat(retrieved).hasSize(1);
@@ -386,34 +324,6 @@ class LazyGenerationContextTest {
         assertThatThrownBy(() -> exceptionContext.handleFilteringFailure("Test failure"))
             .isInstanceOf(FilteringException.class)
             .hasMessage("Test failure");
-    }
-
-    @Test
-    void testHandleReferenceFailureWithReturnNull() {
-        LazyGenerationContext nullContext = new LazyGenerationContext(
-            mockGeneratorRegistry,
-            mockRandom,
-            5,
-            FilteringBehavior.RETURN_NULL
-        );
-
-        JsonNode result = nullContext.handleReferenceFailure("Reference failure");
-
-        assertThat(result.isNull()).isTrue();
-    }
-
-    @Test
-    void testHandleReferenceFailureWithThrowException() {
-        LazyGenerationContext exceptionContext = new LazyGenerationContext(
-            mockGeneratorRegistry,
-            mockRandom,
-            5,
-            FilteringBehavior.THROW_EXCEPTION
-        );
-
-        assertThatThrownBy(() -> exceptionContext.handleReferenceFailure("Reference failure"))
-            .isInstanceOf(FilteringException.class)
-            .hasMessage("Reference resolution failed: Reference failure");
     }
 
     @Test

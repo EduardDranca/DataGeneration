@@ -17,7 +17,7 @@ import java.util.Random;
  * provides direct access to collections. It's suitable for smaller datasets
  * where memory usage is not a concern.
  */
-public class EagerGenerationContext extends AbstractGenerationContext {
+public class EagerGenerationContext extends AbstractGenerationContext<JsonNode> {
     private final Map<String, List<JsonNode>> namedCollections; // Final collections for output
     private final Map<String, List<JsonNode>> referenceCollections; // Collections available for references (includes DSL keys)
     private final Map<String, List<JsonNode>> taggedCollections;

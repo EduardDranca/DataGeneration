@@ -18,7 +18,7 @@ import java.util.Set;
  * Collections are stored as lazy proxies and materialized on-demand, with
  * caching to ensure consistency across multiple accesses.
  */
-public class LazyGenerationContext extends AbstractGenerationContext {
+public class LazyGenerationContext extends AbstractGenerationContext<LazyItemProxy> {
     // Lazy collection support for memory optimization
     private final Map<String, List<LazyItemProxy>> lazyNamedCollections;
     private final Map<String, List<LazyItemProxy>> lazyReferenceCollections;
@@ -39,67 +39,45 @@ public class LazyGenerationContext extends AbstractGenerationContext {
         this.lazyTaggedCollections = new HashMap<>();
         this.namedPicks = new HashMap<>();
         this.materializedCollectionCache = new HashMap<>();
+
     }
 
     public LazyGenerationContext(GeneratorRegistry generatorRegistry, Random random) {
         this(generatorRegistry, random, 100, FilteringBehavior.RETURN_NULL);
     }
 
-    // Lazy collection registration methods for memory optimization
     @Override
-    public void registerLazyCollection(String name, LazyItemCollection collection) {
+    public void registerCollection(String name, List<LazyItemProxy> collection) {
         List<LazyItemProxy> existing = lazyNamedCollections.get(name);
         if (existing == null) {
-            lazyNamedCollections.put(name, collection);
+            lazyNamedCollections.put(name, new ArrayList<>(collection));
         } else {
             // Merge collections with the same name
-            CompositeLazyItemCollection composite;
-            if (existing instanceof CompositeLazyItemCollection existingComposite) {
-                composite = existingComposite;
-            } else {
-                composite = new CompositeLazyItemCollection(name);
-                composite.addCollection((LazyItemCollection) existing);
-                lazyNamedCollections.put(name, composite);
-            }
-            composite.addCollection(collection);
+            existing.addAll(collection);
         }
     }
 
     @Override
-    public void registerLazyReferenceCollection(String name, LazyItemCollection collection) {
-        lazyReferenceCollections.put(name, collection);
+    public void registerReferenceCollection(String name, List<LazyItemProxy> collection) {
+        lazyReferenceCollections.put(name, new ArrayList<>(collection));
     }
 
     @Override
-    public void registerLazyTaggedCollection(String tag, LazyItemCollection collection) {
-        lazyTaggedCollections.put(tag, collection);
+    public void registerTaggedCollection(String tag, List<LazyItemProxy> collection) {
+        List<LazyItemProxy> existing = lazyTaggedCollections.get(tag);
+        if (existing == null) {
+            lazyTaggedCollections.put(tag, new ArrayList<>(collection));
+        } else {
+            // Merge collections with the same tag
+            existing.addAll(collection);
+        }
     }
 
     /**
      * Gets the lazy collections for memory-optimized generation.
      */
-    @Override
     public Map<String, List<LazyItemProxy>> getLazyNamedCollections() {
         return new HashMap<>(lazyNamedCollections);
-    }
-
-    @Override
-    public void registerCollection(String name, List<JsonNode> collection) {
-        // For lazy context, we don't support direct eager collection registration
-        // This should not be called in lazy mode, but we'll provide a fallback
-        throw new UnsupportedOperationException("Lazy generation context does not support eager collection registration. Use registerLazyCollection instead.");
-    }
-
-    @Override
-    public void registerReferenceCollection(String name, List<JsonNode> collection) {
-        // For lazy context, we don't support direct eager collection registration
-        throw new UnsupportedOperationException("Lazy generation context does not support eager collection registration. Use registerLazyReferenceCollection instead.");
-    }
-
-    @Override
-    public void registerTaggedCollection(String tag, List<JsonNode> collection) {
-        // For lazy context, we don't support direct eager collection registration
-        throw new UnsupportedOperationException("Lazy generation context does not support eager collection registration. Use registerLazyTaggedCollection instead.");
     }
 
     @Override
@@ -115,12 +93,15 @@ public class LazyGenerationContext extends AbstractGenerationContext {
             return cached;
         }
 
+        // Check lazy reference collections first (highest priority)
         List<LazyItemProxy> lazyCollection = lazyReferenceCollections.get(name);
         if (lazyCollection != null) {
             List<JsonNode> materialized = materializeLazyCollection(lazyCollection);
             materializedCollectionCache.put(name, materialized);
             return materialized;
         }
+
+        // Check lazy named collections
         lazyCollection = lazyNamedCollections.get(name);
         if (lazyCollection != null) {
             List<JsonNode> materialized = materializeLazyCollection(lazyCollection);
@@ -140,6 +121,7 @@ public class LazyGenerationContext extends AbstractGenerationContext {
             return cached;
         }
 
+        // Check lazy tagged collections
         List<LazyItemProxy> lazyCollection = lazyTaggedCollections.get(tag);
         if (lazyCollection != null) {
             List<JsonNode> materialized = materializeLazyCollection(lazyCollection);
@@ -157,11 +139,13 @@ public class LazyGenerationContext extends AbstractGenerationContext {
 
     @Override
     public Map<String, List<JsonNode>> getNamedCollections() {
-        // For lazy context, we need to materialize all collections
         Map<String, List<JsonNode>> result = new HashMap<>();
+
+        // Materialize all lazy collections
         for (Map.Entry<String, List<LazyItemProxy>> entry : lazyNamedCollections.entrySet()) {
             result.put(entry.getKey(), materializeLazyCollection(entry.getValue()));
         }
+
         return result;
     }
 
@@ -177,17 +161,11 @@ public class LazyGenerationContext extends AbstractGenerationContext {
         return materializedList;
     }
 
-    /**
-     * Enables memory optimization with the given referenced paths.
-     */
     @Override
     public void enableMemoryOptimization(Map<String, Set<String>> referencedPaths) {
         this.referencedPaths = new HashMap<>(referencedPaths);
     }
 
-    /**
-     * Gets the referenced paths for a collection.
-     */
     @Override
     public Set<String> getReferencedPaths(String collection) {
         if (referencedPaths == null) {
@@ -196,9 +174,6 @@ public class LazyGenerationContext extends AbstractGenerationContext {
         return referencedPaths.getOrDefault(collection, Set.of());
     }
 
-    /**
-     * Sets the referenced paths for a collection.
-     */
     @Override
     public void setReferencedPaths(String collection, Set<String> paths) {
         if (referencedPaths == null) {

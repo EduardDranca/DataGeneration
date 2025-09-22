@@ -77,18 +77,12 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
             // If memory optimization is enabled, create a lazy collection
             if (context.isMemoryOptimizationEnabled()) {
                 Set<String> referencedPaths = context.getReferencedPaths(node.getCollectionName());
-                LazyItemCollection lazyCollection = new LazyItemCollection(node, this, node.getCollectionName(), referencedPaths);
+
+                // Generate all items with only referenced fields materialized
+                List<LazyItemProxy> lazyCollection = createLazyItemList(node, referencedPaths);
 
                 // Register the lazy collection
-                context.registerLazyCollection(node.getCollectionName(), lazyCollection);
-
-                if (!node.getName().equals(node.getCollectionName())) {
-                    context.registerLazyReferenceCollection(node.getName(), lazyCollection);
-                }
-
-                for (String tag : node.getTags()) {
-                    context.registerLazyTaggedCollection(tag, lazyCollection);
-                }
+                registerCollection(node, lazyCollection);
 
                 // For picks, we need to materialize the specific item
                 for (Map.Entry<String, Integer> pick : node.getPicks().entrySet()) {
@@ -96,6 +90,7 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
                     int index = pick.getValue();
                     if (index < lazyCollection.size()) {
                         LazyItemProxy lazyItem = lazyCollection.get(index);
+                        // TODO: Not sure about materializing here - should be deferred until later
                         JsonNode pickedItem = lazyItem.getMaterializedCopy();
                         context.registerPick(alias, pickedItem);
                     }
@@ -112,15 +107,7 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
                     items.add(item);
                 }
 
-                context.registerCollection(node.getCollectionName(), items);
-
-                if (!node.getName().equals(node.getCollectionName())) {
-                    context.registerReferenceCollection(node.getName(), items);
-                }
-
-                for (String tag : node.getTags()) {
-                    context.registerTaggedCollection(tag, items);
-                }
+                registerCollection(node, items);
 
                 for (Map.Entry<String, Integer> pick : node.getPicks().entrySet()) {
                     String alias = pick.getKey();
@@ -135,6 +122,18 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
         } finally {
             // Restore previous collection context
             this.currentCollectionName = previousCollectionName;
+        }
+    }
+
+     private <T> void registerCollection(CollectionNode node, List<T> items) {
+        context.registerCollection(node.getCollectionName(), items);
+
+        if (!node.getName().equals(node.getCollectionName())) {
+            context.registerReferenceCollection(node.getName(), items);
+        }
+
+        for (String tag : node.getTags()) {
+            context.registerTaggedCollection(tag, items);
         }
     }
 
@@ -391,6 +390,27 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
 
     public void setCurrentItem(ObjectNode currentItem) {
         this.currentItem = currentItem;
+    }
+
+    /**
+     * Creates a list of LazyItemProxy objects for a collection.
+     * Only generates items if there are referenced paths to optimize memory usage.
+     */
+    private List<LazyItemProxy> createLazyItemList(CollectionNode node, Set<String> referencedPaths) {
+        List<LazyItemProxy> items = new ArrayList<>();
+        int count = node.getCount();
+
+        for (int i = 0; i < count; i++) {
+            LazyItemProxy item = new LazyItemProxy(
+                node.getCollectionName(),
+                node.getItem().getFields(),
+                referencedPaths,
+                this
+            );
+            items.add(item);
+        }
+
+        return items;
     }
 
 }

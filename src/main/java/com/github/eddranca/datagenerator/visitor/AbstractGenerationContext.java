@@ -29,8 +29,10 @@ import java.util.Set;
  * <p>
  * Subclasses implement the specific collection management strategies for their
  * respective generation modes.
+ *
+ * @param <T> The type of items stored in collections (JsonNode for eager, LazyItemProxy for lazy)
  */
-public abstract class AbstractGenerationContext {
+public abstract class AbstractGenerationContext<T> {
     protected final GeneratorRegistry generatorRegistry;
     protected final Random random;
     protected final ObjectMapper mapper;
@@ -66,11 +68,11 @@ public abstract class AbstractGenerationContext {
     }
 
     // Abstract methods that subclasses must implement
-    public abstract void registerCollection(String name, List<JsonNode> collection);
+    public abstract void registerCollection(String name, List<T> collection);
 
-    public abstract void registerReferenceCollection(String name, List<JsonNode> collection);
+    public abstract void registerReferenceCollection(String name, List<T> collection);
 
-    public abstract void registerTaggedCollection(String tag, List<JsonNode> collection);
+    public abstract void registerTaggedCollection(String tag, List<T> collection);
 
     public abstract void registerPick(String name, JsonNode value);
 
@@ -154,19 +156,6 @@ public abstract class AbstractGenerationContext {
     }
 
     /**
-     * Handles reference resolution failure according to the configured filtering behavior.
-     * This provides consistent error handling for both filtering and reference failures.
-     * <p>
-     * This is a CORE utility method that typed reference nodes should use.
-     */
-    public JsonNode handleReferenceFailure(String message) {
-        if (filteringBehavior == FilteringBehavior.THROW_EXCEPTION) {
-            throw new FilteringException("Reference resolution failed: " + message);
-        }
-        return mapper.nullNode();
-    }
-
-    /**
      * Gets the next sequential index for a reference field node.
      * Each reference field node maintains its own counter for round-robin access.
      * <p>
@@ -210,23 +199,6 @@ public abstract class AbstractGenerationContext {
         } catch (FilteringException e) {
             return handleFilteringFailure(e.getMessage());
         }
-    }
-
-    // Default implementations for lazy collection methods (overridden in LazyGenerationContext)
-    public void registerLazyCollection(String name, LazyItemCollection collection) {
-        throw new UnsupportedOperationException("Lazy collection registration is only supported in LazyGenerationContext");
-    }
-
-    public void registerLazyReferenceCollection(String name, LazyItemCollection collection) {
-        throw new UnsupportedOperationException("Lazy collection registration is only supported in LazyGenerationContext");
-    }
-
-    public void registerLazyTaggedCollection(String tag, LazyItemCollection collection) {
-        throw new UnsupportedOperationException("Lazy collection registration is only supported in LazyGenerationContext");
-    }
-
-    public Map<String, List<LazyItemProxy>> getLazyNamedCollections() {
-        throw new UnsupportedOperationException("Lazy collections are only available in LazyGenerationContext");
     }
 
     public Set<String> getReferencedPaths(String collection) {
