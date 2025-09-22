@@ -24,7 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class GenerationContextTest {
+class EagerGenerationContextTest {
 
     @Mock
     private GeneratorRegistry mockGeneratorRegistry;
@@ -38,18 +38,18 @@ class GenerationContextTest {
     @Mock
     private Sequential mockSequentialNode;
 
-    private GenerationContext context;
+    private EagerGenerationContext context;
     private ObjectMapper mapper;
 
     @BeforeEach
     void setUp() {
-        context = new GenerationContext(mockGeneratorRegistry, mockRandom, 5, FilteringBehavior.RETURN_NULL);
+        context = new EagerGenerationContext(mockGeneratorRegistry, mockRandom, 5, FilteringBehavior.RETURN_NULL);
         mapper = new ObjectMapper();
     }
 
     @Test
     void testConstructorWithDefaults() {
-        GenerationContext defaultContext = new GenerationContext(mockGeneratorRegistry, mockRandom);
+        AbstractGenerationContext defaultContext = new EagerGenerationContext(mockGeneratorRegistry, mockRandom);
 
         assertThat(defaultContext.getGeneratorRegistry()).isEqualTo(mockGeneratorRegistry);
         assertThat(defaultContext.getRandom()).isEqualTo(mockRandom);
@@ -58,7 +58,7 @@ class GenerationContextTest {
 
     @Test
     void testConstructorWithCustomSettings() {
-        GenerationContext customContext = new GenerationContext(
+        AbstractGenerationContext customContext = new EagerGenerationContext(
             mockGeneratorRegistry,
             mockRandom,
             10,
@@ -352,7 +352,7 @@ class GenerationContextTest {
 
     @Test
     void testHandleFilteringFailureWithReturnNull() {
-        GenerationContext nullContext = new GenerationContext(
+        AbstractGenerationContext nullContext = new EagerGenerationContext(
             mockGeneratorRegistry,
             mockRandom,
             5,
@@ -366,7 +366,7 @@ class GenerationContextTest {
 
     @Test
     void testHandleFilteringFailureWithThrowException() {
-        GenerationContext exceptionContext = new GenerationContext(
+        AbstractGenerationContext exceptionContext = new EagerGenerationContext(
             mockGeneratorRegistry,
             mockRandom,
             5,

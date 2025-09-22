@@ -92,7 +92,7 @@ public class EagerGeneration implements Generation {
             }
 
             Stream<String> sqlStream = entry.getValue().stream()
-                .map(item -> SqlInsertGenerator.generateSqlInsert(tableName, item));
+                    .map(item -> SqlInsertGenerator.generateSqlInsert(tableName, item));
             sqlStreams.put(tableName, sqlStream);
         }
         return sqlStreams;
@@ -114,7 +114,7 @@ public class EagerGeneration implements Generation {
         }
 
         return collection.stream()
-            .map(item -> SqlInsertGenerator.generateSqlInsert(collectionName, item));
+                .map(item -> SqlInsertGenerator.generateSqlInsert(collectionName, item));
     }
 
     /**
@@ -215,7 +215,7 @@ public class EagerGeneration implements Generation {
          *
          * @param collectionName the name of the collection to stream
          * @return a stream of JsonNode items
-         * @throws IOException if file reading fails
+         * @throws IOException              if file reading fails
          * @throws IllegalArgumentException if the collection doesn't exist
          */
         public Stream<JsonNode> streamJsonNodes(String collectionName) throws IOException {
@@ -227,7 +227,7 @@ public class EagerGeneration implements Generation {
          *
          * @param collectionName the name of the collection to stream
          * @return a stream of SQL INSERT statements
-         * @throws IOException if file reading fails
+         * @throws IOException              if file reading fails
          * @throws IllegalArgumentException if the collection doesn't exist
          */
         public Stream<String> streamSqlInserts(String collectionName) throws IOException {

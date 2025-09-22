@@ -37,6 +37,12 @@ public class ChoiceFieldNode implements DslNode {
         this.options = new ArrayList<>(options);
         this.weights = weights != null ? new ArrayList<>(weights) : null;
         this.filters = new ArrayList<>(filters);
+
+        // Validate weights
+        if (weights != null && weights.stream()
+            .anyMatch(w -> w == null || w <= 0)) {
+            throw new IllegalArgumentException("All weights must be positive numbers");
+        }
     }
 
     /**

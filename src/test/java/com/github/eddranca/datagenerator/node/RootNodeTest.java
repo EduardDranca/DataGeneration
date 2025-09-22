@@ -97,12 +97,12 @@ class RootNodeTest {
 
         // Create a real collection for more comprehensive testing
         CollectionNode realCollection = new CollectionNode(
-                "users",
-                10,
-                mockItem,
-                List.of("tag1"),
-                new HashMap<>(),
-                null
+            "users",
+            10,
+            mockItem,
+            List.of("tag1"),
+            new HashMap<>(),
+            null
         );
 
         node.addCollection("users", realCollection);

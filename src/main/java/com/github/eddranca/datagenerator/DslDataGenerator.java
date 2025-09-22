@@ -8,8 +8,10 @@ import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
 import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.validation.DslTreeBuildResult;
+import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 import com.github.eddranca.datagenerator.visitor.DataGenerationVisitor;
-import com.github.eddranca.datagenerator.visitor.GenerationContext;
+import com.github.eddranca.datagenerator.visitor.EagerGenerationContext;
+import com.github.eddranca.datagenerator.visitor.LazyGenerationContext;
 import com.github.eddranca.datagenerator.visitor.LazyItemProxy;
 import net.datafaker.Faker;
 
@@ -36,7 +38,7 @@ public class DslDataGenerator {
         this.filteringBehavior = builder.filteringBehavior;
         this.memoryOptimizationEnabled = builder.memoryOptimizationEnabled;
         this.generatorRegistry = builder.generatorRegistry != null ? builder.generatorRegistry
-                : GeneratorRegistry.withDefaultGenerators(new Faker(random));
+            : GeneratorRegistry.withDefaultGenerators(new Faker(random));
 
         // Add custom generators if any
         if (builder.customGenerators != null) {
@@ -102,15 +104,17 @@ public class DslDataGenerator {
             this.random.setSeed(rootNode.getSeed());
         }
 
-        // Generate data using the visitor
-        GenerationContext context = new GenerationContext(generatorRegistry, random, maxFilteringRetries,
-                filteringBehavior);
+        // Generate data using the appropriate visitor context
+        AbstractGenerationContext context;
 
-        // Enable memory optimization if requested
         if (memoryOptimizationEnabled) {
-            // Initialize with empty referenced paths - they will be populated during
-            // analysis
-            context.enableMemoryOptimization(new HashMap<>());
+            LazyGenerationContext lazyContext = new LazyGenerationContext(generatorRegistry, random,
+                maxFilteringRetries, filteringBehavior);
+            // Initialize with empty referenced paths - they will be populated during analysis
+            lazyContext.enableMemoryOptimization(new HashMap<>());
+            context = lazyContext;
+        } else {
+            context = new EagerGenerationContext(generatorRegistry, random, maxFilteringRetries, filteringBehavior);
         }
 
         DataGenerationVisitor visitor = new DataGenerationVisitor(context);
@@ -120,12 +124,8 @@ public class DslDataGenerator {
         // Return the appropriate Generation implementation based on memory optimization
         if (memoryOptimizationEnabled) {
             // For memory optimization, use the lazy collections directly
-            Map<String, List<LazyItemProxy>> lazyCollections = new HashMap<>();
-
-            for (Map.Entry<String, List<LazyItemProxy>> entry : context.getLazyNamedCollections().entrySet()) {
-                lazyCollections.put(entry.getKey(), entry.getValue());
-            }
-
+            LazyGenerationContext lazyContext = (LazyGenerationContext) context;
+            Map<String, List<LazyItemProxy>> lazyCollections = lazyContext.getLazyNamedCollections();
             return new LazyGeneration(lazyCollections);
         } else {
             // Normal generation

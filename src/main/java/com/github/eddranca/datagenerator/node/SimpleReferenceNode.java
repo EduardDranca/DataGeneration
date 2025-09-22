@@ -1,7 +1,7 @@
 package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.eddranca.datagenerator.visitor.GenerationContext;
+import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ public class SimpleReferenceNode extends AbstractReferenceNode {
     }
 
     @Override
-    public JsonNode resolve(GenerationContext context, JsonNode currentItem, List<JsonNode> filterValues) {
+    public JsonNode resolve(AbstractGenerationContext context, JsonNode currentItem, List<JsonNode> filterValues) {
         // Get the collection
         List<JsonNode> collection = context.getCollection(collectionName);
 

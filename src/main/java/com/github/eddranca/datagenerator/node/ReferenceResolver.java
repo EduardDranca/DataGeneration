@@ -1,7 +1,7 @@
 package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.eddranca.datagenerator.visitor.GenerationContext;
+import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 
 import java.util.List;
 
@@ -18,5 +18,5 @@ interface ReferenceResolver {
      * @param filterValues values to exclude from the result (null if no filtering)
      * @return the resolved value
      */
-    JsonNode resolve(GenerationContext context, JsonNode currentItem, List<JsonNode> filterValues);
+    JsonNode resolve(AbstractGenerationContext context, JsonNode currentItem, List<JsonNode> filterValues);
 }

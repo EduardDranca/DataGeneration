@@ -2,7 +2,7 @@ package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.visitor.GenerationContext;
+import com.github.eddranca.datagenerator.visitor.EagerGenerationContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 class ArrayFieldReferenceNodeTest {
 
     @Mock
-    private GenerationContext mockContext;
+    private EagerGenerationContext mockContext;
 
     private ObjectMapper mapper;
 
@@ -116,7 +116,7 @@ class ArrayFieldReferenceNodeTest {
         when(mockContext.getCollection("users")).thenReturn(originalCollection);
         when(mockContext.applyFilteringOnField(originalCollection, "name", filterValues)).thenReturn(emptyFilteredCollection);
         when(mockContext.handleFilteringFailure("Array field reference 'users[*].name' has no valid values after filtering"))
-                .thenReturn(failureResult);
+            .thenReturn(failureResult);
 
         JsonNode result = node.resolve(mockContext, currentItem, filterValues);
 

@@ -66,7 +66,8 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
                 .generate();
 
             // Force evaluation by consuming the stream
-            generation.streamJsonNodes("items").forEach(item -> {});
+            generation.streamJsonNodes("items").forEach(item -> {
+            });
         })
             .isInstanceOf(FilteringException.class)
             .hasMessageContaining("All choice options were filtered out");
@@ -102,7 +103,8 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
                 .generate();
 
             // Force evaluation by consuming the stream
-            generation.streamJsonNodes("filtered_items").forEach(item -> {});
+            generation.streamJsonNodes("filtered_items").forEach(item -> {
+            });
         })
             .isInstanceOf(FilteringException.class)
             .hasMessageContaining("has no valid values after filtering");

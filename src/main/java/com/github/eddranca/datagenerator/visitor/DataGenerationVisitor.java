@@ -36,11 +36,11 @@ import java.util.function.Supplier;
  * Maintains generation context and produces JSON output.
  */
 public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
-    private final GenerationContext context;
+    private final AbstractGenerationContext context;
     private ObjectNode currentItem; // Track current item for "this" references
     private String currentCollectionName; // Track current collection for lazy generation
 
-    public DataGenerationVisitor(GenerationContext context) {
+    public DataGenerationVisitor(AbstractGenerationContext context) {
         this.context = context;
     }
 

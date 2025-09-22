@@ -44,7 +44,7 @@ class DataGenerationVisitorTest {
         DslTreeBuildResult buildResult = builder.build(dsl);
         assertThat(buildResult.hasErrors()).isFalse();
 
-        GenerationContext context = new GenerationContext(registry, new Random(123L));
+        EagerGenerationContext context = new EagerGenerationContext(registry, new Random(123L));
         DataGenerationVisitor visitor = new DataGenerationVisitor(context);
 
         JsonNode result = buildResult.getTree().accept(visitor);
@@ -84,7 +84,7 @@ class DataGenerationVisitorTest {
         DslTreeBuildResult buildResult = builder.build(dsl);
         assertThat(buildResult.hasErrors()).isFalse();
 
-        GenerationContext context = new GenerationContext(registry, new Random(123L));
+        EagerGenerationContext context = new EagerGenerationContext(registry, new Random(123L));
         DataGenerationVisitor visitor = new DataGenerationVisitor(context);
 
         JsonNode result = buildResult.getTree().accept(visitor);
@@ -116,7 +116,7 @@ class DataGenerationVisitorTest {
         DslTreeBuildResult buildResult = builder.build(dsl);
         assertThat(buildResult.hasErrors()).isFalse();
 
-        GenerationContext context = new GenerationContext(registry, new Random(123L));
+        EagerGenerationContext context = new EagerGenerationContext(registry, new Random(123L));
         DataGenerationVisitor visitor = new DataGenerationVisitor(context);
 
         JsonNode result = buildResult.getTree().accept(visitor);
@@ -156,7 +156,7 @@ class DataGenerationVisitorTest {
         DslTreeBuildResult buildResult = builder.build(dsl);
         assertThat(buildResult.hasErrors()).isFalse();
 
-        GenerationContext context = new GenerationContext(registry, new Random(123L));
+        EagerGenerationContext context = new EagerGenerationContext(registry, new Random(123L));
         DataGenerationVisitor visitor = new DataGenerationVisitor(context);
 
         JsonNode result = buildResult.getTree().accept(visitor);
@@ -198,7 +198,7 @@ class DataGenerationVisitorTest {
         DslTreeBuildResult buildResult1 = builder1.build(dsl);
         assertThat(buildResult1.hasErrors()).isFalse();
 
-        GenerationContext context1 = new GenerationContext(registry1, random1);
+        EagerGenerationContext context1 = new EagerGenerationContext(registry1, random1);
         DataGenerationVisitor visitor1 = new DataGenerationVisitor(context1);
         JsonNode result1 = buildResult1.getTree().accept(visitor1);
 
@@ -208,7 +208,7 @@ class DataGenerationVisitorTest {
         DslTreeBuildResult buildResult2 = builder2.build(dsl);
         assertThat(buildResult2.hasErrors()).isFalse();
 
-        GenerationContext context2 = new GenerationContext(registry2, random2);
+        EagerGenerationContext context2 = new EagerGenerationContext(registry2, random2);
         DataGenerationVisitor visitor2 = new DataGenerationVisitor(context2);
         JsonNode result2 = buildResult2.getTree().accept(visitor2);
 

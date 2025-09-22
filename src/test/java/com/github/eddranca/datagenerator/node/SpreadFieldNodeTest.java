@@ -66,8 +66,8 @@ class SpreadFieldNodeTest {
     @Test
     void testSpreadFieldWithComplexOptions() {
         JsonNode options = mapper.createObjectNode()
-                .put("locale", "en_US")
-                .put("seed", 12345);
+            .put("locale", "en_US")
+            .put("seed", 12345);
         List<String> fields = List.of("name", "address");
 
         SpreadFieldNode node = new SpreadFieldNode("faker", options, fields);

@@ -1,6 +1,5 @@
 package com.github.eddranca.datagenerator.validation;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.ValidationError;
 import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
@@ -152,7 +151,6 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
     @Override
     public Void visitChoiceField(ChoiceFieldNode node) {
         // Choice fields don't have references to validate
-        // Filtering validation is handled at runtime according to FilteringBehavior
         return null;
     }
 
@@ -265,68 +263,5 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
 
     private void addSelfReferenceError(String reference, String message) {
         addError("Self reference '" + reference + "' " + message);
-    }
-
-    /**
-     * Validates that a choice field with filters won't result in all options being filtered out.
-     * This performs static analysis on literal choice options to catch obvious filtering issues early.
-     */
-    private void validateChoiceFieldFiltering(ChoiceFieldNode node) {
-        List<DslNode> options = node.getOptions();
-        List<FilterNode> filters = node.getFilters();
-        
-        if (options.isEmpty() || filters.isEmpty()) {
-            return;
-        }
-
-        // For static validation, we can only check literal options
-        // Complex options (like generators or references) can't be validated statically
-        List<String> literalOptions = new ArrayList<>();
-        boolean hasNonLiteralOptions = false;
-        
-        for (DslNode option : options) {
-            if (option instanceof LiteralFieldNode literalField) {
-                JsonNode value = literalField.getValue();
-                if (value.isTextual()) {
-                    literalOptions.add(value.asText());
-                } else {
-                    literalOptions.add(value.toString());
-                }
-            } else {
-                hasNonLiteralOptions = true;
-            }
-        }
-
-        // If we have non-literal options, we can't do complete static validation
-        if (hasNonLiteralOptions) {
-            return;
-        }
-
-        // Extract filter values (only handle literal filters for static validation)
-        List<String> filterValues = new ArrayList<>();
-        for (FilterNode filter : filters) {
-            if (filter.getFilterExpression() instanceof LiteralFieldNode literalFilter) {
-                JsonNode value = literalFilter.getValue();
-                if (value.isTextual()) {
-                    filterValues.add(value.asText());
-                } else {
-                    filterValues.add(value.toString());
-                }
-            } else {
-                // Can't validate non-literal filters statically
-                return;
-            }
-        }
-
-        // Check if all literal options would be filtered out
-        // Only report this as a validation error if we're absolutely certain all options are filtered
-        // and there are no non-literal options that might provide alternatives
-        boolean hasValidOption = literalOptions.stream()
-            .anyMatch(option -> !filterValues.contains(option));
-
-        if (!hasValidOption && !hasNonLiteralOptions && !literalOptions.isEmpty()) {
-            addError("Choice field has all options filtered out. Options: " + literalOptions + 
-                    ", Filters: " + filterValues);
-        }
     }
 }

@@ -2,7 +2,7 @@ package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.visitor.GenerationContext;
+import com.github.eddranca.datagenerator.visitor.EagerGenerationContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 class TagReferenceNodeTest {
 
     @Mock
-    private GenerationContext mockContext;
+    private EagerGenerationContext mockContext;
 
     private ObjectMapper mapper;
 

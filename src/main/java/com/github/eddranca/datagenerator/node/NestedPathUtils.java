@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
  * Utility class for handling nested path extraction from JsonNode objects.
  */
 public class NestedPathUtils {
-    private NestedPathUtils() {}
+    private NestedPathUtils() {
+    }
 
     /**
      * Extracts a field value from a JsonNode, supporting nested paths like "address.street".
