@@ -7,6 +7,7 @@ import com.github.eddranca.datagenerator.exception.FilteringException;
 import com.github.eddranca.datagenerator.generator.FilteringGeneratorAdapter;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
+import com.github.eddranca.datagenerator.node.CollectionNode;
 import com.github.eddranca.datagenerator.node.Sequential;
 
 import java.util.ArrayList;
@@ -50,10 +51,6 @@ public abstract class AbstractGenerationContext<T> {
         this.filteringBehavior = filteringBehavior;
     }
 
-    protected AbstractGenerationContext(GeneratorRegistry generatorRegistry, Random random) {
-        this(generatorRegistry, random, 100, FilteringBehavior.RETURN_NULL);
-    }
-
     // Getters for shared resources
     public GeneratorRegistry getGeneratorRegistry() {
         return generatorRegistry;
@@ -85,6 +82,25 @@ public abstract class AbstractGenerationContext<T> {
     public abstract Map<String, List<JsonNode>> getNamedCollections();
 
     public abstract boolean isMemoryOptimizationEnabled();
+
+    /**
+     * Creates and registers a collection based on the context's strategy.
+     * Each context implements its own approach (eager vs lazy).
+     *
+     * @param node the collection node to process
+     * @param visitor the visitor for generating items
+     * @return the result JsonNode for the visitor
+     */
+    public abstract JsonNode createAndRegisterCollection(CollectionNode node, DataGenerationVisitor<T> visitor);
+
+    /**
+     * Registers a pick from the specified collection.
+     *
+     * @param alias the pick alias
+     * @param index the index to pick
+     * @param collectionName the name of the collection to pick from
+     */
+    public abstract void registerPickFromCollection(String alias, int index, String collectionName);
 
     /**
      * Gets a random or sequential element from a collection.
@@ -206,10 +222,6 @@ public abstract class AbstractGenerationContext<T> {
     }
 
     public void setReferencedPaths(String collection, Set<String> paths) {
-        // No-op for eager context
-    }
-
-    public void enableMemoryOptimization(Map<String, Set<String>> referencedPaths) {
         // No-op for eager context
     }
 }

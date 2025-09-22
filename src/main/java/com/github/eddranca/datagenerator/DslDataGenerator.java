@@ -105,19 +105,16 @@ public class DslDataGenerator {
         }
 
         // Generate data using the appropriate visitor context
-        AbstractGenerationContext context;
+        AbstractGenerationContext<?> context;
 
         if (memoryOptimizationEnabled) {
-            LazyGenerationContext lazyContext = new LazyGenerationContext(generatorRegistry, random,
+            context = new LazyGenerationContext(generatorRegistry, random,
                 maxFilteringRetries, filteringBehavior);
-            // Initialize with empty referenced paths - they will be populated during analysis
-            lazyContext.enableMemoryOptimization(new HashMap<>());
-            context = lazyContext;
         } else {
             context = new EagerGenerationContext(generatorRegistry, random, maxFilteringRetries, filteringBehavior);
         }
 
-        DataGenerationVisitor visitor = new DataGenerationVisitor(context);
+        DataGenerationVisitor<?> visitor = new DataGenerationVisitor<>(context);
 
         rootNode.accept(visitor);
 

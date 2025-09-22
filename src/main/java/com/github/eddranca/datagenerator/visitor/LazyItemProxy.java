@@ -24,7 +24,7 @@ public class LazyItemProxy extends AbstractLazyProxy {
     public LazyItemProxy(String collectionName,
                          Map<String, DslNode> fieldNodes,
                          Set<String> referencedPaths,
-                         DataGenerationVisitor visitor) {
+                         DataGenerationVisitor<LazyItemProxy> visitor) {
         super(fieldNodes, referencedPaths, visitor);
         this.collectionName = collectionName;
 

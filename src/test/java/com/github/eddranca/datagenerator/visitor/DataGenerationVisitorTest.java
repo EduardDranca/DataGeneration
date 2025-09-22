@@ -45,7 +45,7 @@ class DataGenerationVisitorTest {
         assertThat(buildResult.hasErrors()).isFalse();
 
         EagerGenerationContext context = new EagerGenerationContext(registry, new Random(123L));
-        DataGenerationVisitor visitor = new DataGenerationVisitor(context);
+        DataGenerationVisitor<JsonNode> visitor = new DataGenerationVisitor<>(context);
 
         JsonNode result = buildResult.getTree().accept(visitor);
 
@@ -85,7 +85,7 @@ class DataGenerationVisitorTest {
         assertThat(buildResult.hasErrors()).isFalse();
 
         EagerGenerationContext context = new EagerGenerationContext(registry, new Random(123L));
-        DataGenerationVisitor visitor = new DataGenerationVisitor(context);
+        DataGenerationVisitor<JsonNode> visitor = new DataGenerationVisitor<>(context);
 
         JsonNode result = buildResult.getTree().accept(visitor);
 
@@ -117,7 +117,7 @@ class DataGenerationVisitorTest {
         assertThat(buildResult.hasErrors()).isFalse();
 
         EagerGenerationContext context = new EagerGenerationContext(registry, new Random(123L));
-        DataGenerationVisitor visitor = new DataGenerationVisitor(context);
+        DataGenerationVisitor<JsonNode> visitor = new DataGenerationVisitor<>(context);
 
         JsonNode result = buildResult.getTree().accept(visitor);
 
@@ -157,7 +157,7 @@ class DataGenerationVisitorTest {
         assertThat(buildResult.hasErrors()).isFalse();
 
         EagerGenerationContext context = new EagerGenerationContext(registry, new Random(123L));
-        DataGenerationVisitor visitor = new DataGenerationVisitor(context);
+        DataGenerationVisitor<JsonNode> visitor = new DataGenerationVisitor<>(context);
 
         JsonNode result = buildResult.getTree().accept(visitor);
 
@@ -199,7 +199,7 @@ class DataGenerationVisitorTest {
         assertThat(buildResult1.hasErrors()).isFalse();
 
         EagerGenerationContext context1 = new EagerGenerationContext(registry1, random1);
-        DataGenerationVisitor visitor1 = new DataGenerationVisitor(context1);
+        DataGenerationVisitor<JsonNode> visitor1 = new DataGenerationVisitor<>(context1);
         JsonNode result1 = buildResult1.getTree().accept(visitor1);
 
         Random random2 = new Random(456L);
@@ -209,7 +209,7 @@ class DataGenerationVisitorTest {
         assertThat(buildResult2.hasErrors()).isFalse();
 
         EagerGenerationContext context2 = new EagerGenerationContext(registry2, random2);
-        DataGenerationVisitor visitor2 = new DataGenerationVisitor(context2);
+        DataGenerationVisitor<JsonNode> visitor2 = new DataGenerationVisitor<>(context2);
         JsonNode result2 = buildResult2.getTree().accept(visitor2);
 
         assertThat(result1).isEqualTo(result2);

@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator.visitor;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.FilteringBehavior;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
+import com.github.eddranca.datagenerator.node.CollectionNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -162,11 +163,6 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
     }
 
     @Override
-    public void enableMemoryOptimization(Map<String, Set<String>> referencedPaths) {
-        this.referencedPaths = new HashMap<>(referencedPaths);
-    }
-
-    @Override
     public Set<String> getReferencedPaths(String collection) {
         if (referencedPaths == null) {
             return Set.of();
@@ -185,5 +181,62 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
     @Override
     public boolean isMemoryOptimizationEnabled() {
         return true;
+    }
+
+    @Override
+    public JsonNode createAndRegisterCollection(CollectionNode node, DataGenerationVisitor visitor) {
+        Set<String> referencedPaths = getReferencedPaths(node.getCollectionName());
+
+        // Generate all items with only referenced fields materialized
+        List<LazyItemProxy> lazyCollection = createLazyItemList(node, referencedPaths, visitor);
+
+        // Register the lazy collection
+        registerCollection(node.getCollectionName(), lazyCollection);
+
+        if (!node.getName().equals(node.getCollectionName())) {
+            registerReferenceCollection(node.getName(), lazyCollection);
+        }
+
+        for (String tag : node.getTags()) {
+            registerTaggedCollection(tag, lazyCollection);
+        }
+
+        return mapper.createArrayNode();
+    }
+
+    @Override
+    public void registerPickFromCollection(String alias, int index, String collectionName) {
+        // Look up the collection from our own storage
+        List<LazyItemProxy> lazyCollection = lazyNamedCollections.get(collectionName);
+        if (lazyCollection == null) {
+            lazyCollection = lazyReferenceCollections.get(collectionName);
+        }
+
+        if (lazyCollection != null && index < lazyCollection.size()) {
+            LazyItemProxy lazyItem = lazyCollection.get(index);
+            // Materialize the specific item for the pick
+            JsonNode pickedItem = lazyItem.getMaterializedCopy();
+            registerPick(alias, pickedItem);
+        }
+    }
+
+    /**
+     * Creates a list of LazyItemProxy objects for a collection.
+     */
+    private List<LazyItemProxy> createLazyItemList(CollectionNode node, Set<String> referencedPaths, DataGenerationVisitor visitor) {
+        List<LazyItemProxy> items = new ArrayList<>();
+        int count = node.getCount();
+
+        for (int i = 0; i < count; i++) {
+            LazyItemProxy item = new LazyItemProxy(
+                node.getCollectionName(),
+                node.getItem().getFields(),
+                referencedPaths,
+                visitor
+            );
+            items.add(item);
+        }
+
+        return items;
     }
 }

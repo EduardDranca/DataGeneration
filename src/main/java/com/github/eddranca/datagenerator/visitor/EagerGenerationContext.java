@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator.visitor;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.FilteringBehavior;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
+import com.github.eddranca.datagenerator.node.CollectionNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,5 +98,37 @@ public class EagerGenerationContext extends AbstractGenerationContext<JsonNode> 
     @Override
     public boolean isMemoryOptimizationEnabled() {
         return false;
+    }
+
+    @Override
+    public JsonNode createAndRegisterCollection(CollectionNode node, DataGenerationVisitor<JsonNode> visitor) {
+        // Standard eager generation
+        List<JsonNode> items = new ArrayList<>();
+
+        for (int i = 0; i < node.getCount(); i++) {
+            JsonNode item = node.getItem().accept(visitor);
+            items.add(item);
+        }
+
+        // Register the collection
+        registerCollection(node.getCollectionName(), items);
+
+        if (!node.getName().equals(node.getCollectionName())) {
+            registerReferenceCollection(node.getName(), items);
+        }
+
+        for (String tag : node.getTags()) {
+            registerTaggedCollection(tag, items);
+        }
+
+        return mapper.valueToTree(items);
+    }
+
+    @Override
+    public void registerPickFromCollection(String alias, int index, String collectionName) {
+        List<JsonNode> items = getCollection(collectionName);
+        if (index < items.size()) {
+            registerPick(alias, items.get(index));
+        }
     }
 }

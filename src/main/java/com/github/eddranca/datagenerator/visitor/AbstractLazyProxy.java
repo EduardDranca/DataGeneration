@@ -17,13 +17,13 @@ import java.util.Set;
 abstract class AbstractLazyProxy {
     protected final Map<String, DslNode> fieldNodes;
     protected final Set<String> referencedPaths;
-    protected final DataGenerationVisitor visitor;
+    protected final DataGenerationVisitor<LazyItemProxy> visitor;
     protected final Set<String> materializedFieldNames = new HashSet<>();
     protected final ObjectNode delegate;
 
     protected AbstractLazyProxy(Map<String, DslNode> fieldNodes,
                                 Set<String> referencedPaths,
-                                DataGenerationVisitor visitor) {
+                                DataGenerationVisitor<LazyItemProxy> visitor) {
         this.fieldNodes = new HashMap<>(fieldNodes);
         this.referencedPaths = referencedPaths != null ? referencedPaths : Set.of();
         this.visitor = visitor;
