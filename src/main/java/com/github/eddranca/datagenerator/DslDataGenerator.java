@@ -13,6 +13,7 @@ import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 import com.github.eddranca.datagenerator.visitor.DataGenerationVisitor;
 import com.github.eddranca.datagenerator.visitor.EagerGenerationContext;
 import com.github.eddranca.datagenerator.visitor.LazyGenerationContext;
+import com.github.eddranca.datagenerator.visitor.PathDependencyAnalyzer;
 import net.datafaker.Faker;
 
 import java.io.File;
@@ -23,6 +24,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 public class DslDataGenerator {
     private final ObjectMapper mapper;
@@ -109,8 +111,14 @@ public class DslDataGenerator {
         AbstractGenerationContext<?> context;
 
         if (memoryOptimizationEnabled) {
-            context = new LazyGenerationContext(generatorRegistry, random,
+            // For lazy generation, analyze dependencies first
+            PathDependencyAnalyzer analyzer = new PathDependencyAnalyzer();
+            Map<String, Set<String>> referencedPaths = analyzer.analyzeRoot(rootNode);
+            
+            LazyGenerationContext lazyContext = new LazyGenerationContext(generatorRegistry, random,
                 maxFilteringRetries, filteringBehavior);
+            lazyContext.setReferencedPaths(referencedPaths);
+            context = lazyContext;
         } else {
             context = new EagerGenerationContext(generatorRegistry, random, maxFilteringRetries, filteringBehavior);
         }
