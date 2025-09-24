@@ -145,12 +145,11 @@ void shouldGenerateArrayWithFiltering() {
         .generate();
     
     // Then
-    assertThat(result.getCollections().get("users"))
-        .hasSize(10)
-        .allSatisfy(user -> {
-            List<String> skills = (List<String>) user.get("skills");
-            assertThat(skills).doesNotContain("ExcludedSkill");
-        });
+    assertThat(result.getCollectionSize("users")).isEqualTo(10);
+    result.streamJsonNodes("users").forEach(user -> {
+        List<String> skills = (List<String>) user.get("skills");
+        assertThat(skills).doesNotContain("ExcludedSkill");
+    });
 }
 ```
 

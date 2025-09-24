@@ -2,21 +2,21 @@ package com.github.eddranca.datagenerator.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.DslDataGenerator;
 import com.github.eddranca.datagenerator.Generation;
-import org.junit.jupiter.api.Test;
+import com.github.eddranca.datagenerator.ParameterizedGenerationTest;
 
+import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.asJsonNode;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for various generators working together in DSL scenarios.
  * Tests the interaction between boolean, lorem, phone, and other generators.
  */
-class GeneratorIntegrationTest {
+class GeneratorIntegrationTest extends ParameterizedGenerationTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
-    @Test
-    void testMultipleGeneratorsInDsl() throws Exception {
+    @BothImplementationsTest
+    void testMultipleGeneratorsInDsl(boolean memoryOptimized) throws Exception {
 
         String dsl = """
             {
@@ -39,12 +39,9 @@ class GeneratorIntegrationTest {
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-        JsonNode result = generation.asJsonNode();
+        JsonNode result = asJsonNode(generation);
 
         // Verify structure
         assertThat(result.has("testData")).isTrue();
@@ -94,8 +91,8 @@ class GeneratorIntegrationTest {
         }
     }
 
-    @Test
-    void testBooleanProbabilityDistribution() throws Exception {
+    @BothImplementationsTest
+    void testBooleanProbabilityDistribution(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
               "booleanTest": {
@@ -111,12 +108,9 @@ class GeneratorIntegrationTest {
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(456L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDslWithSeed(dslNode, 456L, memoryOptimized);
 
-        JsonNode result = generation.asJsonNode();
+        JsonNode result = asJsonNode(generation);
         JsonNode testData = result.get("booleanTest");
 
         int mostlyTrueCount = 0;
@@ -140,8 +134,8 @@ class GeneratorIntegrationTest {
             .isBetween(85, 95);
     }
 
-    @Test
-    void testLoremGeneratorVariations() throws Exception {
+    @BothImplementationsTest
+    void testLoremGeneratorVariations(boolean memoryOptimized) throws Exception {
         // Test simple lorem generation (this works)
         String simpleDsl = """
             {
@@ -159,12 +153,9 @@ class GeneratorIntegrationTest {
 
         JsonNode dslNode = mapper.readTree(simpleDsl);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(789L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDslWithSeed(dslNode, 789L, memoryOptimized);
 
-        JsonNode result = generation.asJsonNode();
+        JsonNode result = asJsonNode(generation);
         JsonNode testData = result.get("loremTest");
 
         for (JsonNode item : testData) {
@@ -187,8 +178,8 @@ class GeneratorIntegrationTest {
         }
     }
 
-    @Test
-    void testPhoneGeneratorFormats() throws Exception {
+    @BothImplementationsTest
+    void testPhoneGeneratorFormats(boolean memoryOptimized) throws Exception {
         String dsl = """
             {
               "contacts": {
@@ -207,12 +198,9 @@ class GeneratorIntegrationTest {
 
         JsonNode dslNode = mapper.readTree(dsl);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(999L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDslWithSeed(dslNode, 999L, memoryOptimized);
 
-        JsonNode result = generation.asJsonNode();
+        JsonNode result = asJsonNode(generation);
         JsonNode contacts = result.get("contacts");
 
         assertThat(contacts.size()).isEqualTo(5);

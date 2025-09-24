@@ -1,8 +1,6 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -11,41 +9,36 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ReferenceSpreadTest {
-    private final ObjectMapper mapper = new ObjectMapper();
+class ReferenceSpreadTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testBasicReferenceSpread() throws IOException {
+    @BothImplementationsTest
+    void testBasicReferenceSpread(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree(
-                """
-                        {
-                            "users": {
-                                "count": 3,
-                                "item": {
-                                    "id": {"gen": "uuid"},
-                                    "name": {"gen": "choice", "options": ["Alice", "Bob", "Charlie"]},
-                                    "email": {"gen": "choice", "options": ["alice@test.com", "bob@test.com", "charlie@test.com"]}
-                                }
-                            },
-                            "orders": {
-                                "count": 5,
-                                "item": {
-                                    "orderId": {"gen": "uuid"},
-                                    "...userInfo": {
-                                        "ref": "users[*]",
-                                        "fields": ["id", "name"]
-                                    }
-                                }
+            """
+                {
+                    "users": {
+                        "count": 3,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "name": {"gen": "choice", "options": ["Alice", "Bob", "Charlie"]},
+                            "email": {"gen": "choice", "options": ["alice@test.com", "bob@test.com", "charlie@test.com"]}
+                        }
+                    },
+                    "orders": {
+                        "count": 5,
+                        "item": {
+                            "orderId": {"gen": "uuid"},
+                            "...userInfo": {
+                                "ref": "users[*]",
+                                "fields": ["id", "name"]
                             }
                         }
-                        """);
+                    }
+                }
+                """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
         List<JsonNode> orders = collections.get("orders");
 
@@ -66,37 +59,33 @@ class ReferenceSpreadTest {
             });
     }
 
-    @Test
-    void testReferenceSpreadWithFieldRenaming() throws IOException {
+    @BothImplementationsTest
+    void testReferenceSpreadWithFieldRenaming(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Alice", "Bob"]},
-                            "email": {"gen": "choice", "options": ["alice@test.com", "bob@test.com"]}
-                        }
-                    },
-                    "orders": {
-                        "count": 4,
-                        "item": {
-                            "orderId": {"gen": "uuid"},
-                            "...userInfo": {
-                                "ref": "users[*]",
-                                "fields": ["userId:id", "customerName:name"]
-                            }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Alice", "Bob"]},
+                        "email": {"gen": "choice", "options": ["alice@test.com", "bob@test.com"]}
+                    }
+                },
+                "orders": {
+                    "count": 4,
+                    "item": {
+                        "orderId": {"gen": "uuid"},
+                        "...userInfo": {
+                            "ref": "users[*]",
+                            "fields": ["userId:id", "customerName:name"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> orders = collections.get("orders");
 
         assertThat(orders)
@@ -115,35 +104,31 @@ class ReferenceSpreadTest {
             });
     }
 
-    @Test
-    void testReferenceSpreadWithoutFieldsArray() throws IOException {
+    @BothImplementationsTest
+    void testReferenceSpreadWithoutFieldsArray(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Alice", "Bob"]}
-                        }
-                    },
-                    "orders": {
-                        "count": 3,
-                        "item": {
-                            "orderId": {"gen": "uuid"},
-                            "...userInfo": {
-                                "ref": "users[*]"
-                            }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Alice", "Bob"]}
+                    }
+                },
+                "orders": {
+                    "count": 3,
+                    "item": {
+                        "orderId": {"gen": "uuid"},
+                        "...userInfo": {
+                            "ref": "users[*]"
                         }
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> orders = collections.get("orders");
 
         assertThat(orders)
@@ -160,37 +145,33 @@ class ReferenceSpreadTest {
             });
     }
 
-    @Test
-    void testReferenceSpreadWithSequential() throws IOException {
+    @BothImplementationsTest
+    void testReferenceSpreadWithSequential(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Alice", "Bob"]}
-                        }
-                    },
-                    "orders": {
-                        "count": 6,
-                        "item": {
-                            "orderId": {"gen": "uuid"},
-                            "...userInfo": {
-                                "ref": "users[*]",
-                                "sequential": true,
-                                "fields": ["userId:id", "userName:name"]
-                            }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Alice", "Bob"]}
+                    }
+                },
+                "orders": {
+                    "count": 6,
+                    "item": {
+                        "orderId": {"gen": "uuid"},
+                        "...userInfo": {
+                            "ref": "users[*]",
+                            "sequential": true,
+                            "fields": ["userId:id", "userName:name"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
         List<JsonNode> orders = collections.get("orders");
 

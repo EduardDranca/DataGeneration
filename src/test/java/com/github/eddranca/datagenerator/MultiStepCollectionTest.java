@@ -1,8 +1,6 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,52 +8,48 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class MultiStepCollectionTest {
-    private final ObjectMapper mapper = new ObjectMapper();
+class MultiStepCollectionTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testMultiStepCollectionGeneration() throws IOException {
+    @BothImplementationsTest
+    void testMultiStepCollectionGeneration(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "admin_users": {
-                        "name": "users",
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "number", "min": 1, "max": 100},
-                            "username": {"gen": "choice", "options": ["admin1", "admin2"]},
-                            "role": {"gen": "choice", "options": ["admin"]},
-                            "email": {"gen": "internet.emailAddress"}
-                        }
-                    },
-                    "regular_users": {
-                        "name": "users",
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "number", "min": 101, "max": 200},
-                            "username": {"gen": "choice", "options": ["user1", "user2", "user3"]},
-                            "role": {"gen": "choice", "options": ["user"]},
-                            "email": {"gen": "internet.emailAddress"}
-                        }
-                    },
-                    "guest_users": {
-                        "name": "users",
-                        "count": 1,
-                        "item": {
-                            "id": {"gen": "number", "min": 201, "max": 300},
-                            "username": {"gen": "choice", "options": ["guest1"]},
-                            "role": {"gen": "choice", "options": ["guest"]},
-                            "email": {"gen": "internet.emailAddress"}
-                        }
+            {
+                "admin_users": {
+                    "name": "users",
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "number", "min": 1, "max": 100},
+                        "username": {"gen": "choice", "options": ["admin1", "admin2"]},
+                        "role": {"gen": "choice", "options": ["admin"]},
+                        "email": {"gen": "internet.emailAddress"}
+                    }
+                },
+                "regular_users": {
+                    "name": "users",
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "number", "min": 101, "max": 200},
+                        "username": {"gen": "choice", "options": ["user1", "user2", "user3"]},
+                        "role": {"gen": "choice", "options": ["user"]},
+                        "email": {"gen": "internet.emailAddress"}
+                    }
+                },
+                "guest_users": {
+                    "name": "users",
+                    "count": 1,
+                    "item": {
+                        "id": {"gen": "number", "min": 201, "max": 300},
+                        "username": {"gen": "choice", "options": ["guest1"]},
+                        "role": {"gen": "choice", "options": ["guest"]},
+                        "email": {"gen": "internet.emailAddress"}
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Should have only one collection named "users"
         assertThat(collections)
@@ -108,48 +102,45 @@ class MultiStepCollectionTest {
             });
     }
 
-    @Test
-    void testMultiStepCollectionWithReferences() throws IOException {
+    @BothImplementationsTest
+    void testMultiStepCollectionWithReferences(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "premium_products": {
-                        "name": "products",
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "number", "min": 1, "max": 100},
-                            "name": {"gen": "choice", "options": ["Premium Widget", "Deluxe Gadget"]},
-                            "category": {"gen": "choice", "options": ["premium"]},
-                            "price": {"gen": "float", "min": 100.0, "max": 500.0, "decimals": 2}
-                        }
-                    },
-                    "basic_products": {
-                        "name": "products",
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "number", "min": 101, "max": 200},
-                            "name": {"gen": "choice", "options": ["Basic Widget", "Simple Tool", "Standard Item"]},
-                            "category": {"gen": "choice", "options": ["basic"]},
-                            "price": {"gen": "float", "min": 10.0, "max": 99.99, "decimals": 2}
-                        }
-                    },
-                    "orders": {
-                        "count": 4,
-                        "item": {
-                            "id": {"gen": "number", "min": 1, "max": 100},
-                            "product_id": {"ref": "products[*].id"},
-                            "product_name": {"ref": "products[*].name"},
-                            "quantity": {"gen": "number", "min": 1, "max": 5}
-                        }
+            {
+                "premium_products": {
+                    "name": "products",
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "number", "min": 1, "max": 100},
+                        "name": {"gen": "choice", "options": ["Premium Widget", "Deluxe Gadget"]},
+                        "category": {"gen": "choice", "options": ["premium"]},
+                        "price": {"gen": "float", "min": 100.0, "max": 500.0, "decimals": 2}
+                    }
+                },
+                "basic_products": {
+                    "name": "products",
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "number", "min": 101, "max": 200},
+                        "name": {"gen": "choice", "options": ["Basic Widget", "Simple Tool", "Standard Item"]},
+                        "category": {"gen": "choice", "options": ["basic"]},
+                        "price": {"gen": "float", "min": 10.0, "max": 99.99, "decimals": 2}
+                    }
+                },
+                "orders": {
+                    "count": 4,
+                    "item": {
+                        "id": {"gen": "number", "min": 1, "max": 100},
+                        "product_id": {"ref": "products[*].id"},
+                        "product_name": {"ref": "products[*].name"},
+                        "quantity": {"gen": "number", "min": 1, "max": 5}
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(456L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Should have products and orders collections
         assertThat(collections)
@@ -195,47 +186,44 @@ class MultiStepCollectionTest {
             });
     }
 
-    @Test
-    void testMultiStepCollectionWithTags() throws IOException {
+    @BothImplementationsTest
+    void testMultiStepCollectionWithTags(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "us_locations": {
-                        "name": "locations",
-                        "tags": ["location", "us"],
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "number", "min": 1, "max": 100},
-                            "name": {"gen": "choice", "options": ["New York", "Los Angeles"]},
-                            "country": {"gen": "choice", "options": ["US"]}
-                        }
-                    },
-                    "eu_locations": {
-                        "name": "locations",
-                        "tags": ["location", "eu"],
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "number", "min": 101, "max": 200},
-                            "name": {"gen": "choice", "options": ["London", "Paris"]},
-                            "country": {"gen": "choice", "options": ["UK", "FR"]}
-                        }
-                    },
-                    "events": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "number", "min": 1, "max": 100},
-                            "name": {"gen": "choice", "options": ["Conference", "Workshop", "Meetup"]},
-                            "location_name": {"ref": "byTag[location].name"}
-                        }
+            {
+                "us_locations": {
+                    "name": "locations",
+                    "tags": ["location", "us"],
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "number", "min": 1, "max": 100},
+                        "name": {"gen": "choice", "options": ["New York", "Los Angeles"]},
+                        "country": {"gen": "choice", "options": ["US"]}
+                    }
+                },
+                "eu_locations": {
+                    "name": "locations",
+                    "tags": ["location", "eu"],
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "number", "min": 101, "max": 200},
+                        "name": {"gen": "choice", "options": ["London", "Paris"]},
+                        "country": {"gen": "choice", "options": ["UK", "FR"]}
+                    }
+                },
+                "events": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "number", "min": 1, "max": 100},
+                        "name": {"gen": "choice", "options": ["Conference", "Workshop", "Meetup"]},
+                        "location_name": {"ref": "byTag[location].name"}
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(789L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Should have locations and events collections
         assertThat(collections)
@@ -268,59 +256,56 @@ class MultiStepCollectionTest {
             });
     }
 
-    @Test
-    void testReferenceIndividualCollectionSteps() throws IOException {
+    @BothImplementationsTest
+    void testReferenceIndividualCollectionSteps(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "us_users": {
-                        "name": "users",
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "number", "min": 1, "max": 100},
-                            "username": {"gen": "choice", "options": ["john_us", "jane_us"]},
-                            "region": {"gen": "choice", "options": ["US"]},
-                            "email": {"gen": "internet.emailAddress"}
-                        }
-                    },
-                    "eu_users": {
-                        "name": "users",
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "number", "min": 101, "max": 200},
-                            "username": {"gen": "choice", "options": ["pierre_eu", "anna_eu"]},
-                            "region": {"gen": "choice", "options": ["EU"]},
-                            "email": {"gen": "internet.emailAddress"}
-                        }
-                    },
-                    "us_orders": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "number", "min": 1, "max": 100},
-                            "user_id": {"ref": "us_users[*].id"},
-                            "user_region": {"ref": "us_users[*].region"},
-                            "amount": {"gen": "float", "min": 10.0, "max": 100.0, "decimals": 2}
-                        },
-                        "name": "orders"
-                    },
-                    "eu_orders": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "number", "min": 101, "max": 200},
-                            "user_id": {"ref": "eu_users[*].id"},
-                            "user_region": {"ref": "eu_users[*].region"},
-                            "amount": {"gen": "float", "min": 50.0, "max": 200.0, "decimals": 2}
-                        },
-                        "name": "orders"
+            {
+                "us_users": {
+                    "name": "users",
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "number", "min": 1, "max": 100},
+                        "username": {"gen": "choice", "options": ["john_us", "jane_us"]},
+                        "region": {"gen": "choice", "options": ["US"]},
+                        "email": {"gen": "internet.emailAddress"}
                     }
+                },
+                "eu_users": {
+                    "name": "users",
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "number", "min": 101, "max": 200},
+                        "username": {"gen": "choice", "options": ["pierre_eu", "anna_eu"]},
+                        "region": {"gen": "choice", "options": ["EU"]},
+                        "email": {"gen": "internet.emailAddress"}
+                    }
+                },
+                "us_orders": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "number", "min": 1, "max": 100},
+                        "user_id": {"ref": "us_users[*].id"},
+                        "user_region": {"ref": "us_users[*].region"},
+                        "amount": {"gen": "float", "min": 10.0, "max": 100.0, "decimals": 2}
+                    },
+                    "name": "orders"
+                },
+                "eu_orders": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "number", "min": 101, "max": 200},
+                        "user_id": {"ref": "eu_users[*].id"},
+                        "user_region": {"ref": "eu_users[*].region"},
+                        "amount": {"gen": "float", "min": 50.0, "max": 200.0, "decimals": 2}
+                    },
+                    "name": "orders"
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(999L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Should have users, orders collections
         assertThat(collections)

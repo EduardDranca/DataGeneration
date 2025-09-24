@@ -22,7 +22,8 @@ public class InternetGenerator implements Generator {
         return mapper.valueToTree(
             Map.of("emailAddress", faker.internet().emailAddress(),
                 "domainName", faker.internet().domainName(),
-                "url", faker.internet().url()));
+                "url", faker.internet().url(),
+                "username", faker.credentials().username()));
     }
 
     @Override
@@ -30,6 +31,7 @@ public class InternetGenerator implements Generator {
         return Map.of(
             "emailAddress", () -> mapper.valueToTree(faker.internet().emailAddress()),
             "domainName", () -> mapper.valueToTree(faker.internet().domainName()),
-            "url", () -> mapper.valueToTree(faker.internet().url()));
+            "url", () -> mapper.valueToTree(faker.internet().url()),
+            "username", () -> mapper.valueToTree(faker.credentials().username()));
     }
 }

@@ -13,7 +13,6 @@ import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
 import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
-
 import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
 import com.github.eddranca.datagenerator.validation.DslTreeBuildResult;
@@ -120,23 +119,23 @@ class DslTreeBuilderTest {
     @Test
     void testBuildWithReference() throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "countries": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "country.name"},
-                            "code": {"gen": "country.countryCode"}
-                        }
-                    },
-                    "users": {
-                        "count": 3,
-                        "item": {
-                            "name": {"gen": "name.firstName"},
-                            "country": {"ref": "countries[*].name"}
-                        }
+            {
+                "countries": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "country.name"},
+                        "code": {"gen": "country.countryCode"}
+                    }
+                },
+                "users": {
+                    "count": 3,
+                    "item": {
+                        "name": {"gen": "name.firstName"},
+                        "country": {"ref": "countries[*].name"}
                     }
                 }
-                """);
+            }
+            """);
 
         DslTreeBuildResult result = builder.build(dsl);
 
@@ -157,16 +156,16 @@ class DslTreeBuilderTest {
     @Test
     void testBuildWithValidationErrors() throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "nonexistent.generator"},
-                            "country": {"ref": "nonexistent[*].name"}
-                        }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "nonexistent.generator"},
+                        "country": {"ref": "nonexistent[*].name"}
                     }
                 }
-                """);
+            }
+            """);
 
         DslTreeBuildResult result = builder.build(dsl);
 
@@ -184,18 +183,18 @@ class DslTreeBuilderTest {
     @Test
     void testBuildWithObject() throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "profile": {
-                                "age": {"gen": "number", "min": 18, "max": 65},
-                                "city": {"gen": "address.city"}
-                            }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "profile": {
+                            "age": {"gen": "number", "min": 18, "max": 65},
+                            "city": {"gen": "address.city"}
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         DslTreeBuildResult result = builder.build(dsl);
 
@@ -216,19 +215,19 @@ class DslTreeBuilderTest {
     @Test
     void testBuildWithSpreadField() throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "...nameDetails": {
-                                "gen": "name",
-                                "fields": ["firstName", "lastName:surname"]
-                            },
-                            "id": {"gen": "uuid"}
-                        }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "...nameDetails": {
+                            "gen": "name",
+                            "fields": ["firstName", "lastName:surname"]
+                        },
+                        "id": {"gen": "uuid"}
                     }
                 }
-                """);
+            }
+            """);
 
         DslTreeBuildResult result = builder.build(dsl);
 
@@ -257,27 +256,27 @@ class DslTreeBuilderTest {
     @Test
     void testArrayFieldParsing() throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "fixedArray": {
-                                "array": {
-                                    "size": 3,
-                                    "item": "value"
-                                }
-                            },
-                            "variableArray": {
-                                "array": {
-                                    "minSize": 1,
-                                    "maxSize": 5,
-                                    "item": {"gen": "uuid"}
-                                }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "fixedArray": {
+                            "array": {
+                                "size": 3,
+                                "item": "value"
+                            }
+                        },
+                        "variableArray": {
+                            "array": {
+                                "minSize": 1,
+                                "maxSize": 5,
+                                "item": {"gen": "uuid"}
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         DslTreeBuildResult result = builder.build(mapper.readTree(dsl));
 
@@ -310,19 +309,19 @@ class DslTreeBuilderTest {
     @Test
     void testArrayFieldValidationMissingItem() throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "badArray": {
-                                "array": {
-                                    "size": 3
-                                }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "badArray": {
+                            "array": {
+                                "size": 3
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         DslTreeBuildResult result = builder.build(mapper.readTree(dsl));
         assertThat(result.getErrors()).hasSize(1);
@@ -332,22 +331,22 @@ class DslTreeBuilderTest {
     @Test
     void testArrayFieldValidationConflictingSize() throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "badArray": {
-                                "array": {
-                                    "size": 3,
-                                    "minSize": 1,
-                                    "maxSize": 5,
-                                    "item": "value"
-                                }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "badArray": {
+                            "array": {
+                                "size": 3,
+                                "minSize": 1,
+                                "maxSize": 5,
+                                "item": "value"
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         DslTreeBuildResult result = builder.build(mapper.readTree(dsl));
         assertThat(result.getErrors()).hasSize(1);
@@ -357,20 +356,20 @@ class DslTreeBuilderTest {
     @Test
     void testArrayFieldValidationNegativeSize() throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "badArray": {
-                                "array": {
-                                    "size": -1,
-                                    "item": "value"
-                                }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "badArray": {
+                            "array": {
+                                "size": -1,
+                                "item": "value"
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         DslTreeBuildResult result = builder.build(mapper.readTree(dsl));
         assertThat(result.getErrors()).hasSize(1);
@@ -380,21 +379,21 @@ class DslTreeBuilderTest {
     @Test
     void testArrayFieldValidationInvalidRange() throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "badArray": {
-                                "array": {
-                                    "minSize": 5,
-                                    "maxSize": 2,
-                                    "item": "value"
-                                }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "badArray": {
+                            "array": {
+                                "minSize": 5,
+                                "maxSize": 2,
+                                "item": "value"
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
         DslTreeBuildResult result = builder.build(mapper.readTree(dsl));
         assertThat(result.getErrors()).hasSize(1);

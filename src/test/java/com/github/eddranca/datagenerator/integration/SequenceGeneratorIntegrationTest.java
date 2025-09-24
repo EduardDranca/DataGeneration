@@ -2,10 +2,9 @@ package com.github.eddranca.datagenerator.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.DslDataGenerator;
 import com.github.eddranca.datagenerator.Generation;
+import com.github.eddranca.datagenerator.ParameterizedGenerationTest;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
@@ -15,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Integration tests for the sequence generator functionality.
  */
-class SequenceGeneratorIntegrationTest {
+class SequenceGeneratorIntegrationTest extends ParameterizedGenerationTest {
 
     private ObjectMapper mapper;
 
@@ -24,25 +23,22 @@ class SequenceGeneratorIntegrationTest {
         mapper = new ObjectMapper();
     }
 
-    @Test
-    void testSequenceGeneratorBasicFunctionality() throws Exception {
+    @BothImplementationsTest
+    void testSequenceGeneratorBasicFunctionality(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "sequence", "start": 0, "increment": 2}
-                        }
+            {
+                "items": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "sequence", "start": 0, "increment": 2}
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dsl)
-            .generate();
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         assertThat(collections).containsKey("items");
 
         assertThat(collections.get("items"))
@@ -51,27 +47,24 @@ class SequenceGeneratorIntegrationTest {
             .containsExactly(0, 2, 4, 6, 8);
     }
 
-    @Test
-    void testMultipleFieldsHaveIndependentSequences() throws Exception {
+    @BothImplementationsTest
+    void testMultipleFieldsHaveIndependentSequences(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 3,
-                        "item": {
-                            "evenNumbers": {"gen": "sequence", "start": 0, "increment": 2},
-                            "oddNumbers": {"gen": "sequence", "start": 1, "increment": 2},
-                            "negativeNumbers": {"gen": "sequence", "start": -5, "increment": -1}
-                        }
+            {
+                "items": {
+                    "count": 3,
+                    "item": {
+                        "evenNumbers": {"gen": "sequence", "start": 0, "increment": 2},
+                        "oddNumbers": {"gen": "sequence", "start": 1, "increment": 2},
+                        "negativeNumbers": {"gen": "sequence", "start": -5, "increment": -1}
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(456L)
-            .fromJsonNode(dsl)
-            .generate();
+        Generation generation = generateFromDslWithSeed(dsl, 456L, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         assertThat(collections).containsKey("items");
         assertThat(collections.get("items")).hasSize(3);
 
@@ -93,25 +86,22 @@ class SequenceGeneratorIntegrationTest {
         assertThat(items.get(2).get("negativeNumbers").intValue()).isEqualTo(-7);
     }
 
-    @Test
-    void testSequenceGeneratorWithDefaultValues() throws Exception {
+    @BothImplementationsTest
+    void testSequenceGeneratorWithDefaultValues(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 4,
-                        "item": {
-                            "id": {"gen": "sequence"}
-                        }
+            {
+                "items": {
+                    "count": 4,
+                    "item": {
+                        "id": {"gen": "sequence"}
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(789L)
-            .fromJsonNode(dsl)
-            .generate();
+        Generation generation = generateFromDslWithSeed(dsl, 789L, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         assertThat(collections).containsKey("items");
         assertThat(collections.get("items")).hasSize(4);
 
@@ -121,25 +111,22 @@ class SequenceGeneratorIntegrationTest {
             .containsExactly(0, 1, 2, 3);
     }
 
-    @Test
-    void testSequenceGeneratorWithNegativeIncrement() throws Exception {
+    @BothImplementationsTest
+    void testSequenceGeneratorWithNegativeIncrement(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "sequence", "start": 10, "increment": -3}
-                        }
+            {
+                "items": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "sequence", "start": 10, "increment": -3}
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(999L)
-            .fromJsonNode(dsl)
-            .generate();
+        Generation generation = generateFromDslWithSeed(dsl, 999L, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         assertThat(collections).containsKey("items");
         assertThat(collections.get("items")).hasSize(5);
 

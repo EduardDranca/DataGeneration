@@ -29,23 +29,23 @@ class DataGenerationVisitorTest {
     @Test
     void testSimpleGeneration() throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.firstName"},
-                            "age": {"gen": "number", "min": 18, "max": 65}
-                        }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.firstName"},
+                        "age": {"gen": "number", "min": 18, "max": 65}
                     }
                 }
-                """);
+            }
+            """);
 
         DslTreeBuildResult buildResult = builder.build(dsl);
         assertThat(buildResult.hasErrors()).isFalse();
 
-        GenerationContext context = new GenerationContext(registry, new Random(123L));
-        DataGenerationVisitor visitor = new DataGenerationVisitor(context);
+        EagerGenerationContext context = new EagerGenerationContext(registry, new Random(123L));
+        DataGenerationVisitor<JsonNode> visitor = new DataGenerationVisitor<>(context);
 
         JsonNode result = buildResult.getTree().accept(visitor);
 
@@ -68,24 +68,24 @@ class DataGenerationVisitorTest {
     @Test
     void testChoiceGeneration() throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 5,
-                        "item": {
-                            "status": {
-                                "gen": "choice",
-                                "options": ["active", "inactive", "pending"]
-                            }
+            {
+                "items": {
+                    "count": 5,
+                    "item": {
+                        "status": {
+                            "gen": "choice",
+                            "options": ["active", "inactive", "pending"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         DslTreeBuildResult buildResult = builder.build(dsl);
         assertThat(buildResult.hasErrors()).isFalse();
 
-        GenerationContext context = new GenerationContext(registry, new Random(123L));
-        DataGenerationVisitor visitor = new DataGenerationVisitor(context);
+        EagerGenerationContext context = new EagerGenerationContext(registry, new Random(123L));
+        DataGenerationVisitor<JsonNode> visitor = new DataGenerationVisitor<>(context);
 
         JsonNode result = buildResult.getTree().accept(visitor);
 
@@ -100,24 +100,24 @@ class DataGenerationVisitorTest {
     @Test
     void testObjectGeneration() throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "profile": {
-                                "age": {"gen": "number", "min": 18, "max": 65},
-                                "city": {"gen": "address.city"}
-                            }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "profile": {
+                            "age": {"gen": "number", "min": 18, "max": 65},
+                            "city": {"gen": "address.city"}
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         DslTreeBuildResult buildResult = builder.build(dsl);
         assertThat(buildResult.hasErrors()).isFalse();
 
-        GenerationContext context = new GenerationContext(registry, new Random(123L));
-        DataGenerationVisitor visitor = new DataGenerationVisitor(context);
+        EagerGenerationContext context = new EagerGenerationContext(registry, new Random(123L));
+        DataGenerationVisitor<JsonNode> visitor = new DataGenerationVisitor<>(context);
 
         JsonNode result = buildResult.getTree().accept(visitor);
 
@@ -135,29 +135,29 @@ class DataGenerationVisitorTest {
     @Test
     void testReferenceGeneration() throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "countries": {
-                        "count": 3,
-                        "item": {
-                            "name": {"gen": "country.name"},
-                            "code": {"gen": "country.countryCode"}
-                        }
-                    },
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "name.firstName"},
-                            "country": {"ref": "countries[*].name"}
-                        }
+            {
+                "countries": {
+                    "count": 3,
+                    "item": {
+                        "name": {"gen": "country.name"},
+                        "code": {"gen": "country.countryCode"}
+                    }
+                },
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "name.firstName"},
+                        "country": {"ref": "countries[*].name"}
                     }
                 }
-                """);
+            }
+            """);
 
         DslTreeBuildResult buildResult = builder.build(dsl);
         assertThat(buildResult.hasErrors()).isFalse();
 
-        GenerationContext context = new GenerationContext(registry, new Random(123L));
-        DataGenerationVisitor visitor = new DataGenerationVisitor(context);
+        EagerGenerationContext context = new EagerGenerationContext(registry, new Random(123L));
+        DataGenerationVisitor<JsonNode> visitor = new DataGenerationVisitor<>(context);
 
         JsonNode result = buildResult.getTree().accept(visitor);
 
@@ -180,16 +180,16 @@ class DataGenerationVisitorTest {
     @Test
     void testSeedConsistency() throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.firstName"}
-                        }
+            {
+                "users": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.firstName"}
                     }
                 }
-                """);
+            }
+            """);
 
         // Generate with same seed twice using separate registries
         Random random1 = new Random(456L);
@@ -198,8 +198,8 @@ class DataGenerationVisitorTest {
         DslTreeBuildResult buildResult1 = builder1.build(dsl);
         assertThat(buildResult1.hasErrors()).isFalse();
 
-        GenerationContext context1 = new GenerationContext(registry1, random1);
-        DataGenerationVisitor visitor1 = new DataGenerationVisitor(context1);
+        EagerGenerationContext context1 = new EagerGenerationContext(registry1, random1);
+        DataGenerationVisitor<JsonNode> visitor1 = new DataGenerationVisitor<>(context1);
         JsonNode result1 = buildResult1.getTree().accept(visitor1);
 
         Random random2 = new Random(456L);
@@ -208,8 +208,8 @@ class DataGenerationVisitorTest {
         DslTreeBuildResult buildResult2 = builder2.build(dsl);
         assertThat(buildResult2.hasErrors()).isFalse();
 
-        GenerationContext context2 = new GenerationContext(registry2, random2);
-        DataGenerationVisitor visitor2 = new DataGenerationVisitor(context2);
+        EagerGenerationContext context2 = new EagerGenerationContext(registry2, random2);
+        DataGenerationVisitor<JsonNode> visitor2 = new DataGenerationVisitor<>(context2);
         JsonNode result2 = buildResult2.getTree().accept(visitor2);
 
         assertThat(result1).isEqualTo(result2);

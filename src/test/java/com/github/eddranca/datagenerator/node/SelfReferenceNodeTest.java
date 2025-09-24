@@ -2,7 +2,7 @@ package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.visitor.GenerationContext;
+import com.github.eddranca.datagenerator.visitor.EagerGenerationContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 class SelfReferenceNodeTest {
 
     @Mock
-    private GenerationContext mockContext;
+    private EagerGenerationContext mockContext;
 
     private ObjectMapper mapper;
 
@@ -40,8 +40,8 @@ class SelfReferenceNodeTest {
     void testResolveWithExistingField() {
         SelfReferenceNode node = new SelfReferenceNode("name", List.of(), false);
         JsonNode currentItem = mapper.createObjectNode()
-                .put("name", "John")
-                .put("age", 30);
+            .put("name", "John")
+            .put("age", 30);
 
         JsonNode result = node.resolve(mockContext, currentItem, null);
 
@@ -52,8 +52,8 @@ class SelfReferenceNodeTest {
     void testResolveWithMissingField() {
         SelfReferenceNode node = new SelfReferenceNode("missingField", List.of(), false);
         JsonNode currentItem = mapper.createObjectNode()
-                .put("name", "John")
-                .put("age", 30);
+            .put("name", "John")
+            .put("age", 30);
 
         when(mockContext.getMapper()).thenReturn(mapper);
 
@@ -67,8 +67,8 @@ class SelfReferenceNodeTest {
         SelfReferenceNode node = new SelfReferenceNode("address", List.of(), false);
         JsonNode address = mapper.createObjectNode().put("city", "New York").put("state", "NY");
         JsonNode currentItem = mapper.createObjectNode()
-                .put("name", "John")
-                .set("address", address);
+            .put("name", "John")
+            .set("address", address);
 
         JsonNode result = node.resolve(mockContext, currentItem, null);
 
@@ -79,8 +79,8 @@ class SelfReferenceNodeTest {
     void testResolveWithNullField() {
         SelfReferenceNode node = new SelfReferenceNode("nullField", List.of(), false);
         JsonNode currentItem = mapper.createObjectNode()
-                .put("name", "John")
-                .putNull("nullField");
+            .put("name", "John")
+            .putNull("nullField");
 
         JsonNode result = node.resolve(mockContext, currentItem, null);
 
@@ -92,8 +92,8 @@ class SelfReferenceNodeTest {
         SelfReferenceNode node = new SelfReferenceNode("tags", List.of(), false);
         JsonNode tags = mapper.createArrayNode().add("tag1").add("tag2");
         JsonNode currentItem = mapper.createObjectNode()
-                .put("name", "John")
-                .set("tags", tags);
+            .put("name", "John")
+            .set("tags", tags);
 
         JsonNode result = node.resolve(mockContext, currentItem, null);
 
@@ -107,11 +107,11 @@ class SelfReferenceNodeTest {
     void testResolveWithObjectField() {
         SelfReferenceNode node = new SelfReferenceNode("profile", List.of(), false);
         JsonNode profile = mapper.createObjectNode()
-                .put("bio", "Software Developer")
-                .put("experience", 5);
+            .put("bio", "Software Developer")
+            .put("experience", 5);
         JsonNode currentItem = mapper.createObjectNode()
-                .put("name", "John")
-                .set("profile", profile);
+            .put("name", "John")
+            .set("profile", profile);
 
         JsonNode result = node.resolve(mockContext, currentItem, null);
 
@@ -130,7 +130,7 @@ class SelfReferenceNodeTest {
         JsonNode failureResult = mapper.nullNode();
 
         when(mockContext.handleFilteringFailure("Self reference 'this.name' value matches filter"))
-                .thenReturn(failureResult);
+            .thenReturn(failureResult);
 
         JsonNode result = node.resolve(mockContext, currentItem, filterValues);
 

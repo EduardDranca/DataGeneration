@@ -90,8 +90,8 @@ class ChoiceFieldNodeTest {
         List<Double> weights = List.of(0.7); // Only one weight for two options
 
         assertThatThrownBy(() -> new ChoiceFieldNode(options, weights, List.of()))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Options and weights lists must have the same size");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Options and weights lists must have the same size");
     }
 
     @Test
@@ -100,8 +100,8 @@ class ChoiceFieldNodeTest {
         List<Double> weights = List.of(0.7, -0.3);
 
         assertThatThrownBy(() -> new ChoiceFieldNode(options, weights, List.of()))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("All weights must be positive numbers");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("All weights must be positive numbers");
     }
 
     @Test
@@ -110,8 +110,8 @@ class ChoiceFieldNodeTest {
         List<Double> weights = List.of(0.7, 0.0);
 
         assertThatThrownBy(() -> new ChoiceFieldNode(options, weights, List.of()))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("All weights must be positive numbers");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("All weights must be positive numbers");
     }
 
     @Test
@@ -122,8 +122,8 @@ class ChoiceFieldNodeTest {
         weights.add(null);
 
         assertThatThrownBy(() -> new ChoiceFieldNode(options, weights, List.of()))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("All weights must be positive numbers");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("All weights must be positive numbers");
     }
 
     @Test

@@ -1,73 +1,64 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
-class GenerationTest {
+class GenerationTest extends ParameterizedGenerationTest {
 
-    private Generation generation;
-    private ObjectMapper mapper;
-
-    @BeforeEach
-    void setUp() throws Exception {
-        mapper = new ObjectMapper();
-        JsonNode dslNode = mapper.readTree("""
-                {
-                    "countries": {
-                        "count": 3,
-                        "tags": ["country"],
-                        "item": {
-                            "name": {"gen": "country.name"},
-                            "isoCode": {"gen": "country.countryCode"},
-                            "id": {"gen": "choice", "options": ["Romania", "Brasil"]},
-                            "embargoed": {"gen": "choice", "options": [true, false, false, false]}
-                        }
-                    },
-                    "companies": {
-                        "count": 10,
-                        "tags": ["company"],
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "company.name"},
-                            "countryCode": {"ref": "countries[*].isoCode", "filter": [{"ref": "countries[0].isoCode"}]},
-                            "ctrName": {"ref": "countries[*].id", "filter": ["Romania"]}
-                        }
-                    }
+    private static final String TEST_DSL = """
+        {
+            "countries": {
+                "count": 3,
+                "tags": ["country"],
+                "item": {
+                    "name": {"gen": "country.name"},
+                    "isoCode": {"gen": "country.countryCode"},
+                    "id": {"gen": "choice", "options": ["Romania", "Brasil"]},
+                    "embargoed": {"gen": "choice", "options": [true, false, false, false]}
                 }
-                """);
-        generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+            },
+            "companies": {
+                "count": 10,
+                "tags": ["company"],
+                "item": {
+                    "id": {"gen": "uuid"},
+                    "name": {"gen": "company.name"},
+                    "countryCode": {"ref": "countries[*].isoCode", "filter": [{"ref": "countries[0].isoCode"}]},
+                    "ctrName": {"ref": "countries[*].id", "filter": ["Romania"]}
+                }
+            }
+        }
+        """;
+
+    @BothImplementationsTest
+    void testAsJsonNode(boolean memoryOptimized) throws Exception {
+        Generation generation = generateFromDsl(TEST_DSL, memoryOptimized);
+        JsonNode collectionsNode = createLegacyJsonNode(generation);
+
+        assertThat(collectionsNode).isNotNull();
+        assertThat(collectionsNode.has("companies")).isTrue();
+        assertThat(collectionsNode.has("countries")).isTrue();
+
+        JsonNode companies = collectionsNode.get("companies");
+        JsonNode countries = collectionsNode.get("countries");
+
+        assertThat(companies).isNotNull();
+        assertThat(companies.size()).isGreaterThan(0);
+        assertThat(countries).isNotNull();
+        assertThat(countries.size()).isGreaterThan(0);
     }
 
-    @Test
-    void testGetCollections() {
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-
-        assertThat(collections)
-            .isNotNull()
-            .containsKeys("companies", "countries");
-
-        List<JsonNode> companies = collections.get("companies");
-        List<JsonNode> countries = collections.get("countries");
-
-        assertThat(companies).isNotNull().isNotEmpty();
-        assertThat(countries).isNotNull().isNotEmpty();
-    }
-
-    @Test
-    void testGetCollectionsAsJsonNode() {
-        JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
+    @BothImplementationsTest
+    void testGetCollectionsAsJsonNode(boolean memoryOptimized) throws Exception {
+        Generation generation = generateFromDsl(TEST_DSL, memoryOptimized);
+        JsonNode collectionsNode = createLegacyJsonNode(generation);
 
         assertThat(collectionsNode).isNotNull();
         assertThat(collectionsNode.has("companies")).isTrue();
@@ -78,9 +69,10 @@ class GenerationTest {
         assertThat(collectionsNode.get("countries").isEmpty()).isFalse();
     }
 
-    @Test
-    void testAsJson() throws Exception {
-        String json = generation.asJson();
+    @BothImplementationsTest
+    void testAsJson(boolean memoryOptimized) throws Exception {
+        Generation generation = generateFromDsl(TEST_DSL, memoryOptimized);
+        String json = createLegacyJsonString(generation);
 
         assertThat(json)
             .isNotNull()
@@ -91,9 +83,10 @@ class GenerationTest {
         assertThatNoException().isThrownBy(() -> mapper.readTree(json));
     }
 
-    @Test
-    void testAsJsonNode() {
-        JsonNode jsonNode = generation.asJsonNode();
+    @BothImplementationsTest
+    void testAsJsonNodeStructure(boolean memoryOptimized) throws Exception {
+        Generation generation = generateFromDsl(TEST_DSL, memoryOptimized);
+        JsonNode jsonNode = createLegacyJsonNode(generation);
 
         assertThat(jsonNode).isNotNull();
         assertThat(jsonNode.has("companies")).isTrue();
@@ -102,9 +95,10 @@ class GenerationTest {
         assertThat(jsonNode.get("countries").isArray()).isTrue();
     }
 
-    @Test
-    void testAsSqlInsertsAll() {
-        Map<String, String> sqlMap = generation.asSqlInserts();
+    @BothImplementationsTest
+    void testAsSqlInsertsAll(boolean memoryOptimized) throws Exception {
+        Generation generation = generateFromDsl(TEST_DSL, memoryOptimized);
+        Map<String, String> sqlMap = collectAllSqlInserts(generation);
 
         assertThat(sqlMap)
             .isNotNull()
@@ -118,10 +112,16 @@ class GenerationTest {
         assertThat(countriesSql).contains("INSERT INTO countries");
     }
 
-    @Test
-    void testAsSqlInsertsSpecificTable() {
-        Map<String, String> companiesSqlMap = generation.asSqlInserts("companies");
-        Map<String, String> countriesSqlMap = generation.asSqlInserts("countries");
+    @BothImplementationsTest
+    void testAsSqlInsertsSpecificTable(boolean memoryOptimized) throws Exception {
+        Generation generation = generateFromDsl(TEST_DSL, memoryOptimized);
+
+        // Get SQL for specific collections by collecting their streams
+        Map<String, String> companiesSqlMap = new HashMap<>();
+        companiesSqlMap.put("companies", generation.streamSqlInserts("companies").collect(Collectors.joining("\n")));
+
+        Map<String, String> countriesSqlMap = new HashMap<>();
+        countriesSqlMap.put("countries", generation.streamSqlInserts("countries").collect(Collectors.joining("\n")));
 
         assertThat(companiesSqlMap)
             .isNotNull()
@@ -139,19 +139,11 @@ class GenerationTest {
         assertThat(countriesSql).contains("INSERT INTO countries");
     }
 
-    @Test
-    void testAsSqlInsertsNonExistentTable() {
-        Map<String, String> sqlMap = generation.asSqlInserts("nonexistent");
-
-        assertThat(sqlMap)
-            .isNotNull()
-            .isEmpty();
-    }
-
-    @Test
-    void testJsonAndJsonNodeConsistency() throws Exception {
-        String jsonString = generation.asJson();
-        JsonNode jsonNode = generation.asJsonNode();
+    @BothImplementationsTest
+    void testJsonAndJsonNodeConsistency(boolean memoryOptimized) throws Exception {
+        Generation generation = generateFromDsl(TEST_DSL, memoryOptimized);
+        String jsonString = createLegacyJsonString(generation);
+        JsonNode jsonNode = createLegacyJsonNode(generation);
 
         assertThat(jsonString).isNotNull();
         assertThat(jsonNode).isNotNull();
@@ -163,49 +155,30 @@ class GenerationTest {
         }).doesNotThrowAnyException();
     }
 
-    @Test
-    void testCollectionsAndJsonNodeConsistency() {
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
 
-        assertThat(collections).isNotNull();
-        assertThat(collectionsNode).isNotNull();
-
-        assertThat(collections.keySet())
-            .as("Collections and collectionsNode should have same keys")
-            .allSatisfy(key -> {
-                assertThat(collectionsNode.has(key)).isTrue();
-                assertThat(collectionsNode.get(key).size()).isEqualTo(collections.get(key).size());
-            });
-    }
-
-    @Test
-    void testSqlGenerationWithComplexObjects() throws Exception {
-        JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.firstName"},
-                            "profile": {
-                                "age": {"gen": "number", "min": 18, "max": 65},
-                                "address": {
-                                    "street": {"gen": "address.streetAddress"},
-                                    "city": {"gen": "address.city"}
-                                }
+    @BothImplementationsTest
+    void testSqlGenerationWithComplexObjects(boolean memoryOptimized) throws Exception {
+        String complexDsl = """
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.firstName"},
+                        "profile": {
+                            "age": {"gen": "number", "min": 18, "max": 65},
+                            "address": {
+                                "street": {"gen": "address.streetAddress"},
+                                "city": {"gen": "address.city"}
                             }
                         }
                     }
                 }
-                """);
+            }
+            """;
 
-        Generation complexGeneration = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, String> sqlMap = complexGeneration.asSqlInserts("users");
+        Generation complexGeneration = generateFromDsl(complexDsl, memoryOptimized);
+        Map<String, String> sqlMap = collectAllSqlInserts(complexGeneration);
         String sql = sqlMap.get("users");
 
         assertThat(sql)
@@ -217,21 +190,16 @@ class GenerationTest {
         assertThat(sql.contains("'{") || sql.contains("\"{")).isTrue();
     }
 
-    @Test
-    void testEmptyGeneration() throws Exception {
-        JsonNode emptyDsl = mapper.readTree("{}");
+    @BothImplementationsTest
+    void testEmptyGeneration(boolean memoryOptimized) throws Exception {
+        String emptyDsl = "{}";
+        Generation emptyGeneration = generateFromDsl(emptyDsl, memoryOptimized);
 
-        Generation emptyGeneration = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(emptyDsl)
-            .generate();
+        JsonNode jsonNode = createLegacyJsonNode(emptyGeneration);
+        String json = createLegacyJsonString(emptyGeneration);
+        Map<String, String> sqlMap = collectAllSqlInserts(emptyGeneration);
 
-        Map<String, List<JsonNode>> collections = emptyGeneration.getCollections();
-        JsonNode jsonNode = emptyGeneration.asJsonNode();
-        String json = emptyGeneration.asJson();
-        Map<String, String> sqlMap = emptyGeneration.asSqlInserts();
-
-        assertThat(collections).isNotNull().isEmpty();
+        assertThat(emptyGeneration.getCollectionNames()).isNotNull().isEmpty();
         assertThat(jsonNode).isNotNull();
         assertThat(json).isNotNull();
         assertThat(sqlMap).isNotNull().isEmpty();
@@ -239,33 +207,28 @@ class GenerationTest {
         assertThat(json.equals("{}") || json.equals("{ }")).isTrue();
     }
 
-    @Test
-    void testSingleItemGeneration() throws Exception {
-        JsonNode singleItemDsl = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 1,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "value": {"gen": "string", "length": 5}
-                        }
+    @BothImplementationsTest
+    void testSingleItemGeneration(boolean memoryOptimized) throws Exception {
+        String singleItemDsl = """
+            {
+                "items": {
+                    "count": 1,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "value": {"gen": "string", "length": 5}
                     }
                 }
-                """);
+            }
+            """;
 
-        Generation singleGeneration = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(singleItemDsl)
-            .generate();
+        Generation singleGeneration = generateFromDsl(singleItemDsl, memoryOptimized);
+        JsonNode collectionsNode = createLegacyJsonNode(singleGeneration);
 
-        Map<String, List<JsonNode>> collections = singleGeneration.getCollections();
+        assertThat(collectionsNode).isNotNull();
+        assertThat(collectionsNode.has("items")).isTrue();
+        assertThat(collectionsNode.get("items").size()).isEqualTo(1);
 
-        assertThat(collections)
-            .isNotNull()
-            .containsKey("items");
-        assertThat(collections.get("items"))
-            .hasSize(1);
-        JsonNode firstItem = collections.get("items").get(0);
+        JsonNode firstItem = collectionsNode.get("items").get(0);
         assertThat(firstItem.has("id")).isTrue();
         assertThat(firstItem.has("value")).isTrue();
         assertThat(firstItem.size()).isBetween(0, 50);

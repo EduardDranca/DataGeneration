@@ -7,69 +7,51 @@ import com.github.eddranca.datagenerator.exception.FilteringException;
 import com.github.eddranca.datagenerator.generator.FilteringGeneratorAdapter;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
+import com.github.eddranca.datagenerator.node.CollectionNode;
 import com.github.eddranca.datagenerator.node.Sequential;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
+import java.util.Set;
 
 /**
- * Context for data generation that maintains state during visitor traversal.
- * Tracks generated collections, tagged collections, and provides access to
- * generators.
+ * Abstract base class for generation contexts that provides shared functionality
+ * for both eager and lazy generation modes.
  * <p>
- * ARCHITECTURE:
- * This class provides core utilities for the typed reference system:
- * 1. Collection management (registration, retrieval, caching)
- * 2. Sequential tracking for deterministic generation
- * 3. Filtering utilities with configurable behavior
- * 4. Generator integration with filtering support
+ * This class contains all the core utilities that are common to both generation
+ * strategies:
+ * - Generator registry and random number generation
+ * - Sequential tracking for deterministic generation
+ * - Filtering utilities with configurable behavior
+ * - Generator integration with filtering support
  * <p>
- * All reference nodes use these core utility methods:
- * - getElementFromCollection() for element selection
- * - applyFiltering() for collection filtering
- * - handleFilteringFailure() for error handling
- * - getNextSequentialIndex() for sequential tracking
- * <p>
- * The system now uses typed AbstractReferenceNode instances exclusively,
- * eliminating string-based reference resolution and improving type safety.
+ * Subclasses implement the specific collection management strategies for their
+ * respective generation modes.
+ *
+ * @param <T> The type of items stored in collections (JsonNode for eager, LazyItemProxy for lazy)
  */
-public class GenerationContext {
-    private final GeneratorRegistry generatorRegistry;
-    private final Random random;
-    private final ObjectMapper mapper;
-    private final Map<String, List<JsonNode>> namedCollections; // Final collections for output
-    private final Map<String, List<JsonNode>> referenceCollections; // Collections available for references (includes
-    // DSL keys)
-    private final Map<String, List<JsonNode>> taggedCollections;
-    private final Map<String, JsonNode> namedPicks;
-    private final Map<Sequential, Integer> sequentialCounters;
-    private final int maxFilteringRetries;
-    private final FilteringBehavior filteringBehavior;
+public abstract class AbstractGenerationContext<T> {
+    protected final GeneratorRegistry generatorRegistry;
+    protected final Random random;
+    protected final ObjectMapper mapper;
+    protected final Map<Sequential, Integer> sequentialCounters;
+    protected final int maxFilteringRetries;
+    protected final FilteringBehavior filteringBehavior;
 
-    public GenerationContext(GeneratorRegistry generatorRegistry, Random random, int maxFilteringRetries,
-                             FilteringBehavior filteringBehavior) {
+    protected AbstractGenerationContext(GeneratorRegistry generatorRegistry, Random random,
+                                        int maxFilteringRetries, FilteringBehavior filteringBehavior) {
         this.generatorRegistry = generatorRegistry;
         this.random = random;
         this.mapper = new ObjectMapper();
-        this.namedCollections = new HashMap<>();
-        this.referenceCollections = new HashMap<>();
-        this.taggedCollections = new HashMap<>();
-        this.namedPicks = new HashMap<>();
         this.sequentialCounters = new IdentityHashMap<>();
         this.maxFilteringRetries = maxFilteringRetries;
         this.filteringBehavior = filteringBehavior;
-
     }
 
-    public GenerationContext(GeneratorRegistry generatorRegistry, Random random) {
-        this(generatorRegistry, random, 100, FilteringBehavior.RETURN_NULL);
-    }
-
+    // Getters for shared resources
     public GeneratorRegistry getGeneratorRegistry() {
         return generatorRegistry;
     }
@@ -82,56 +64,43 @@ public class GenerationContext {
         return mapper;
     }
 
-    public void registerCollection(String name, List<JsonNode> collection) {
-        List<JsonNode> existing = namedCollections.get(name);
-        if (existing == null) {
-            namedCollections.put(name, new ArrayList<>(collection));
-        } else {
-            // Merge collections with the same name
-            existing.addAll(collection);
-        }
-    }
+    // Abstract methods that subclasses must implement
+    public abstract void registerCollection(String name, List<T> collection);
 
-    public void registerPick(String name, JsonNode value) {
-        namedPicks.put(name, value);
-    }
+    public abstract void registerReferenceCollection(String name, List<T> collection);
 
-    public void registerReferenceCollection(String name, List<JsonNode> collection) {
-        referenceCollections.put(name, new ArrayList<>(collection));
-    }
+    public abstract void registerTaggedCollection(String tag, List<T> collection);
 
-    public void registerTaggedCollection(String tag, List<JsonNode> collection) {
-        List<JsonNode> existing = taggedCollections.get(tag);
-        if (existing == null) {
-            taggedCollections.put(tag, new ArrayList<>(collection));
-        } else {
-            // Merge collections with the same tag
-            existing.addAll(collection);
-        }
-    }
+    public abstract void registerPick(String name, JsonNode value);
 
-    public List<JsonNode> getCollection(String name) {
-        // First check reference collections (includes DSL keys), then named collections
-        List<JsonNode> collection = referenceCollections.get(name);
-        if (collection != null) {
-            return collection;
-        }
-        collection = namedCollections.get(name);
-        return collection != null ? collection : List.of();
-    }
+    public abstract List<JsonNode> getCollection(String name);
 
-    public List<JsonNode> getTaggedCollection(String tag) {
-        List<JsonNode> collection = taggedCollections.get(tag);
-        return collection != null ? collection : List.of();
-    }
+    public abstract List<JsonNode> getTaggedCollection(String tag);
 
-    public Map<String, List<JsonNode>> getNamedCollections() {
-        return new HashMap<>(namedCollections);
-    }
+    public abstract JsonNode getNamedPick(String name);
 
-    public JsonNode getNamedPick(String name) {
-        return namedPicks.get(name);
-    }
+    public abstract Map<String, List<T>> getNamedCollections();
+
+
+
+    /**
+     * Creates and registers a collection based on the context's strategy.
+     * Each context implements its own approach (eager vs lazy).
+     *
+     * @param node    the collection node to process
+     * @param visitor the visitor for generating items
+     * @return the result JsonNode for the visitor
+     */
+    public abstract JsonNode createAndRegisterCollection(CollectionNode node, DataGenerationVisitor<T> visitor);
+
+    /**
+     * Registers a pick from the specified collection.
+     *
+     * @param alias          the pick alias
+     * @param index          the index to pick
+     * @param collectionName the name of the collection to pick from
+     */
+    public abstract void registerPickFromCollection(String alias, int index, String collectionName);
 
     /**
      * Gets a random or sequential element from a collection.
@@ -247,4 +216,6 @@ public class GenerationContext {
             return handleFilteringFailure(e.getMessage());
         }
     }
+
+
 }

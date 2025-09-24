@@ -65,9 +65,9 @@ class GeneratedFieldNodeTest {
     @Test
     void testGeneratedFieldWithComplexOptions() {
         JsonNode options = mapper.createObjectNode()
-                .put("min", 1)
-                .put("max", 100)
-                .put("type", "integer");
+            .put("min", 1)
+            .put("max", 100)
+            .put("type", "integer");
 
         GeneratedFieldNode node = new GeneratedFieldNode("number", options, null, List.of());
 

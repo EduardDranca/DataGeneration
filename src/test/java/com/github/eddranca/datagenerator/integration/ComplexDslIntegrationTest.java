@@ -2,14 +2,14 @@ package com.github.eddranca.datagenerator.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.DslDataGenerator;
 import com.github.eddranca.datagenerator.Generation;
+import com.github.eddranca.datagenerator.ParameterizedGenerationTest;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
 
+import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.asJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
@@ -17,7 +17,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
  * Integration tests for complex DSL scenarios including picks, filtering,
  * multiple collections, and advanced reference patterns.
  */
-class ComplexDslIntegrationTest {
+class ComplexDslIntegrationTest extends ParameterizedGenerationTest {
 
     private ObjectMapper mapper;
 
@@ -26,64 +26,61 @@ class ComplexDslIntegrationTest {
         mapper = new ObjectMapper();
     }
 
-    @Test
-    void testPickWithReferencesAndFiltering() throws Exception {
+    @BothImplementationsTest
+    void testPickWithReferencesAndFiltering(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "countries": {
-                        "count": 5,
-                        "tags": ["location"],
-                        "item": {
-                            "name": {"gen": "country.name"},
-                            "code": {"gen": "country.countryCode"},
-                            "continent": {"gen": "choice", "options": ["Europe", "Asia", "America", "Africa"]},
-                            "population": {"gen": "number", "min": 1000000, "max": 100000000}
-                        },
-                        "pick": {
-                            "firstCountry": 0,
-                            "secondCountry": 1,
-                            "lastCountry": 4
-                        }
+            {
+                "countries": {
+                    "count": 5,
+                    "tags": ["location"],
+                    "item": {
+                        "name": {"gen": "country.name"},
+                        "code": {"gen": "country.countryCode"},
+                        "continent": {"gen": "choice", "options": ["Europe", "Asia", "America", "Africa"]},
+                        "population": {"gen": "number", "min": 1000000, "max": 100000000}
                     },
-                    "cities": {
-                        "count": 10,
-                        "item": {
-                            "name": {"gen": "address.city"},
-                            "countryName": {"ref": "countries[*].name", "filter": [{"ref": "firstCountry.name"}]},
-                            "countryCode": {"ref": "countries[*].code"},
-                            "population": {"gen": "number", "min": 50000, "max": 10000000}
-                        }
-                    },
-                    "companies": {
-                        "count": 15,
-                        "item": {
-                            "name": {"gen": "company.name"},
-                            "headquarters": {"ref": "cities[*].name"},
-                            "country": {"ref": "byTag[location]"},
-                            "foundedYear": {"gen": "number", "min": 1900, "max": 2023},
-                            "employees": {"gen": "number", "min": 10, "max": 50000}
-                        }
-                    },
-                    "users": {
-                        "count": 25,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.fullName"},
-                            "email": {"gen": "internet.emailAddress"},
-                            "company": {"ref": "companies[*].name"},
-                            "homeCountry": {"ref": "lastCountry.name"},
-                            "age": {"gen": "number", "min": 18, "max": 65}
-                        }
+                    "pick": {
+                        "firstCountry": 0,
+                        "secondCountry": 1,
+                        "lastCountry": 4
+                    }
+                },
+                "cities": {
+                    "count": 10,
+                    "item": {
+                        "name": {"gen": "address.city"},
+                        "countryName": {"ref": "countries[*].name", "filter": [{"ref": "firstCountry.name"}]},
+                        "countryCode": {"ref": "countries[*].code"},
+                        "population": {"gen": "number", "min": 50000, "max": 10000000}
+                    }
+                },
+                "companies": {
+                    "count": 15,
+                    "item": {
+                        "name": {"gen": "company.name"},
+                        "headquarters": {"ref": "cities[*].name"},
+                        "country": {"ref": "byTag[location]"},
+                        "foundedYear": {"gen": "number", "min": 1900, "max": 2023},
+                        "employees": {"gen": "number", "min": 10, "max": 50000}
+                    }
+                },
+                "users": {
+                    "count": 25,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.fullName"},
+                        "email": {"gen": "internet.emailAddress"},
+                        "company": {"ref": "companies[*].name"},
+                        "homeCountry": {"ref": "lastCountry.name"},
+                        "age": {"gen": "number", "min": 18, "max": 65}
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dsl)
-            .generate();
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Verify all collections exist
         assertThat(collections).containsKeys("countries", "cities", "companies", "users");
@@ -115,72 +112,69 @@ class ComplexDslIntegrationTest {
             );
     }
 
-    @Test
-    void testLargeScaleDataGeneration() throws Exception {
+    @BothImplementationsTest
+    void testLargeScaleDataGeneration(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "regions": {
-                        "count": 5,
-                        "tags": ["geo"],
-                        "item": {
-                            "name": {"gen": "choice", "options": ["North", "South", "East", "West", "Central"]},
-                            "code": {"gen": "string", "length": 3}
-                        }
-                    },
-                    "countries": {
-                        "count": 25,
-                        "item": {
-                            "name": {"gen": "country.name"},
-                            "code": {"gen": "country.countryCode"},
-                            "region": {"ref": "regions[*].name"}
-                        }
-                    },
-                    "states": {
-                        "count": 100,
-                        "item": {
-                            "name": {"gen": "address.state"},
-                            "country": {"ref": "countries[*].name"},
-                            "population": {"gen": "number", "min": 100000, "max": 50000000}
-                        }
-                    },
-                    "cities": {
-                        "count": 500,
-                        "item": {
-                            "name": {"gen": "address.city"},
-                            "state": {"ref": "states[*].name"},
-                            "country": {"ref": "countries[*].name"},
-                            "population": {"gen": "number", "min": 10000, "max": 10000000}
-                        }
-                    },
-                    "companies": {
-                        "count": 200,
-                        "item": {
-                            "name": {"gen": "company.name"},
-                            "headquarters": {"ref": "cities[*].name"},
-                            "industry": {"gen": "choice", "options": ["Tech", "Finance", "Healthcare", "Manufacturing", "Retail"]},
-                            "employees": {"gen": "number", "min": 50, "max": 100000}
-                        }
-                    },
-                    "users": {
-                        "count": 1000,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.fullName"},
-                            "email": {"gen": "internet.emailAddress"},
-                            "company": {"ref": "companies[*].name"},
-                            "city": {"ref": "cities[*].name"},
-                            "age": {"gen": "number", "min": 18, "max": 70}
-                        }
+            {
+                "regions": {
+                    "count": 5,
+                    "tags": ["geo"],
+                    "item": {
+                        "name": {"gen": "choice", "options": ["North", "South", "East", "West", "Central"]},
+                        "code": {"gen": "string", "length": 3}
+                    }
+                },
+                "countries": {
+                    "count": 25,
+                    "item": {
+                        "name": {"gen": "country.name"},
+                        "code": {"gen": "country.countryCode"},
+                        "region": {"ref": "regions[*].name"}
+                    }
+                },
+                "states": {
+                    "count": 100,
+                    "item": {
+                        "name": {"gen": "address.state"},
+                        "country": {"ref": "countries[*].name"},
+                        "population": {"gen": "number", "min": 100000, "max": 50000000}
+                    }
+                },
+                "cities": {
+                    "count": 500,
+                    "item": {
+                        "name": {"gen": "address.city"},
+                        "state": {"ref": "states[*].name"},
+                        "country": {"ref": "countries[*].name"},
+                        "population": {"gen": "number", "min": 10000, "max": 10000000}
+                    }
+                },
+                "companies": {
+                    "count": 200,
+                    "item": {
+                        "name": {"gen": "company.name"},
+                        "headquarters": {"ref": "cities[*].name"},
+                        "industry": {"gen": "choice", "options": ["Tech", "Finance", "Healthcare", "Manufacturing", "Retail"]},
+                        "employees": {"gen": "number", "min": 50, "max": 100000}
+                    }
+                },
+                "users": {
+                    "count": 1000,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.fullName"},
+                        "email": {"gen": "internet.emailAddress"},
+                        "company": {"ref": "companies[*].name"},
+                        "city": {"ref": "cities[*].name"},
+                        "age": {"gen": "number", "min": 18, "max": 70}
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(789L)
-            .fromJsonNode(dsl)
-            .generate();
+        Generation generation = generateFromDslWithSeed(dsl, 789L, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Verify all collections have correct sizes
         assertThat(collections.get("regions")).hasSize(5);
@@ -202,65 +196,62 @@ class ComplexDslIntegrationTest {
             });
 
         // Verify JSON serialization works for large datasets
-        String json = generation.asJson();
+        String json = asJson(generation);
         assertThat(json)
             .isNotNull()
             .hasSizeGreaterThan(100000); // Should be substantial JSON
     }
 
-    @Test
-    void testComplexFilteringWithMultipleLevels() throws Exception {
+    @BothImplementationsTest
+    void testComplexFilteringWithMultipleLevels(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "categories": {
-                        "count": 4,
-                        "item": {
-                            "name": {"gen": "choice", "options": ["Electronics", "Books", "Clothing", "Home"]},
-                            "priority": {"gen": "choice", "options": ["high", "medium", "low"]}
-                        },
-                        "pick": {
-                            "highPriorityCategory": 0,
-                            "lowPriorityCategory": 3
-                        }
+            {
+                "categories": {
+                    "count": 4,
+                    "item": {
+                        "name": {"gen": "choice", "options": ["Electronics", "Books", "Clothing", "Home"]},
+                        "priority": {"gen": "choice", "options": ["high", "medium", "low"]}
                     },
-                    "products": {
-                        "count": 20,
-                        "item": {
-                            "name": {"gen": "string", "length": 12},
-                            "category": {"ref": "categories[*].name", "filter": [{"ref": "highPriorityCategory.name"}]},
-                            "price": {"gen": "number", "min": 10, "max": 1000},
-                            "inStock": {"gen": "choice", "options": [true, false]}
-                        }
-                    },
-                    "orders": {
-                        "count": 50,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "product": {"ref": "products[*].name"},
-                            "quantity": {"gen": "number", "min": 1, "max": 10},
-                            "customerEmail": {"gen": "internet.emailAddress"},
-                            "status": {"gen": "choice", "options": ["pending", "shipped", "delivered", "cancelled"]}
-                        }
-                    },
-                    "reviews": {
-                        "count": 30,
-                        "item": {
-                            "orderId": {"ref": "orders[*].id"},
-                            "rating": {"gen": "number", "min": 1, "max": 5},
-                            "comment": {"gen": "string", "length": 50},
-                            "verified": {"gen": "choice", "options": [true, false]},
-                            "productCategory": {"ref": "lowPriorityCategory.name"}
-                        }
+                    "pick": {
+                        "highPriorityCategory": 0,
+                        "lowPriorityCategory": 3
+                    }
+                },
+                "products": {
+                    "count": 20,
+                    "item": {
+                        "name": {"gen": "string", "length": 12},
+                        "category": {"ref": "categories[*].name", "filter": [{"ref": "highPriorityCategory.name"}]},
+                        "price": {"gen": "number", "min": 10, "max": 1000},
+                        "inStock": {"gen": "choice", "options": [true, false]}
+                    }
+                },
+                "orders": {
+                    "count": 50,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "product": {"ref": "products[*].name"},
+                        "quantity": {"gen": "number", "min": 1, "max": 10},
+                        "customerEmail": {"gen": "internet.emailAddress"},
+                        "status": {"gen": "choice", "options": ["pending", "shipped", "delivered", "cancelled"]}
+                    }
+                },
+                "reviews": {
+                    "count": 30,
+                    "item": {
+                        "orderId": {"ref": "orders[*].id"},
+                        "rating": {"gen": "number", "min": 1, "max": 5},
+                        "comment": {"gen": "string", "length": 50},
+                        "verified": {"gen": "choice", "options": [true, false]},
+                        "productCategory": {"ref": "lowPriorityCategory.name"}
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(999L)
-            .fromJsonNode(dsl)
-            .generate();
+        Generation generation = generateFromDslWithSeed(dsl, 999L, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Verify filtering works correctly
         String highPriorityCategoryName = collections.get("categories").get(0).get("name").asText();
@@ -296,60 +287,57 @@ class ComplexDslIntegrationTest {
             });
     }
 
-    @Test
-    void testDynamicTagReferencesWithThisField() throws Exception {
+    @BothImplementationsTest
+    void testDynamicTagReferencesWithThisField(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 10,
-                        "item": {
-                            "name": {"gen": "name.firstName"},
-                            "role": {"gen": "choice", "options": ["admin", "user", "guest"]},
-                            "department": {"gen": "choice", "options": ["engineering", "marketing", "sales"]}
-                        }
-                    },
-                    "admin_resources": {
-                        "count": 5,
-                        "tags": ["admin"],
-                        "item": {
-                            "name": {"gen": "string", "length": 10},
-                            "type": {"gen": "choice", "options": ["server", "database", "application"]}
-                        }
-                    },
-                    "user_resources": {
-                        "count": 8,
-                        "tags": ["user"],
-                        "item": {
-                            "name": {"gen": "string", "length": 8},
-                            "type": {"gen": "choice", "options": ["document", "report", "dashboard"]}
-                        }
-                    },
-                    "guest_resources": {
-                        "count": 3,
-                        "tags": ["guest"],
-                        "item": {
-                            "name": {"gen": "string", "length": 6},
-                            "type": {"gen": "choice", "options": ["faq", "help", "tutorial"]}
-                        }
-                    },
-                    "permissions": {
-                        "count": 15,
-                        "item": {
-                            "userId": {"ref": "users[*].name"},
-                            "userRole": {"ref": "users[*].role"},
-                            "allowedResource": {"ref": "byTag[this.userRole]"},
-                            "accessLevel": {"gen": "choice", "options": ["read", "write", "execute"]}
-                        }
+            {
+                "users": {
+                    "count": 10,
+                    "item": {
+                        "name": {"gen": "name.firstName"},
+                        "role": {"gen": "choice", "options": ["admin", "user", "guest"]},
+                        "department": {"gen": "choice", "options": ["engineering", "marketing", "sales"]}
+                    }
+                },
+                "admin_resources": {
+                    "count": 5,
+                    "tags": ["admin"],
+                    "item": {
+                        "name": {"gen": "string", "length": 10},
+                        "type": {"gen": "choice", "options": ["server", "database", "application"]}
+                    }
+                },
+                "user_resources": {
+                    "count": 8,
+                    "tags": ["user"],
+                    "item": {
+                        "name": {"gen": "string", "length": 8},
+                        "type": {"gen": "choice", "options": ["document", "report", "dashboard"]}
+                    }
+                },
+                "guest_resources": {
+                    "count": 3,
+                    "tags": ["guest"],
+                    "item": {
+                        "name": {"gen": "string", "length": 6},
+                        "type": {"gen": "choice", "options": ["faq", "help", "tutorial"]}
+                    }
+                },
+                "permissions": {
+                    "count": 15,
+                    "item": {
+                        "userId": {"ref": "users[*].name"},
+                        "userRole": {"ref": "users[*].role"},
+                        "allowedResource": {"ref": "byTag[this.userRole]"},
+                        "accessLevel": {"gen": "choice", "options": ["read", "write", "execute"]}
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(111L)
-            .fromJsonNode(dsl)
-            .generate();
+        Generation generation = generateFromDslWithSeed(dsl, 111L, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         // Verify all collections exist and have correct sizes
         assertThat(collections.get("users")).hasSize(10);
@@ -373,82 +361,72 @@ class ComplexDslIntegrationTest {
             });
     }
 
-    @Test
-    void testSeedConsistencyWithComplexStructures() throws Exception {
+    @BothImplementationsTest
+    void testSeedConsistencyWithComplexStructures(boolean memoryOptimized) throws Exception {
         JsonNode dsl = mapper.readTree("""
-                {
-                    "base_data": {
-                        "count": 5,
-                        "tags": ["base"],
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "value": {"gen": "number", "min": 1, "max": 100}
-                        },
-                        "pick": {
-                            "first": 0,
-                            "last": 4
-                        }
+            {
+                "base_data": {
+                    "count": 5,
+                    "tags": ["base"],
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "value": {"gen": "number", "min": 1, "max": 100}
                     },
-                    "derived_data": {
-                        "count": 10,
-                        "item": {
-                            "baseRef": {"ref": "base_data[*].id"},
-                            "filteredRef": {"ref": "base_data[*].value", "filter": [{"ref": "first.value"}]},
-                            "tagRef": {"ref": "byTag[base]"},
-                            "computed": {
-                                "nested": {"gen": "string", "length": 8},
-                                "choice": {"gen": "choice", "options": ["a", "b", "c"]}
-                            }
+                    "pick": {
+                        "first": 0,
+                        "last": 4
+                    }
+                },
+                "derived_data": {
+                    "count": 10,
+                    "item": {
+                        "baseRef": {"ref": "base_data[*].id"},
+                        "filteredRef": {"ref": "base_data[*].value", "filter": [{"ref": "first.value"}]},
+                        "tagRef": {"ref": "byTag[base]"},
+                        "computed": {
+                            "nested": {"gen": "string", "length": 8},
+                            "choice": {"gen": "choice", "options": ["a", "b", "c"]}
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         // Generate with same seed twice
-        Generation generation1 = DslDataGenerator.create()
-            .withSeed(222L)
-            .fromJsonNode(dsl)
-            .generate();
-
-        Generation generation2 = DslDataGenerator.create()
-            .withSeed(222L)
-            .fromJsonNode(dsl)
-            .generate();
+        Generation generation1 = generateFromDslWithSeed(dsl, 222L, memoryOptimized);
+        Generation generation2 = generateFromDslWithSeed(dsl, 222L, memoryOptimized);
 
         // Results should be identical
-        assertThat(generation1.asJson()).isEqualTo(generation2.asJson());
+        assertThat(asJson(generation1)).isEqualTo(asJson(generation2));
 
         // Verify structure is correct
-        Map<String, List<JsonNode>> collections1 = generation1.getCollections();
+        Map<String, List<JsonNode>> collections1 = collectAllJsonNodes(generation1);
         assertThat(collections1.get("base_data")).hasSize(5);
         assertThat(collections1.get("derived_data")).hasSize(10);
     }
 
-    @Test
-    void testCsvGeneratorUsersIntegration() throws Exception {
+    @BothImplementationsTest
+    void testCsvGeneratorUsersIntegration(boolean memoryOptimized) throws Exception {
         String csvPath = "src/test/resources/test-users.csv";
 
         JsonNode dslNode = mapper.readTree(String.format("""
-                {
-                    "users_from_csv": {
-                        "count": 3,
-                        "item": {
-                            "...user": {
-                                "gen": "csv",
-                                "file": "%s",
-                                "sequential": true
-                            }
+            {
+                "users_from_csv": {
+                    "count": 3,
+                    "item": {
+                        "...user": {
+                            "gen": "csv",
+                            "file": "%s",
+                            "sequential": true
                         }
                     }
                 }
-                """, csvPath));
+            }
+            """, csvPath));
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(42L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDslWithSeed(dslNode, 42L, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users_from_csv");
 
         assertThat(users)
@@ -468,32 +446,29 @@ class ComplexDslIntegrationTest {
             );
     }
 
-    @Test
-    void testCsvGeneratorPickFieldIntegration() throws Exception {
+    @BothImplementationsTest
+    void testCsvGeneratorPickFieldIntegration(boolean memoryOptimized) throws Exception {
         String csvPath = "src/test/resources/test-users.csv";
 
         // TODO: This should work with just "item": { "gen": "csv", ... } but currently requires the nested 'user' object
         JsonNode dslNode = mapper.readTree(String.format("""
-                {
-                    "users_picked": {
-                        "count": 3,
-                        "item": {
-                            "user": {
-                                "gen": "csv",
-                                "file": "%s",
-                                "sequential": true
-                            }
+            {
+                "users_picked": {
+                    "count": 3,
+                    "item": {
+                        "user": {
+                            "gen": "csv",
+                            "file": "%s",
+                            "sequential": true
                         }
                     }
                 }
-                """, csvPath));
+            }
+            """, csvPath));
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(42L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDslWithSeed(dslNode, 42L, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users_picked");
 
         assertThat(users)

@@ -1,42 +1,37 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class WeightedChoiceTest {
-    private final ObjectMapper mapper = new ObjectMapper();
+class WeightedChoiceTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testBasicWeightedChoice() throws IOException {
-        JsonNode dslNode = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 1000,
-                        "item": {
-                            "type": {
-                                "gen": "choice",
-                                "options": ["rare", "common", "uncommon"],
-                                "weights": [0.1, 0.8, 0.1]
-                            }
+    @BothImplementationsTest
+    void testBasicWeightedChoice(boolean memoryOptimized) throws IOException {
+        String dsl = """
+            {
+                "items": {
+                    "count": 1000,
+                    "item": {
+                        "type": {
+                            "gen": "choice",
+                            "options": ["rare", "common", "uncommon"],
+                            "weights": [0.1, 0.8, 0.1]
                         }
                     }
                 }
-                """);
+            }
+            """;
 
-        Generation generation = DslDataGenerator.create()
+        Generation generation = createGenerator(memoryOptimized)
             .withSeed(1993L)
-            .fromJsonNode(dslNode)
+            .fromJsonString(dsl)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        List<JsonNode> items = collections.get("items");
+        List<JsonNode> items = generation.streamJsonNodes("items").toList();
 
         assertThat(items).hasSize(1000);
 
@@ -62,30 +57,29 @@ class WeightedChoiceTest {
             .as("Uncommon count should be around 100, got: " + uncommonCount).isTrue();
     }
 
-    @Test
-    void testWeightedChoiceWithDifferentWeights() throws IOException {
-        JsonNode dslNode = mapper.readTree("""
-                {
-                    "products": {
-                        "count": 1000,
-                        "item": {
-                            "category": {
-                                "gen": "choice",
-                                "options": ["electronics", "books", "clothing", "home"],
-                                "weights": [5.0, 2.0, 1.0, 2.0]
-                            }
+    @BothImplementationsTest
+    void testWeightedChoiceWithDifferentWeights(boolean memoryOptimized) throws IOException {
+        String dsl = """
+            {
+                "products": {
+                    "count": 1000,
+                    "item": {
+                        "category": {
+                            "gen": "choice",
+                            "options": ["electronics", "books", "clothing", "home"],
+                            "weights": [5.0, 2.0, 1.0, 2.0]
                         }
                     }
                 }
-                """);
+            }
+            """;
 
-        Generation generation = DslDataGenerator.create()
+        Generation generation = createGenerator(memoryOptimized)
             .withSeed(456L)
-            .fromJsonNode(dslNode)
+            .fromJsonString(dsl)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        List<JsonNode> products = collections.get("products");
+        List<JsonNode> products = generation.streamJsonNodes("products").toList();
 
         assertThat(products).hasSize(1000);
 
@@ -115,35 +109,34 @@ class WeightedChoiceTest {
             .isTrue();
     }
 
-    @Test
-    void testWeightedChoiceWithComplexOptions() throws IOException {
-        JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 500,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "role": {
-                                "gen": "choice",
-                                "options": [
-                                    {"gen": "choice", "options": ["admin", "super_admin"]},
-                                    {"gen": "choice", "options": ["user", "member"]},
-                                    "guest"
-                                ],
-                                "weights": [0.05, 0.9, 0.05]
-                            }
+    @BothImplementationsTest
+    void testWeightedChoiceWithComplexOptions(boolean memoryOptimized) throws IOException {
+        String dsl = """
+            {
+                "users": {
+                    "count": 500,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "role": {
+                            "gen": "choice",
+                            "options": [
+                                {"gen": "choice", "options": ["admin", "super_admin"]},
+                                {"gen": "choice", "options": ["user", "member"]},
+                                "guest"
+                            ],
+                            "weights": [0.05, 0.9, 0.05]
                         }
                     }
                 }
-                """);
+            }
+            """;
 
-        Generation generation = DslDataGenerator.create()
+        Generation generation = createGenerator(memoryOptimized)
             .withSeed(789L)
-            .fromJsonNode(dslNode)
+            .fromJsonString(dsl)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        List<JsonNode> users = collections.get("users");
+        List<JsonNode> users = generation.streamJsonNodes("users").toList();
 
         assertThat(users).hasSize(500);
 
@@ -173,29 +166,28 @@ class WeightedChoiceTest {
             .isTrue();
     }
 
-    @Test
-    void testUnweightedChoiceStillWorks() throws IOException {
-        JsonNode dslNode = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 300,
-                        "item": {
-                            "color": {
-                                "gen": "choice",
-                                "options": ["red", "green", "blue"]
-                            }
+    @BothImplementationsTest
+    void testUnweightedChoiceStillWorks(boolean memoryOptimized) throws IOException {
+        String dsl = """
+            {
+                "items": {
+                    "count": 300,
+                    "item": {
+                        "color": {
+                            "gen": "choice",
+                            "options": ["red", "green", "blue"]
                         }
                     }
                 }
-                """);
+            }
+            """;
 
-        Generation generation = DslDataGenerator.create()
+        Generation generation = createGenerator(memoryOptimized)
             .withSeed(999L)
-            .fromJsonNode(dslNode)
+            .fromJsonString(dsl)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        List<JsonNode> items = collections.get("items");
+        List<JsonNode> items = generation.streamJsonNodes("items").toList();
 
         assertThat(items).hasSize(300);
 
@@ -218,30 +210,29 @@ class WeightedChoiceTest {
             .isTrue();
     }
 
-    @Test
-    void testWeightedChoiceWithDecimalWeights() throws IOException {
-        JsonNode dslNode = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 1000,
-                        "item": {
-                            "priority": {
-                                "gen": "choice",
-                                "options": ["high", "medium", "low"],
-                                "weights": [0.15, 0.35, 0.50]
-                            }
+    @BothImplementationsTest
+    void testWeightedChoiceWithDecimalWeights(boolean memoryOptimized) throws IOException {
+        String dsl = """
+            {
+                "items": {
+                    "count": 1000,
+                    "item": {
+                        "priority": {
+                            "gen": "choice",
+                            "options": ["high", "medium", "low"],
+                            "weights": [0.15, 0.35, 0.50]
                         }
                     }
                 }
-                """);
+            }
+            """;
 
-        Generation generation = DslDataGenerator.create()
+        Generation generation = createGenerator(memoryOptimized)
             .withSeed(111L)
-            .fromJsonNode(dslNode)
+            .fromJsonString(dsl)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        List<JsonNode> items = collections.get("items");
+        List<JsonNode> items = generation.streamJsonNodes("items").toList();
 
         assertThat(items).hasSize(1000);
 

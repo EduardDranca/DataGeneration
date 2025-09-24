@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,7 +56,7 @@ class BooleanGeneratorTest {
 
         int totalTests = 1000;
 
-        long trueCount = java.util.stream.IntStream.range(0, totalTests)
+        long trueCount = IntStream.range(0, totalTests)
             .mapToObj(i -> generator.generate(options))
             .mapToInt(result -> result.asBoolean() ? 1 : 0)
             .sum();

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.generator.Generator;
 import net.datafaker.Faker;
 
+import java.util.UUID;
+
 public class UuidGenerator implements Generator {
     private final Faker faker;
     private final ObjectMapper mapper;
@@ -19,7 +21,7 @@ public class UuidGenerator implements Generator {
         // Create a deterministic UUID using the faker's random
         long mostSigBits = faker.random().nextLong();
         long leastSigBits = faker.random().nextLong();
-        java.util.UUID uuid = new java.util.UUID(mostSigBits, leastSigBits);
+        UUID uuid = new UUID(mostSigBits, leastSigBits);
         return mapper.valueToTree(uuid.toString());
     }
 }

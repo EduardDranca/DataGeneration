@@ -6,6 +6,8 @@ import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Random;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FinanceGeneratorTest {
@@ -40,8 +42,8 @@ class FinanceGeneratorTest {
 
     @Test
     void testSeedConsistency() {
-        Faker faker1 = new Faker(new java.util.Random(123L));
-        Faker faker2 = new Faker(new java.util.Random(123L));
+        Faker faker1 = new Faker(new Random(123L));
+        Faker faker2 = new Faker(new Random(123L));
 
         FinanceGenerator gen1 = new FinanceGenerator(faker1);
         FinanceGenerator gen2 = new FinanceGenerator(faker2);

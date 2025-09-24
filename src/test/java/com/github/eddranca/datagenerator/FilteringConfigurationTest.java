@@ -1,45 +1,37 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.exception.FilteringException;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class FilteringConfigurationTest {
-    private final ObjectMapper mapper = new ObjectMapper();
+class FilteringConfigurationTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testDefaultFilteringBehaviorReturnsNull() throws IOException {
+    @BothImplementationsTest
+    void testDefaultFilteringBehaviorReturnsNull(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "restrictedChoice": {
-                                "gen": "choice",
-                                "options": ["A", "B"],
-                                "filter": ["A", "B"]
-                            }
+            {
+                "items": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "restrictedChoice": {
+                            "gen": "choice",
+                            "options": ["A", "B"],
+                            "filter": ["A", "B"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        List<JsonNode> items = collections.get("items");
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
+        List<JsonNode> items = generation.streamJsonNodes("items").toList();
 
         assertThat(items).hasSize(5);
 
@@ -49,94 +41,102 @@ class FilteringConfigurationTest {
             .allSatisfy(choice -> assertThat(choice.isNull()).isTrue());
     }
 
-    @Test
-    void testThrowExceptionFilteringBehaviorForGenerators() throws IOException {
+    @BothImplementationsTest
+    void testThrowExceptionFilteringBehaviorForGenerators(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "restrictedChoice": {
-                                "gen": "choice",
-                                "options": ["A", "B"],
-                                "filter": ["A", "B"]
-                            }
+            {
+                "items": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "restrictedChoice": {
+                            "gen": "choice",
+                            "options": ["A", "B"],
+                            "filter": ["A", "B"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
-            .fromJsonNode(dslNode)
-            .generate())
+        assertThatThrownBy(() -> {
+            Generation generation = createGenerator(memoryOptimized)
+                .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
+                .fromJsonNode(dslNode)
+                .generate();
+
+            // Force evaluation by consuming the stream
+            generation.streamJsonNodes("items").forEach(item -> {
+            });
+        })
             .isInstanceOf(FilteringException.class)
             .hasMessageContaining("All choice options were filtered out");
     }
 
-    @Test
-    void testThrowExceptionFilteringBehaviorForReferences() throws IOException {
+    @BothImplementationsTest
+    void testThrowExceptionFilteringBehaviorForReferences(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "reference_data": {
-                        "count": 2,
-                        "item": {
-                            "name": {"gen": "choice", "options": ["Alice", "Bob"]}
-                        }
-                    },
-                    "filtered_items": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {
-                                "ref": "reference_data[*].name",
-                                "filter": ["Alice", "Bob"]
-                            }
+            {
+                "reference_data": {
+                    "count": 2,
+                    "item": {
+                        "name": {"gen": "choice", "options": ["Alice", "Bob"]}
+                    }
+                },
+                "filtered_items": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {
+                            "ref": "reference_data[*].name",
+                            "filter": ["Alice", "Bob"]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-            .withSeed(123L)
-            .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
-            .fromJsonNode(dslNode)
-            .generate())
+        assertThatThrownBy(() -> {
+            Generation generation = createGenerator(memoryOptimized)
+                .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
+                .fromJsonNode(dslNode)
+                .generate();
+
+            // Force evaluation by consuming the stream
+            generation.streamJsonNodes("filtered_items").forEach(item -> {
+            });
+        })
             .isInstanceOf(FilteringException.class)
             .hasMessageContaining("has no valid values after filtering");
     }
 
-    @Test
-    void testCustomMaxFilteringRetries() throws IOException {
+    @BothImplementationsTest
+    void testCustomMaxFilteringRetries(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 5,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "number": {
-                                "gen": "number",
-                                "min": 1,
-                                "max": 3,
-                                "filter": [1]
-                            }
+            {
+                "items": {
+                    "count": 5,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "number": {
+                            "gen": "number",
+                            "min": 1,
+                            "max": 3,
+                            "filter": [1]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
         // With only 2 possible values (1, 2) and filtering out 1,
         // we should be able to generate 2 consistently
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
+        Generation generation = createGenerator(memoryOptimized)
             .withMaxFilteringRetries(10) // Lower retry count
             .fromJsonNode(dslNode)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        List<JsonNode> items = collections.get("items");
+        List<JsonNode> items = generation.streamJsonNodes("items").toList();
 
         assertThat(items).hasSize(5);
 
@@ -170,34 +170,32 @@ class FilteringConfigurationTest {
         assertThat(generator).isNotNull();
     }
 
-    @Test
-    void testSuccessfulFilteringWithCustomRetries() throws IOException {
+    @BothImplementationsTest
+    void testSuccessfulFilteringWithCustomRetries(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "items": {
-                        "count": 10,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "number": {
-                                "gen": "number",
-                                "min": 1,
-                                "max": 10,
-                                "filter": [1, 2, 3, 4, 5]
-                            }
+            {
+                "items": {
+                    "count": 10,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "number": {
+                            "gen": "number",
+                            "min": 1,
+                            "max": 10,
+                            "filter": [1, 2, 3, 4, 5]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
+        Generation generation = createGenerator(memoryOptimized)
             .withMaxFilteringRetries(200) // Higher retry count
             .withFilteringBehavior(FilteringBehavior.RETURN_NULL)
             .fromJsonNode(dslNode)
             .generate();
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
-        List<JsonNode> items = collections.get("items");
+        List<JsonNode> items = generation.streamJsonNodes("items").toList();
 
         assertThat(items)
             .hasSize(10)

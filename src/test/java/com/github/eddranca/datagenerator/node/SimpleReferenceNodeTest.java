@@ -2,7 +2,7 @@ package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.visitor.GenerationContext;
+import com.github.eddranca.datagenerator.visitor.EagerGenerationContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 class SimpleReferenceNodeTest {
 
     @Mock
-    private GenerationContext mockContext;
+    private EagerGenerationContext mockContext;
 
     private ObjectMapper mapper;
 
@@ -143,7 +143,7 @@ class SimpleReferenceNodeTest {
         when(mockContext.getCollection("users")).thenReturn(originalCollection);
         when(mockContext.applyFiltering(originalCollection, "name", filterValues)).thenReturn(emptyFilteredCollection);
         when(mockContext.handleFilteringFailure("Simple reference 'users.name' has no valid values after filtering"))
-                .thenReturn(failureResult);
+            .thenReturn(failureResult);
 
         JsonNode result = node.resolve(mockContext, currentItem, filterValues);
 

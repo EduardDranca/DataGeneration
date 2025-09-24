@@ -85,9 +85,9 @@ Generation result = DslDataGenerator.create()
     .generate();
 
 // Multiple output formats
-Map<String, List<JsonNode>> collections = result.getCollections();
-JsonNode json = result.asJsonNode();
-Map<String, String> sqlInserts = result.asSqlInserts();
+Stream<JsonNode> users = result.streamJsonNodes("users");  // Stream specific collection
+Map<String, Stream<JsonNode>> jsonStreams = result.asJsonNodes(); // All collections as streams
+Map<String, Stream<String>> sqlInserts = result.asSqlInserts(); // SQL inserts as streams
 ```
 
 ## Key Features
@@ -195,15 +195,18 @@ Reference collections by tags for flexible relationships:
 ```java
 Generation result = DslDataGenerator.create().fromJsonString(dsl).generate();
 
-// Java Collections
-Map<String, List<JsonNode>> data = result.getCollections();
+// Collection metadata
+boolean hasUsers = result.hasCollection("users");
+int userCount = result.getCollectionSize("users");
+Set<String> collectionNames = result.getCollectionNames();
 
-// JSON
-JsonNode json = result.asJsonNode();
-String jsonString = result.asJson();
+// Streaming data (memory efficient)
+Stream<JsonNode> users = result.streamJsonNodes("users");
+Map<String, Stream<JsonNode>> allCollections = result.asJsonNodes();
 
-// SQL Inserts
-Map<String, String> sqlInserts = result.asSqlInserts();
+// SQL Inserts as streams
+Map<String, Stream<String>> sqlInserts = result.asSqlInserts();
+Stream<String> userSqlInserts = result.streamSqlInserts("users");
 ```
 
 ## Built-in Generators
@@ -230,6 +233,29 @@ Map<String, String> sqlInserts = result.asSqlInserts();
 | **csv** | CSV data | 
 
 ## Advanced Features
+
+### Memory Optimization
+For large datasets, enable memory optimization to reduce memory usage by not generating unreferenced fields until needed:
+
+```java
+Generation result = DslDataGenerator.create()
+    .withMemoryOptimization()  // Enable lazy generation
+    .withSeed(123L)           // Always use seed for reproducibility
+    .fromJsonString(dsl)
+    .generate();
+
+// Stream data efficiently without loading everything into memory
+result.streamSqlInserts("users")
+    .forEach(sql -> database.execute(sql));
+```
+
+**Important**: Memory optimization uses lazy generation, which means:
+- Streaming the same collection multiple times yields different results
+- Processing order affects the generated data
+- Not suitable for parallel processing
+- Best for one-time streaming of large datasets
+
+See the [Memory Optimization Example](examples/04-memory-optimization/) for detailed usage.
 
 ### Custom Generators
 ```java

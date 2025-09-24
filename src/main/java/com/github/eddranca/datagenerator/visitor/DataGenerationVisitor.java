@@ -28,22 +28,26 @@ import com.github.eddranca.datagenerator.node.TagReferenceNode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
  * Visitor that generates actual data from the DSL node tree.
  * Maintains generation context and produces JSON output.
  */
-public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
-    private final GenerationContext context;
+public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
+    private final AbstractGenerationContext<T> context;
     private ObjectNode currentItem; // Track current item for "this" references
+    private String currentCollectionName; // Track current collection for lazy generation
 
-    public DataGenerationVisitor(GenerationContext context) {
+    public DataGenerationVisitor(AbstractGenerationContext<T> context) {
         this.context = context;
     }
 
     @Override
     public JsonNode visitRoot(RootNode node) {
+        // Dependency analysis is now handled at the DslDataGenerator level
+
         ObjectNode result = context.getMapper().createObjectNode();
 
         for (Map.Entry<String, CollectionNode> entry : node.getCollections().entrySet()) {
@@ -56,45 +60,42 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
 
     @Override
     public JsonNode visitCollection(CollectionNode node) {
-        List<JsonNode> items = new ArrayList<>();
+        // Set collection context for lazy generation
+        String previousCollectionName = this.currentCollectionName;
+        this.currentCollectionName = node.getCollectionName();
 
-        for (int i = 0; i < node.getCount(); i++) {
-            JsonNode item = node.getItem().accept(this);
-            items.add(item);
-        }
+        try {
+            // Let the context handle collection creation and registration
+            JsonNode collection = context.createAndRegisterCollection(node, this);
 
-        context.registerCollection(node.getCollectionName(), items);
-
-        if (!node.getName().equals(node.getCollectionName())) {
-            context.registerReferenceCollection(node.getName(), items);
-        }
-
-        for (String tag : node.getTags()) {
-            context.registerTaggedCollection(tag, items);
-        }
-
-        for (Map.Entry<String, Integer> pick : node.getPicks().entrySet()) {
-            String alias = pick.getKey();
-            int index = pick.getValue();
-            if (index < items.size()) {
-                context.registerPick(alias, items.get(index));
+            // Handle picks
+            for (Map.Entry<String, Integer> pick : node.getPicks().entrySet()) {
+                String alias = pick.getKey();
+                int index = pick.getValue();
+                context.registerPickFromCollection(alias, index, node.getCollectionName());
             }
-        }
 
-        return context.getMapper().valueToTree(items);
+            return collection;
+        } finally {
+            // Restore previous collection context
+            this.currentCollectionName = previousCollectionName;
+        }
     }
 
     @Override
     public JsonNode visitItem(ItemNode node) {
-        ObjectNode item = context.getMapper().createObjectNode();
         ObjectNode previousItem = this.currentItem;
-        this.currentItem = item;
+
         try {
+            // Standard item generation - lazy generation is now handled at collection level
+            ObjectNode item = context.getMapper().createObjectNode();
+            this.currentItem = item;
             return visitObjectLikeNode(node.getFields(), item);
         } finally {
             this.currentItem = previousItem; // Restore previous item context
         }
     }
+
 
     @Override
     public JsonNode visitGeneratedField(GeneratedFieldNode node) {
@@ -298,10 +299,6 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
         return node.getFilterExpression().accept(this);
     }
 
-    // ------------------------
-    // Private helpers
-    // ------------------------
-
 
     private void spreadInto(ObjectNode target, JsonNode source, List<String> fieldSpecs) {
         if (source == null || !source.isObject()) {
@@ -329,6 +326,15 @@ public class DataGenerationVisitor implements DslNodeVisitor<JsonNode> {
                 target.set(targetField, value);
             }
         }
+    }
+
+    // Methods for managing current item context in lazy proxies
+    public ObjectNode getCurrentItem() {
+        return currentItem;
+    }
+
+    public void setCurrentItem(ObjectNode currentItem) {
+        this.currentItem = currentItem;
     }
 
 }

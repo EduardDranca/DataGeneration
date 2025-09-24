@@ -18,34 +18,32 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ArrayFieldTest {
+class ArrayFieldTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testFixedSizeArray() throws Exception {
+    @BothImplementationsTest
+    void testFixedSizeArray(boolean memoryOptimized) throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "tags": {
-                                "array": {
-                                    "size": 3,
-                                    "item": "tag"
-                                }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "tags": {
+                            "array": {
+                                "size": 3,
+                                "item": "tag"
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
-        Generation generation = DslDataGenerator.create().fromJsonString(dsl).generate();
-        JsonNode result = generation.asJsonNode();
-
-        assertThat(result.has("users")).isTrue();
-        JsonNode users = result.get("users");
-        assertThat(users.isArray()).isTrue();
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
+        List<JsonNode> users = generation.streamJsonNodes("users").toList();
 
         assertThat(users)
             .hasSize(2)
@@ -56,35 +54,32 @@ class ArrayFieldTest {
                 assertThat(tags).hasSize(3);
 
                 assertThat(tags).allSatisfy(tag ->
-                        assertThat(tag.asText()).isEqualTo("tag")
+                    assertThat(tag.asText()).isEqualTo("tag")
                 );
             });
     }
 
-    @Test
-    void testVariableSizeArray() throws Exception {
+    @BothImplementationsTest
+    void testVariableSizeArray(boolean memoryOptimized) throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "scores": {
-                                "array": {
-                                    "minSize": 2,
-                                    "maxSize": 5,
-                                    "item": 100
-                                }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "scores": {
+                            "array": {
+                                "minSize": 2,
+                                "maxSize": 5,
+                                "item": 100
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
-        Generation generation = DslDataGenerator.create().fromJsonString(dsl).generate();
-        JsonNode result = generation.asJsonNode();
-
-        assertThat(result.has("users")).isTrue();
-        JsonNode users = result.get("users");
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
+        List<JsonNode> users = generation.streamJsonNodes("users").toList();
         JsonNode user = users.get(0);
 
         assertThat(user.has("scores")).isTrue();
@@ -98,32 +93,31 @@ class ArrayFieldTest {
             );
     }
 
-    @Test
-    void testArrayWithGeneratedItems() throws Exception {
+    @BothImplementationsTest
+    void testArrayWithGeneratedItems(boolean memoryOptimized) throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "numbers": {
-                                "array": {
-                                    "size": 3,
-                                    "item": {
-                                        "gen": "number",
-                                        "min": 1,
-                                        "max": 10
-                                    }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "numbers": {
+                            "array": {
+                                "size": 3,
+                                "item": {
+                                    "gen": "number",
+                                    "min": 1,
+                                    "max": 10
                                 }
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
-        Generation generation = DslDataGenerator.create().fromJsonString(dsl).generate();
-        JsonNode result = generation.asJsonNode();
-
-        JsonNode user = result.get("users").get(0);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
+        List<JsonNode> users = generation.streamJsonNodes("users").toList();
+        JsonNode user = users.get(0);
         JsonNode numbers = user.get("numbers");
 
         assertThat(numbers.isArray()).isTrue();
@@ -136,33 +130,32 @@ class ArrayFieldTest {
             });
     }
 
-    @Test
-    void testArrayWithObjectItems() throws Exception {
+    @BothImplementationsTest
+    void testArrayWithObjectItems(boolean memoryOptimized) throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "contacts": {
-                                "array": {
-                                    "size": 2,
-                                    "item": {
-                                        "type": "email",
-                                        "value": {
-                                            "gen": "internet.emailAddress"
-                                        }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "contacts": {
+                            "array": {
+                                "size": 2,
+                                "item": {
+                                    "type": "email",
+                                    "value": {
+                                        "gen": "internet.emailAddress"
                                     }
                                 }
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
-        Generation generation = DslDataGenerator.create().fromJsonString(dsl).generate();
-        JsonNode result = generation.asJsonNode();
-
-        JsonNode user = result.get("users").get(0);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
+        List<JsonNode> users = generation.streamJsonNodes("users").toList();
+        JsonNode user = users.get(0);
         JsonNode contacts = user.get("contacts");
 
         assertThat(contacts.isArray()).isTrue();
@@ -178,28 +171,27 @@ class ArrayFieldTest {
             });
     }
 
-    @Test
-    void testEmptyArray() throws Exception {
+    @BothImplementationsTest
+    void testEmptyArray(boolean memoryOptimized) throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 1,
-                        "item": {
-                            "emptyList": {
-                                "array": {
-                                    "size": 0,
-                                    "item": "value"
-                                }
+            {
+                "users": {
+                    "count": 1,
+                    "item": {
+                        "emptyList": {
+                            "array": {
+                                "size": 0,
+                                "item": "value"
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
-        Generation generation = DslDataGenerator.create().fromJsonString(dsl).generate();
-        JsonNode result = generation.asJsonNode();
-
-        JsonNode user = result.get("users").get(0);
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
+        List<JsonNode> users = generation.streamJsonNodes("users").toList();
+        JsonNode user = users.get(0);
         JsonNode emptyList = user.get("emptyList");
 
         assertThat(emptyList.isArray()).isTrue();
@@ -222,19 +214,19 @@ class ArrayFieldTest {
         @Test
         void testBasicCountWithGenerator() throws Exception {
             String dsl = """
-                    {
-                      "users": {
-                        "count": 1,
-                        "item": {
-                          "tags": {
-                            "gen": "choice",
-                            "options": ["tech", "business", "personal"],
-                            "count": 3
-                          }
-                        }
+                {
+                  "users": {
+                    "count": 1,
+                    "item": {
+                      "tags": {
+                        "gen": "choice",
+                        "options": ["tech", "business", "personal"],
+                        "count": 3
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode jsonNode = objectMapper.readTree(dsl);
             DslTreeBuildResult result = builder.build(jsonNode);
@@ -256,18 +248,18 @@ class ArrayFieldTest {
         @Test
         void testCountWithLiteralValue() throws Exception {
             String dsl = """
-                    {
-                      "users": {
-                        "count": 1,
-                        "item": {
-                          "repeated_message": {
-                            "value": "Hello World",
-                            "count": 5
-                          }
-                        }
+                {
+                  "users": {
+                    "count": 1,
+                    "item": {
+                      "repeated_message": {
+                        "value": "Hello World",
+                        "count": 5
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode jsonNode = objectMapper.readTree(dsl);
             DslTreeBuildResult result = builder.build(jsonNode);
@@ -289,19 +281,19 @@ class ArrayFieldTest {
         @Test
         void testCountZero() throws Exception {
             String dsl = """
-                    {
-                      "users": {
-                        "count": 1,
-                        "item": {
-                          "empty_tags": {
-                            "gen": "choice",
-                            "options": ["a", "b", "c"],
-                            "count": 0
-                          }
-                        }
+                {
+                  "users": {
+                    "count": 1,
+                    "item": {
+                      "empty_tags": {
+                        "gen": "choice",
+                        "options": ["a", "b", "c"],
+                        "count": 0
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode jsonNode = objectMapper.readTree(dsl);
             DslTreeBuildResult result = builder.build(jsonNode);
@@ -327,19 +319,19 @@ class ArrayFieldTest {
         })
         void testInvalidCountErrors(String countValue, String expectedError) throws Exception {
             String dsl = """
-                    {
-                      "users": {
-                        "count": 1,
-                        "item": {
-                          "invalid_tags": {
-                            "gen": "choice",
-                            "options": ["a", "b", "c"],
-                            "count": %s
-                          }
-                        }
+                {
+                  "users": {
+                    "count": 1,
+                    "item": {
+                      "invalid_tags": {
+                        "gen": "choice",
+                        "options": ["a", "b", "c"],
+                        "count": %s
                       }
                     }
-                    """.formatted(countValue);
+                  }
+                }
+                """.formatted(countValue);
 
             JsonNode jsonNode = objectMapper.readTree(dsl);
             DslTreeBuildResult result = builder.build(jsonNode);
@@ -353,17 +345,17 @@ class ArrayFieldTest {
         @Test
         void testCountWithoutAdditionalFieldsError() throws Exception {
             String dsl = """
-                    {
-                      "users": {
-                        "count": 1,
-                        "item": {
-                          "invalid_field": {
-                            "count": 3
-                          }
-                        }
+                {
+                  "users": {
+                    "count": 1,
+                    "item": {
+                      "invalid_field": {
+                        "count": 3
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode jsonNode = objectMapper.readTree(dsl);
             DslTreeBuildResult result = builder.build(jsonNode);
@@ -377,26 +369,26 @@ class ArrayFieldTest {
         @Test
         void testCountWithComplexGenerator() throws Exception {
             String dsl = """
-                    {
-                      "companies": {
-                        "count": 1,
-                        "item": {
-                          "employees": {
-                            "name": {
-                              "gen": "choice",
-                              "options": ["Alice", "Bob", "Charlie"]
-                            },
-                            "age": {
-                              "gen": "number",
-                              "min": 18,
-                              "max": 65
-                            },
-                            "count": 2
-                          }
-                        }
+                {
+                  "companies": {
+                    "count": 1,
+                    "item": {
+                      "employees": {
+                        "name": {
+                          "gen": "choice",
+                          "options": ["Alice", "Bob", "Charlie"]
+                        },
+                        "age": {
+                          "gen": "number",
+                          "min": 18,
+                          "max": 65
+                        },
+                        "count": 2
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode jsonNode = objectMapper.readTree(dsl);
             DslTreeBuildResult result = builder.build(jsonNode);

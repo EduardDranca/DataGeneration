@@ -3,21 +3,28 @@ package com.github.eddranca.datagenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.builder.DslTreeBuilder;
+import com.github.eddranca.datagenerator.exception.DataGenerationException;
 import com.github.eddranca.datagenerator.exception.DslValidationException;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
 import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.validation.DslTreeBuildResult;
+import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 import com.github.eddranca.datagenerator.visitor.DataGenerationVisitor;
-import com.github.eddranca.datagenerator.visitor.GenerationContext;
+import com.github.eddranca.datagenerator.visitor.EagerGenerationContext;
+import com.github.eddranca.datagenerator.visitor.LazyGenerationContext;
+import com.github.eddranca.datagenerator.visitor.PathDependencyAnalyzer;
 import net.datafaker.Faker;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 public class DslDataGenerator {
     private final ObjectMapper mapper;
@@ -25,12 +32,14 @@ public class DslDataGenerator {
     private final Random random;
     private final int maxFilteringRetries;
     private final FilteringBehavior filteringBehavior;
+    private final boolean memoryOptimizationEnabled;
 
     private DslDataGenerator(Builder builder) {
         this.random = new Random(builder.seed);
         this.mapper = new ObjectMapper();
         this.maxFilteringRetries = builder.maxFilteringRetries;
         this.filteringBehavior = builder.filteringBehavior;
+        this.memoryOptimizationEnabled = builder.memoryOptimizationEnabled;
         this.generatorRegistry = builder.generatorRegistry != null ? builder.generatorRegistry
             : GeneratorRegistry.withDefaultGenerators(new Faker(random));
 
@@ -98,15 +107,37 @@ public class DslDataGenerator {
             this.random.setSeed(rootNode.getSeed());
         }
 
-        // Generate data using the visitor
-        GenerationContext context = new GenerationContext(generatorRegistry, random, maxFilteringRetries,
-            filteringBehavior);
-        DataGenerationVisitor visitor = new DataGenerationVisitor(context);
+        // Generate data using the appropriate visitor context
+        AbstractGenerationContext<?> context;
+
+        if (memoryOptimizationEnabled) {
+            // For lazy generation, analyze dependencies first
+            PathDependencyAnalyzer analyzer = new PathDependencyAnalyzer();
+            Map<String, Set<String>> referencedPaths = analyzer.analyzeRoot(rootNode);
+            
+            LazyGenerationContext lazyContext = new LazyGenerationContext(generatorRegistry, random,
+                maxFilteringRetries, filteringBehavior);
+            lazyContext.setReferencedPaths(referencedPaths);
+            context = lazyContext;
+        } else {
+            context = new EagerGenerationContext(generatorRegistry, random, maxFilteringRetries, filteringBehavior);
+        }
+
+        DataGenerationVisitor<?> visitor = new DataGenerationVisitor<>(context);
 
         rootNode.accept(visitor);
+        return getGeneration(context);
+    }
 
-        // Convert the result to the expected format for Generation
-        return new Generation(context.getNamedCollections());
+    private <T> Generation getGeneration(AbstractGenerationContext<T> context) {
+        try {
+            Constructor<? extends Generation> constructor = memoryOptimizationEnabled
+                ? LazyGeneration.class.getDeclaredConstructor(Map.class)
+                : EagerGeneration.class.getDeclaredConstructor(Map.class);
+            return constructor.newInstance(context.getNamedCollections());
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new DataGenerationException("Could not create Generation instance.", e);
+        }
     }
 
     /**
@@ -118,6 +149,7 @@ public class DslDataGenerator {
         private Map<String, Generator> customGenerators;
         private int maxFilteringRetries = 100;
         private FilteringBehavior filteringBehavior = FilteringBehavior.RETURN_NULL;
+        private boolean memoryOptimizationEnabled = false;
 
         private Builder() {
         }
@@ -191,13 +223,33 @@ public class DslDataGenerator {
         }
 
         /**
+         * Enables memory optimization using lazy field materialization.
+         * Only referenced fields are initially generated; other fields are created on-demand during streaming.
+         * This reduces memory usage when generating large datasets.
+         *
+         * <p><strong>Consistency behavior:</strong> Streaming the same collection multiple times
+         * will yield different results. Processing order affects generated data.
+         * Not suitable for parallel processing.
+         *
+         * <p>Use when memory usage is a concern and you need to stream data once.
+         * For consistent results, always use {@link #withSeed(long)} and process sequentially.
+         *
+         * @return this builder for method chaining
+         * @see LazyGeneration
+         */
+        public Builder withMemoryOptimization() {
+            this.memoryOptimizationEnabled = true;
+            return this;
+        }
+
+        /**
          * Creates a Generation.Builder for fluent file-based generation.
          *
          * @param file the DSL file to process
          * @return a Generation.Builder for further configuration
          */
-        public Generation.Builder fromFile(File file) {
-            return new Generation.Builder(build(), file);
+        public AbstractGeneration.Builder fromFile(File file) {
+            return new AbstractGeneration.Builder(build(), file);
         }
 
         /**
@@ -206,7 +258,7 @@ public class DslDataGenerator {
          * @param filePath the path to the DSL file
          * @return a Generation.Builder for further configuration
          */
-        public Generation.Builder fromFile(String filePath) {
+        public AbstractGeneration.Builder fromFile(String filePath) {
             return fromFile(new File(filePath));
         }
 
@@ -216,7 +268,7 @@ public class DslDataGenerator {
          * @param path the path to the DSL file
          * @return a Generation.Builder for further configuration
          */
-        public Generation.Builder fromFile(Path path) {
+        public AbstractGeneration.Builder fromFile(Path path) {
             return fromFile(path.toFile());
         }
 
@@ -226,8 +278,8 @@ public class DslDataGenerator {
          * @param jsonString the DSL JSON as a string
          * @return a Generation.Builder for further configuration
          */
-        public Generation.Builder fromJsonString(String jsonString) {
-            return new Generation.Builder(build(), jsonString);
+        public AbstractGeneration.Builder fromJsonString(String jsonString) {
+            return new AbstractGeneration.Builder(build(), jsonString);
         }
 
         /**
@@ -236,8 +288,8 @@ public class DslDataGenerator {
          * @param jsonNode the DSL as a JsonNode
          * @return a Generation.Builder for further configuration
          */
-        public Generation.Builder fromJsonNode(JsonNode jsonNode) {
-            return new Generation.Builder(build(), jsonNode);
+        public AbstractGeneration.Builder fromJsonNode(JsonNode jsonNode) {
+            return new AbstractGeneration.Builder(build(), jsonNode);
         }
 
         /**

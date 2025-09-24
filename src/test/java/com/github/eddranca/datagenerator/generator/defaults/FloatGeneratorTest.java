@@ -6,6 +6,8 @@ import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Random;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FloatGeneratorTest {
@@ -109,8 +111,8 @@ class FloatGeneratorTest {
     void testSeedConsistency() throws Exception {
         JsonNode options = mapper.readTree("{\"min\": 1, \"max\": 10}");
 
-        Faker faker1 = new Faker(new java.util.Random(123L));
-        Faker faker2 = new Faker(new java.util.Random(123L));
+        Faker faker1 = new Faker(new Random(123L));
+        Faker faker2 = new Faker(new Random(123L));
 
         FloatGenerator gen1 = new FloatGenerator(faker1);
         FloatGenerator gen2 = new FloatGenerator(faker2);

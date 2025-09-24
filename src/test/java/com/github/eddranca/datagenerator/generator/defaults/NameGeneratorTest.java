@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.util.Random;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,8 +64,8 @@ class NameGeneratorTest {
 
     @Test
     void testSeedConsistency() {
-        Faker faker1 = new Faker(new java.util.Random(123L));
-        Faker faker2 = new Faker(new java.util.Random(123L));
+        Faker faker1 = new Faker(new Random(123L));
+        Faker faker2 = new Faker(new Random(123L));
 
         NameGenerator gen1 = new NameGenerator(faker1);
         NameGenerator gen2 = new NameGenerator(faker2);

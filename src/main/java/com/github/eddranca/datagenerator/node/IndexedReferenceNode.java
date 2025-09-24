@@ -1,7 +1,7 @@
 package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.eddranca.datagenerator.visitor.GenerationContext;
+import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 
 import java.util.List;
 
@@ -42,6 +42,18 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
         return isWildcardIndex;
     }
 
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public String getIndex() {
+        return index;
+    }
+
     @Override
     public String getReferenceString() {
         String base = collectionName + "[" + index + "]";
@@ -49,7 +61,7 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
     }
 
     @Override
-    public JsonNode resolve(GenerationContext context, JsonNode currentItem, List<JsonNode> filterValues) {
+    public JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues) {
         List<JsonNode> collection = context.getCollection(collectionName);
 
         if (isWildcardIndex()) {
@@ -59,7 +71,7 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
         }
     }
 
-    private JsonNode resolveWildcardIndex(GenerationContext context, List<JsonNode> collection, List<JsonNode> filterValues) {
+    private JsonNode resolveWildcardIndex(AbstractGenerationContext<?> context, List<JsonNode> collection, List<JsonNode> filterValues) {
         // Apply filtering for wildcard index
         if (filterValues != null && !filterValues.isEmpty()) {
             collection = context.applyFiltering(collection, hasFieldName() ? fieldName : "", filterValues);
@@ -74,17 +86,17 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
 
         // Select an element
         JsonNode selected = context.getElementFromCollection(collection, this, sequential);
-        return hasFieldName() ? selected.path(fieldName) : selected;
+        return hasFieldName() ? NestedPathUtils.extractNestedField(selected, fieldName) : selected;
     }
 
-    private JsonNode resolveNumericIndex(GenerationContext context, List<JsonNode> collection, List<JsonNode> filterValues) {
+    private JsonNode resolveNumericIndex(AbstractGenerationContext<?> context, List<JsonNode> collection, List<JsonNode> filterValues) {
         // Numeric index - direct access
         if (numericIndex >= collection.size()) {
             return context.getMapper().nullNode();
         }
 
         JsonNode selected = collection.get(numericIndex);
-        JsonNode value = hasFieldName() ? selected.path(fieldName) : selected;
+        JsonNode value = hasFieldName() ? NestedPathUtils.extractNestedField(selected, fieldName) : selected;
 
         // Check filtering for numeric index
         if (filterValues != null && !filterValues.isEmpty() && filterValues.contains(value)) {

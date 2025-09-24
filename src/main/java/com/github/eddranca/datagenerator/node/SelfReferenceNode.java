@@ -1,7 +1,7 @@
 package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.eddranca.datagenerator.visitor.GenerationContext;
+import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 
 import java.util.List;
 
@@ -29,12 +29,12 @@ public class SelfReferenceNode extends AbstractReferenceNode {
     }
 
     @Override
-    public JsonNode resolve(GenerationContext context, JsonNode currentItem, List<JsonNode> filterValues) {
+    public JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues) {
         if (currentItem == null) {
             return context.getMapper().nullNode();
         }
 
-        JsonNode value = currentItem.path(fieldName);
+        JsonNode value = NestedPathUtils.extractNestedField(currentItem, fieldName);
 
         // Self-references typically don't need filtering since they reference the current item
         // But if filtering is requested, we can check if the value matches any filter

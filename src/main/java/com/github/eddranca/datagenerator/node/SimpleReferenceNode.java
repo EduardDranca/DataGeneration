@@ -1,7 +1,7 @@
 package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.eddranca.datagenerator.visitor.GenerationContext;
+import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 
 import java.util.List;
 
@@ -24,13 +24,21 @@ public class SimpleReferenceNode extends AbstractReferenceNode {
         return !fieldName.isEmpty();
     }
 
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
     @Override
     public String getReferenceString() {
         return hasFieldName() ? collectionName + "." + fieldName : collectionName;
     }
 
     @Override
-    public JsonNode resolve(GenerationContext context, JsonNode currentItem, List<JsonNode> filterValues) {
+    public JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues) {
         // Get the collection
         List<JsonNode> collection = context.getCollection(collectionName);
 
@@ -49,8 +57,8 @@ public class SimpleReferenceNode extends AbstractReferenceNode {
         // Select an element
         JsonNode selected = context.getElementFromCollection(collection, this, sequential);
 
-        // Extract field if specified
-        return hasFieldName() ? selected.path(fieldName) : selected;
+        // Extract field if specified (supporting nested paths)
+        return hasFieldName() ? NestedPathUtils.extractNestedField(selected, fieldName) : selected;
     }
 
     @Override

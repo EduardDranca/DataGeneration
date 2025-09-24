@@ -2,7 +2,7 @@ package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.visitor.GenerationContext;
+import com.github.eddranca.datagenerator.visitor.EagerGenerationContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 class IndexedReferenceNodeTest {
 
     @Mock
-    private GenerationContext mockContext;
+    private EagerGenerationContext mockContext;
 
     @Mock
     private DslNodeVisitor<String> mockVisitor;
@@ -73,8 +73,8 @@ class IndexedReferenceNodeTest {
     @Test
     void testInvalidNumericIndex() {
         assertThatThrownBy(() -> new IndexedReferenceNode("users", "invalid", null, List.of(), false))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Invalid numeric index: invalid");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Invalid numeric index: invalid");
     }
 
     @Test
@@ -170,7 +170,7 @@ class IndexedReferenceNodeTest {
 
         when(mockContext.getCollection("users")).thenReturn(collection);
         when(mockContext.handleFilteringFailure("Indexed reference 'users[0].name' value matches filter"))
-                .thenReturn(failureResult);
+            .thenReturn(failureResult);
 
         JsonNode result = node.resolve(mockContext, currentItem, filterValues);
 

@@ -19,6 +19,7 @@ public class KeyWords {
     public static final String MIN_SIZE = "minSize";
     public static final String MAX_SIZE = "maxSize";
     public static final String THIS_PREFIX = "this.";
+
     private KeyWords() {
         // Prevent instantiation
     }

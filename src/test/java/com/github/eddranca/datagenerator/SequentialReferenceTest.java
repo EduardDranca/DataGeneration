@@ -1,49 +1,44 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SequentialReferenceTest {
-    private final ObjectMapper mapper = new ObjectMapper();
+class SequentialReferenceTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testBasicSequentialReference() throws IOException {
+    @BothImplementationsTest
+    void testBasicSequentialReference(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "number", "min": 1, "max": 3},
-                            "name": {"gen": "choice", "options": ["Alice", "Bob", "Charlie"]}
-                        }
-                    },
-                    "orders": {
-                        "count": 9,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "userId": {
-                                "ref": "users[*].id",
-                                "sequential": true
-                            }
+            {
+                "users": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "number", "min": 1, "max": 3},
+                        "name": {"gen": "choice", "options": ["Alice", "Bob", "Charlie"]}
+                    }
+                },
+                "orders": {
+                    "count": 9,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "userId": {
+                            "ref": "users[*].id",
+                            "sequential": true
                         }
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
         List<JsonNode> orders = collections.get("orders");
 
@@ -62,44 +57,40 @@ class SequentialReferenceTest {
                 IntStream.range(0, 9)
                     .map(i -> userIds[i % userIds.length])
                     .boxed()
-                    .toList()
-            );
+                    .toList());
     }
 
-    @Test
-    void testSequentialReferenceWithFiltering() throws IOException {
+    @BothImplementationsTest
+    void testSequentialReferenceWithFiltering(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 4,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "type": {"gen": "choice", "options": ["admin", "user", "guest", "banned"]}
-                        },
-                        "pick": {
-                            "bannedUser": 3
-                        }
+            {
+                "users": {
+                    "count": 4,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "type": {"gen": "choice", "options": ["admin", "user", "guest", "banned"]}
                     },
-                    "orders": {
-                        "count": 6,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "userId": {
-                                "ref": "users[*].id",
-                                "sequential": true,
-                                "filter": [{"ref": "bannedUser.id"}]
-                            }
+                    "pick": {
+                        "bannedUser": 3
+                    }
+                },
+                "orders": {
+                    "count": 6,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "userId": {
+                            "ref": "users[*].id",
+                            "sequential": true,
+                            "filter": [{"ref": "bannedUser.id"}]
                         }
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
         List<JsonNode> orders = collections.get("orders");
 
@@ -123,7 +114,7 @@ class SequentialReferenceTest {
             .map(order -> order.get("userId").asText())
             .toList();
 
-        List<String> expectedUserIds = java.util.stream.IntStream.range(0, 6)
+        List<String> expectedUserIds = IntStream.range(0, 6)
             .mapToObj(i -> validUserIds[i % validUserIds.length])
             .toList();
 
@@ -133,39 +124,36 @@ class SequentialReferenceTest {
             .doesNotContain(bannedUserId);
     }
 
-    @Test
-    void testRandomVsSequentialReference() throws IOException {
+    @BothImplementationsTest
+    void testRandomVsSequentialReference(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "number", "min": 1, "max": 3}
-                        }
-                    },
-                    "orders": {
-                        "count": 6,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "sequentialUserId": {
-                                "ref": "users[*].id",
-                                "sequential": true
-                            },
-                            "randomUserId": {
-                                "ref": "users[*].id",
-                                "sequential": false
-                            }
+            {
+                "users": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "number", "min": 1, "max": 3}
+                    }
+                },
+                "orders": {
+                    "count": 6,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "sequentialUserId": {
+                            "ref": "users[*].id",
+                            "sequential": true
+                        },
+                        "randomUserId": {
+                            "ref": "users[*].id",
+                            "sequential": false
                         }
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> users = collections.get("users");
         List<JsonNode> orders = collections.get("orders");
 
@@ -181,7 +169,7 @@ class SequentialReferenceTest {
             .map(order -> order.get("sequentialUserId").intValue())
             .toList();
 
-        List<Integer> expectedSequentialIds = java.util.stream.IntStream.range(0, 6)
+        List<Integer> expectedSequentialIds = IntStream.range(0, 6)
             .map(i -> userIds[i % userIds.length])
             .boxed()
             .toList();
@@ -194,7 +182,7 @@ class SequentialReferenceTest {
             .map(order -> order.get("randomUserId").intValue())
             .toList();
 
-        List<Integer> validUserIdsList = java.util.Arrays.stream(userIds).boxed().toList();
+        List<Integer> validUserIdsList = Arrays.stream(userIds).boxed().toList();
 
         assertThat(actualRandomIds)
             .as("Random references should all be valid user IDs")
@@ -202,47 +190,45 @@ class SequentialReferenceTest {
             .allSatisfy(randomId -> assertThat(validUserIdsList).contains(randomId));
     }
 
-    @Test
-    void testSequentialReferenceWithTaggedCollections() throws IOException {
+    @BothImplementationsTest
+    void testSequentialReferenceWithTaggedCollections(boolean memoryOptimized)
+        throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "staff_admins": {
-                        "name": "staff",
-                        "count": 2,
-                        "tags": ["staff"],
-                        "item": {
-                            "id": {"gen": "number", "min": 1, "max": 2},
-                            "role": "admin"
-                        }
-                    },
-                    "staff_managers": {
-                        "name": "staff",
-                        "count": 2,
-                        "tags": ["staff"],
-                        "item": {
-                            "id": {"gen": "number", "min": 3, "max": 4},
-                            "role": "manager"
-                        }
-                    },
-                    "tasks": {
-                        "count": 8,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "assignedTo": {
-                                "ref": "byTag[staff].id",
-                                "sequential": true
-                            }
+            {
+                "staff_admins": {
+                    "name": "staff",
+                    "count": 2,
+                    "tags": ["staff"],
+                    "item": {
+                        "id": {"gen": "number", "min": 1, "max": 2},
+                        "role": "admin"
+                    }
+                },
+                "staff_managers": {
+                    "name": "staff",
+                    "count": 2,
+                    "tags": ["staff"],
+                    "item": {
+                        "id": {"gen": "number", "min": 3, "max": 4},
+                        "role": "manager"
+                    }
+                },
+                "tasks": {
+                    "count": 8,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "assignedTo": {
+                            "ref": "byTag[staff].id",
+                            "sequential": true
                         }
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> tasks = collections.get("tasks");
 
         assertThat(tasks).hasSize(8);
@@ -253,34 +239,31 @@ class SequentialReferenceTest {
             .allSatisfy(assignedTo -> assertThat(assignedTo).isBetween(1, 4));
     }
 
-    @Test
-    void testSequentialReferenceDefaultBehavior() throws IOException {
+    @BothImplementationsTest
+    void testSequentialReferenceDefaultBehavior(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
-                {
-                    "users": {
-                        "count": 2,
-                        "item": {
-                            "id": {"gen": "number", "min": 1, "max": 2}
-                        }
-                    },
-                    "orders": {
-                        "count": 4,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "userId": {
-                                "ref": "users[*].id"
-                            }
+            {
+                "users": {
+                    "count": 2,
+                    "item": {
+                        "id": {"gen": "number", "min": 1, "max": 2}
+                    }
+                },
+                "orders": {
+                    "count": 4,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "userId": {
+                            "ref": "users[*].id"
                         }
                     }
                 }
-                """);
+            }
+            """);
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
         List<JsonNode> orders = collections.get("orders");
 
         assertThat(orders).hasSize(4);

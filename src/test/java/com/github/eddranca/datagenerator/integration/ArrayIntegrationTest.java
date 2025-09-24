@@ -2,47 +2,46 @@ package com.github.eddranca.datagenerator.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.eddranca.datagenerator.DslDataGenerator;
 import com.github.eddranca.datagenerator.Generation;
+import com.github.eddranca.datagenerator.ParameterizedGenerationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 
 import java.util.stream.StreamSupport;
 
+import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.asJsonNode;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ArrayIntegrationTest {
+class ArrayIntegrationTest extends ParameterizedGenerationTest {
 
-    @Test
-    void testComplexArrayScenario() throws Exception {
+    @BothImplementationsTest
+    void testComplexArrayScenario(boolean memoryOptimized) throws Exception {
         String dsl = """
-                {
-                    "users": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "name.firstName"},
-                            "email": {"gen": "internet.emailAddress"},
-                            "skills": {
-                                "array": {
-                                    "minSize": 2,
-                                    "maxSize": 4,
-                                    "item": {"gen": "choice", "options": ["Java", "Python", "JavaScript", "Go", "Rust"]}
-                                }
-                            },
-                            "projects": {
-                                "array": {
-                                    "size": 2,
-                                    "item": {
-                                        "name": {"gen": "company.name"},
-                                        "status": {"gen": "choice", "options": ["active", "completed", "on-hold"]},
-                                        "tags": {
-                                            "array": {
-                                                "minSize": 1,
-                                                "maxSize": 3,
-                                                "item": {"gen": "choice", "options": ["urgent", "backend", "frontend", "mobile", "web"]}
-                                            }
+            {
+                "users": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "name.firstName"},
+                        "email": {"gen": "internet.emailAddress"},
+                        "skills": {
+                            "array": {
+                                "minSize": 2,
+                                "maxSize": 4,
+                                "item": {"gen": "choice", "options": ["Java", "Python", "JavaScript", "Go", "Rust"]}
+                            }
+                        },
+                        "projects": {
+                            "array": {
+                                "size": 2,
+                                "item": {
+                                    "name": {"gen": "company.name"},
+                                    "status": {"gen": "choice", "options": ["active", "completed", "on-hold"]},
+                                    "tags": {
+                                        "array": {
+                                            "minSize": 1,
+                                            "maxSize": 3,
+                                            "item": {"gen": "choice", "options": ["urgent", "backend", "frontend", "mobile", "web"]}
                                         }
                                     }
                                 }
@@ -50,14 +49,12 @@ class ArrayIntegrationTest {
                         }
                     }
                 }
-                """;
+            }
+            """;
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(12345L) // For deterministic testing
-            .fromJsonString(dsl)
-            .generate();
+        Generation generation = generateFromDslWithSeed(dsl, 12345L, memoryOptimized);
 
-        JsonNode result = generation.asJsonNode();
+        JsonNode result = asJsonNode(generation);
 
         // Verify structure
         assertThat(result.has("users")).isTrue();
@@ -102,39 +99,36 @@ class ArrayIntegrationTest {
             });
     }
 
-    @Test
-    void testArrayWithReferences() throws Exception {
+    @BothImplementationsTest
+    void testArrayWithReferences(boolean memoryOptimized) throws Exception {
         String dsl = """
-                {
-                    "categories": {
-                        "count": 3,
-                        "item": {
-                            "id": {"gen": "uuid"},
-                            "name": {"gen": "choice", "options": ["Technology", "Business", "Design"]}
-                        }
-                    },
-                    "articles": {
-                        "count": 2,
-                        "item": {
-                            "title": {"gen": "company.name"},
-                            "categoryIds": {
-                                "array": {
-                                    "minSize": 1,
-                                    "maxSize": 2,
-                                    "item": {"ref": "categories[*].id"}
-                                }
+            {
+                "categories": {
+                    "count": 3,
+                    "item": {
+                        "id": {"gen": "uuid"},
+                        "name": {"gen": "choice", "options": ["Technology", "Business", "Design"]}
+                    }
+                },
+                "articles": {
+                    "count": 2,
+                    "item": {
+                        "title": {"gen": "company.name"},
+                        "categoryIds": {
+                            "array": {
+                                "minSize": 1,
+                                "maxSize": 2,
+                                "item": {"ref": "categories[*].id"}
                             }
                         }
                     }
                 }
-                """;
+            }
+            """;
 
-        Generation generation = DslDataGenerator.create()
-            .withSeed(54321L)
-            .fromJsonString(dsl)
-            .generate();
+        Generation generation = generateFromDslWithSeed(dsl, 54321L, memoryOptimized);
 
-        JsonNode result = generation.asJsonNode();
+        JsonNode result = asJsonNode(generation);
 
         // Extract category IDs for validation
         JsonNode categories = result.get("categories");
@@ -162,7 +156,7 @@ class ArrayIntegrationTest {
     }
 
     @Nested
-    class CountSyntaxIntegrationTest {
+    class CountSyntaxIntegrationTest extends ParameterizedGenerationTest {
 
         private ObjectMapper objectMapper;
 
@@ -171,31 +165,28 @@ class ArrayIntegrationTest {
             objectMapper = new ObjectMapper();
         }
 
-        @Test
-        void testCountSyntaxWithChoiceGenerator() throws Exception {
+        @BothImplementationsTest
+        void testCountSyntaxWithChoiceGenerator(boolean memoryOptimized) throws Exception {
             String dsl = """
-                    {
-                      "users": {
-                        "count": 2,
-                        "item": {
-                          "name": {"gen": "name.firstName"},
-                          "tags": {
-                            "gen": "choice",
-                            "options": ["tech", "business", "personal"],
-                            "count": 3
-                          }
-                        }
+                {
+                  "users": {
+                    "count": 2,
+                    "item": {
+                      "name": {"gen": "name.firstName"},
+                      "tags": {
+                        "gen": "choice",
+                        "options": ["tech", "business", "personal"],
+                        "count": 3
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            Generation generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+            Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-            JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode usersArray = collectionsNode.get("users");
 
             assertThat(usersArray)
@@ -215,30 +206,27 @@ class ArrayIntegrationTest {
                 });
         }
 
-        @Test
-        void testCountSyntaxWithLiteralValues() throws Exception {
+        @BothImplementationsTest
+        void testCountSyntaxWithLiteralValues(boolean memoryOptimized) throws Exception {
             String dsl = """
-                    {
-                      "messages": {
-                        "count": 1,
-                        "item": {
-                          "id": {"gen": "uuid"},
-                          "repeated_greeting": {
-                            "value": "Hello World",
-                            "count": 4
-                          }
-                        }
+                {
+                  "messages": {
+                    "count": 1,
+                    "item": {
+                      "id": {"gen": "uuid"},
+                      "repeated_greeting": {
+                        "value": "Hello World",
+                        "count": 4
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            Generation generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+            Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-            JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode messagesArray = collectionsNode.get("messages");
 
             assertThat(messagesArray).hasSize(1);
@@ -258,34 +246,31 @@ class ArrayIntegrationTest {
                 );
         }
 
-        @Test
-        void testCountSyntaxWithComplexObjects() throws Exception {
+        @BothImplementationsTest
+        void testCountSyntaxWithComplexObjects(boolean memoryOptimized) throws Exception {
             String dsl = """
-                    {
-                      "companies": {
-                        "count": 1,
-                        "item": {
-                          "name": {"gen": "company.name"},
-                          "employees": {
-                            "name": {"gen": "name.firstName"},
-                            "department": {
-                              "gen": "choice",
-                              "options": ["Engineering", "Marketing", "Sales"]
-                            },
-                            "count": 3
-                          }
-                        }
+                {
+                  "companies": {
+                    "count": 1,
+                    "item": {
+                      "name": {"gen": "company.name"},
+                      "employees": {
+                        "name": {"gen": "name.firstName"},
+                        "department": {
+                          "gen": "choice",
+                          "options": ["Engineering", "Marketing", "Sales"]
+                        },
+                        "count": 3
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            Generation generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+            Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-            JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode companiesArray = collectionsNode.get("companies");
 
             assertThat(companiesArray).hasSize(1);
@@ -307,31 +292,28 @@ class ArrayIntegrationTest {
                 });
         }
 
-        @Test
-        void testCountZeroGeneratesEmptyArray() throws Exception {
+        @BothImplementationsTest
+        void testCountZeroGeneratesEmptyArray(boolean memoryOptimized) throws Exception {
             String dsl = """
-                    {
-                      "users": {
-                        "count": 1,
-                        "item": {
-                          "name": {"gen": "name.firstName"},
-                          "empty_tags": {
-                            "gen": "choice",
-                            "options": ["tag1", "tag2"],
-                            "count": 0
-                          }
-                        }
+                {
+                  "users": {
+                    "count": 1,
+                    "item": {
+                      "name": {"gen": "name.firstName"},
+                      "empty_tags": {
+                        "gen": "choice",
+                        "options": ["tag1", "tag2"],
+                        "count": 0
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            Generation generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+            Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-            JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode usersArray = collectionsNode.get("users");
 
             assertThat(usersArray).hasSize(1);
@@ -345,34 +327,31 @@ class ArrayIntegrationTest {
             assertThat(emptyTags).isEmpty();
         }
 
-        @Test
-        void testCountSyntaxWithNestedObjects() throws Exception {
+        @BothImplementationsTest
+        void testCountSyntaxWithNestedObjects(boolean memoryOptimized) throws Exception {
             String dsl = """
-                    {
-                      "projects": {
-                        "count": 1,
-                        "item": {
-                          "name": {"gen": "company.name"},
-                          "tasks": {
-                            "title": {"gen": "company.buzzword"},
-                            "assignees": {
-                              "gen": "name.firstName",
-                              "count": 2
-                            },
-                            "count": 3
-                          }
-                        }
+                {
+                  "projects": {
+                    "count": 1,
+                    "item": {
+                      "name": {"gen": "company.name"},
+                      "tasks": {
+                        "title": {"gen": "company.buzzword"},
+                        "assignees": {
+                          "gen": "name.firstName",
+                          "count": 2
+                        },
+                        "count": 3
                       }
                     }
-                    """;
+                  }
+                }
+                """;
 
             JsonNode dslNode = objectMapper.readTree(dsl);
-            Generation generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonNode(dslNode)
-                .generate();
+            Generation generation = generateFromDsl(dslNode, memoryOptimized);
 
-            JsonNode collectionsNode = generation.getCollectionsAsJsonNode();
+            JsonNode collectionsNode = asJsonNode(generation);
             JsonNode projectsArray = collectionsNode.get("projects");
 
             assertThat(projectsArray).hasSize(1);

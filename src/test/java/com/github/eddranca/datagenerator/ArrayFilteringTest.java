@@ -1,10 +1,9 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,48 +14,42 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests demonstrating array generation combined with filtering capabilities.
  * This showcases advanced features that differentiate this library from simple faker tools.
  */
-class ArrayFilteringTest {
+class ArrayFilteringTest extends ParameterizedGenerationTest {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    @Test
-    void testArrayWithExplicitSyntaxAndFiltering() throws Exception {
+    @BothImplementationsTest
+    void testArrayWithExplicitSyntaxAndFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                  "excluded": {
-                    "count": 1,
-                    "item": {
-                      "name": {"gen": "choice", "options": ["Java", "Python"]}
-                    }
-                  },
-                  "projects": {
-                    "count": 5,
-                    "item": {
-                      "id": {"gen": "uuid"},
-                      "name": {"gen": "company.name"},
-                      "technologies": {
-                        "array": {
-                          "item": {
-                            "gen": "choice",
-                            "options": ["Java", "Python", "JavaScript", "React", "Docker", "AWS"],
-                            "filter": [{"ref": "excluded[0].name"}]
-                          },
-                          "minSize": 2,
-                          "maxSize": 4
-                        }
-                      }
+            {
+              "excluded": {
+                "count": 1,
+                "item": {
+                  "name": {"gen": "choice", "options": ["Java", "Python"]}
+                }
+              },
+              "projects": {
+                "count": 5,
+                "item": {
+                  "id": {"gen": "uuid"},
+                  "name": {"gen": "company.name"},
+                  "technologies": {
+                    "array": {
+                      "item": {
+                        "gen": "choice",
+                        "options": ["Java", "Python", "JavaScript", "React", "Docker", "AWS"],
+                        "filter": [{"ref": "excluded[0].name"}]
+                      },
+                      "minSize": 2,
+                      "maxSize": 4
                     }
                   }
                 }
-                """;
+              }
+            }
+            """;
 
-        JsonNode dslNode = objectMapper.readTree(dsl);
-        Generation generation = DslDataGenerator.create()
-            .withSeed(123L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        JsonNode dslNode = mapper.readTree(dsl);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> excluded = collections.get("excluded");
         List<JsonNode> projects = collections.get("projects");
@@ -78,39 +71,35 @@ class ArrayFilteringTest {
         });
     }
 
-    @Test
-    void testArrayWithCountSyntaxAndFiltering() throws Exception {
+    @BothImplementationsTest
+    void testArrayWithCountSyntaxAndFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                  "bannedUser": {
-                    "count": 1,
-                    "item": {
-                      "role": {"gen": "choice", "options": ["admin", "user"]}
-                    }
-                  },
-                  "users": {
-                    "count": 8,
-                    "item": {
-                      "id": {"gen": "uuid"},
-                      "name": {"gen": "name.fullName"},
-                      "permissions": {
-                        "gen": "choice",
-                        "options": ["admin", "user", "guest", "moderator"],
-                        "count": 3,
-                        "filter": [{"ref": "bannedUser[0].role"}]
-                      }
-                    }
+            {
+              "bannedUser": {
+                "count": 1,
+                "item": {
+                  "role": {"gen": "choice", "options": ["admin", "user"]}
+                }
+              },
+              "users": {
+                "count": 8,
+                "item": {
+                  "id": {"gen": "uuid"},
+                  "name": {"gen": "name.fullName"},
+                  "permissions": {
+                    "gen": "choice",
+                    "options": ["admin", "user", "guest", "moderator"],
+                    "count": 3,
+                    "filter": [{"ref": "bannedUser[0].role"}]
                   }
                 }
-                """;
+              }
+            }
+            """;
 
-        JsonNode dslNode = objectMapper.readTree(dsl);
-        Generation generation = DslDataGenerator.create()
-            .withSeed(789L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        JsonNode dslNode = mapper.readTree(dsl);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> bannedUsers = collections.get("bannedUser");
         List<JsonNode> users = collections.get("users");
@@ -132,47 +121,43 @@ class ArrayFilteringTest {
         });
     }
 
-    @Test
-    void testArrayWithMultipleFilters() throws Exception {
+    @BothImplementationsTest
+    void testArrayWithMultipleFilters(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                  "restrictions": {
-                    "count": 1,
-                    "item": {
-                      "tech1": {"gen": "choice", "options": ["Java", "Python"]},
-                      "tech2": {"gen": "choice", "options": ["React", "Vue"]}
-                    }
-                  },
-                  "projects": {
-                    "count": 3,
-                    "item": {
-                      "id": {"gen": "uuid"},
-                      "technologies": {
-                        "array": {
-                          "item": {
-                            "gen": "choice",
-                            "options": ["Java", "Python", "JavaScript", "React", "Vue", "Docker"],
-                            "filter": [
-                              {"ref": "restrictions[0].tech1"},
-                              {"ref": "restrictions[0].tech2"}
-                            ]
-                          },
-                          "minSize": 2,
-                          "maxSize": 3
-                        }
-                      }
+            {
+              "restrictions": {
+                "count": 1,
+                "item": {
+                  "tech1": {"gen": "choice", "options": ["Java", "Python"]},
+                  "tech2": {"gen": "choice", "options": ["React", "Vue"]}
+                }
+              },
+              "projects": {
+                "count": 3,
+                "item": {
+                  "id": {"gen": "uuid"},
+                  "technologies": {
+                    "array": {
+                      "item": {
+                        "gen": "choice",
+                        "options": ["Java", "Python", "JavaScript", "React", "Vue", "Docker"],
+                        "filter": [
+                          {"ref": "restrictions[0].tech1"},
+                          {"ref": "restrictions[0].tech2"}
+                        ]
+                      },
+                      "minSize": 2,
+                      "maxSize": 3
                     }
                   }
                 }
-                """;
+              }
+            }
+            """;
 
-        JsonNode dslNode = objectMapper.readTree(dsl);
-        Generation generation = DslDataGenerator.create()
-            .withSeed(456L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        JsonNode dslNode = mapper.readTree(dsl);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> restrictions = collections.get("restrictions");
         List<JsonNode> projects = collections.get("projects");
@@ -195,45 +180,41 @@ class ArrayFilteringTest {
         });
     }
 
-    @Test
-    void testArrayWithTagBasedFiltering() throws Exception {
+    @BothImplementationsTest
+    void testArrayWithTagBasedFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                  "blacklist": {
-                    "count": 1,
-                    "item": {
-                      "skill": {"gen": "choice", "options": ["Java", "Python"]}
-                    },
-                    "tags": ["restricted"]
-                  },
-                  "developers": {
-                    "count": 5,
-                    "item": {
-                      "id": {"gen": "uuid"},
-                      "name": {"gen": "name.fullName"},
-                      "skills": {
-                        "array": {
-                          "item": {
-                            "gen": "choice",
-                            "options": ["Java", "Python", "JavaScript", "React", "Docker", "AWS"],
-                            "filter": [{"ref": "byTag[restricted].skill"}]
-                          },
-                          "minSize": 2,
-                          "maxSize": 4
-                        }
-                      }
+            {
+              "blacklist": {
+                "count": 1,
+                "item": {
+                  "skill": {"gen": "choice", "options": ["Java", "Python"]}
+                },
+                "tags": ["restricted"]
+              },
+              "developers": {
+                "count": 5,
+                "item": {
+                  "id": {"gen": "uuid"},
+                  "name": {"gen": "name.fullName"},
+                  "skills": {
+                    "array": {
+                      "item": {
+                        "gen": "choice",
+                        "options": ["Java", "Python", "JavaScript", "React", "Docker", "AWS"],
+                        "filter": [{"ref": "byTag[restricted].skill"}]
+                      },
+                      "minSize": 2,
+                      "maxSize": 4
                     }
                   }
                 }
-                """;
+              }
+            }
+            """;
 
-        JsonNode dslNode = objectMapper.readTree(dsl);
-        Generation generation = DslDataGenerator.create()
-            .withSeed(111L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        JsonNode dslNode = mapper.readTree(dsl);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> blacklist = collections.get("blacklist");
         List<JsonNode> developers = collections.get("developers");
@@ -255,52 +236,48 @@ class ArrayFilteringTest {
         });
     }
 
-    @Test
-    void testNestedArraysWithFiltering() throws Exception {
+    @BothImplementationsTest
+    void testNestedArraysWithFiltering(boolean memoryOptimized) throws IOException {
         String dsl = """
-                {
-                  "forbidden": {
-                    "count": 1,
-                    "item": {
-                      "framework": {"gen": "choice", "options": ["Spring", "Django"]}
-                    }
-                  },
-                  "teams": {
-                    "count": 2,
-                    "item": {
-                      "name": {"gen": "company.name"},
-                      "projects": {
-                        "array": {
-                          "item": {
-                            "name": {"gen": "string", "length": 8},
-                            "technologies": {
-                              "array": {
-                                "item": {
-                                  "gen": "choice",
-                                  "options": ["Spring", "Django", "Express", "FastAPI", "Rails"],
-                                  "filter": [{"ref": "forbidden[0].framework"}]
-                                },
-                                "minSize": 1,
-                                "maxSize": 2
-                              }
-                            }
-                          },
-                          "minSize": 1,
-                          "maxSize": 3
+            {
+              "forbidden": {
+                "count": 1,
+                "item": {
+                  "framework": {"gen": "choice", "options": ["Spring", "Django"]}
+                }
+              },
+              "teams": {
+                "count": 2,
+                "item": {
+                  "name": {"gen": "company.name"},
+                  "projects": {
+                    "array": {
+                      "item": {
+                        "name": {"gen": "string", "length": 8},
+                        "technologies": {
+                          "array": {
+                            "item": {
+                              "gen": "choice",
+                              "options": ["Spring", "Django", "Express", "FastAPI", "Rails"],
+                              "filter": [{"ref": "forbidden[0].framework"}]
+                            },
+                            "minSize": 1,
+                            "maxSize": 2
+                          }
                         }
-                      }
+                      },
+                      "minSize": 1,
+                      "maxSize": 3
                     }
                   }
                 }
-                """;
+              }
+            }
+            """;
 
-        JsonNode dslNode = objectMapper.readTree(dsl);
-        Generation generation = DslDataGenerator.create()
-            .withSeed(999L)
-            .fromJsonNode(dslNode)
-            .generate();
-
-        Map<String, List<JsonNode>> collections = generation.getCollections();
+        JsonNode dslNode = mapper.readTree(dsl);
+        Generation generation = generateFromDsl(dslNode, memoryOptimized);
+        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         List<JsonNode> forbidden = collections.get("forbidden");
         List<JsonNode> teams = collections.get("teams");
