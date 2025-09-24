@@ -46,15 +46,11 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
 
     @Override
     public JsonNode visitRoot(RootNode node) {
-        // If memory optimization is enabled, analyze dependencies for the entire root
-        if (context.isMemoryOptimizationEnabled()) {
+        // If using lazy generation, analyze dependencies for memory optimization
+        if (context instanceof LazyGenerationContext lazyContext) {
             PathDependencyAnalyzer analyzer = new PathDependencyAnalyzer();
             Map<String, Set<String>> allReferencedPaths = analyzer.analyzeRoot(node);
-
-            // Set the referenced paths for all collections
-            for (Map.Entry<String, Set<String>> entry : allReferencedPaths.entrySet()) {
-                context.setReferencedPaths(entry.getKey(), entry.getValue());
-            }
+            lazyContext.setReferencedPaths(allReferencedPaths);
         }
 
         ObjectNode result = context.getMapper().createObjectNode();

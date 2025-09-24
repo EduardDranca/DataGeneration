@@ -148,18 +148,15 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
         return materializedList;
     }
 
-    @Override
-    public void setReferencedPaths(String collection, Set<String> paths) {
-        if (referencedPaths == null) {
-            referencedPaths = new HashMap<>();
-        }
-        referencedPaths.put(collection, paths);
+    /**
+     * Sets the referenced paths for all collections at once.
+     * This is used by the DataGenerationVisitor to provide dependency analysis results.
+     */
+    public void setReferencedPaths(Map<String, Set<String>> allReferencedPaths) {
+        this.referencedPaths = new HashMap<>(allReferencedPaths);
     }
 
-    @Override
-    public boolean isMemoryOptimizationEnabled() {
-        return true;
-    }
+
 
     @Override
     public JsonNode createAndRegisterCollection(CollectionNode node, DataGenerationVisitor<LazyItemProxy> visitor) {

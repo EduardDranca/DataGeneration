@@ -81,7 +81,7 @@ public abstract class AbstractGenerationContext<T> {
 
     public abstract Map<String, List<T>> getNamedCollections();
 
-    public abstract boolean isMemoryOptimizationEnabled();
+
 
     /**
      * Creates and registers a collection based on the context's strategy.
@@ -217,7 +217,5 @@ public abstract class AbstractGenerationContext<T> {
         }
     }
 
-    public void setReferencedPaths(String collection, Set<String> paths) {
-        // No-op for eager context
-    }
+
 }

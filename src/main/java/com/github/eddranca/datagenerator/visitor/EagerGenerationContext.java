@@ -95,10 +95,7 @@ public class EagerGenerationContext extends AbstractGenerationContext<JsonNode> 
         return namedCollections;
     }
 
-    @Override
-    public boolean isMemoryOptimizationEnabled() {
-        return false;
-    }
+
 
     @Override
     public JsonNode createAndRegisterCollection(CollectionNode node, DataGenerationVisitor<JsonNode> visitor) {

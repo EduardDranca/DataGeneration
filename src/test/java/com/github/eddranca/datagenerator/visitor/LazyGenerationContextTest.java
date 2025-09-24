@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -59,7 +60,7 @@ class LazyGenerationContextTest {
         assertThat(defaultContext.getGeneratorRegistry()).isEqualTo(mockGeneratorRegistry);
         assertThat(defaultContext.getRandom()).isEqualTo(mockRandom);
         assertThat(defaultContext.getMapper()).isNotNull();
-        assertThat(defaultContext.isMemoryOptimizationEnabled()).isTrue();
+        // LazyGenerationContext is used for memory optimization
     }
 
     @Test
@@ -73,12 +74,21 @@ class LazyGenerationContextTest {
 
         assertThat(customContext.getGeneratorRegistry()).isEqualTo(mockGeneratorRegistry);
         assertThat(customContext.getRandom()).isEqualTo(mockRandom);
-        assertThat(customContext.isMemoryOptimizationEnabled()).isTrue();
+        // LazyGenerationContext is used for memory optimization
     }
 
     @Test
-    void testIsMemoryOptimizationEnabled() {
-        assertThat(context.isMemoryOptimizationEnabled()).isTrue();
+    void testSetReferencedPaths() {
+        Map<String, Set<String>> paths = Map.of(
+            "users", Set.of("id", "name"),
+            "posts", Set.of("title")
+        );
+        
+        // This method should not throw an exception
+        context.setReferencedPaths(paths);
+        
+        // The actual behavior will be tested through integration tests
+        // since getReferencedPaths is private
     }
 
     @Test
