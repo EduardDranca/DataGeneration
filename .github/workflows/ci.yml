@@ -40,6 +40,8 @@ jobs:
         reporter: java-junit
 
     - name: SonarQube Analysis
+        env:
+          HEAD_REF: ${{ github.head_ref }}
       run: |
         if [ "${{ github.event_name }}" = "pull_request" ]; then
           # PR Analysis
@@ -48,7 +50,7 @@ jobs:
             -Dsonar.organization=eduarddranca \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.pullrequest.key=${{ github.event.number }} \
-            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+            -Dsonar.pullrequest.branch=$HEAD_REF \
             -Dsonar.pullrequest.base=${{ github.base_ref }} \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
         elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
