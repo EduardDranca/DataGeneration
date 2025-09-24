@@ -27,16 +27,12 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.SEED;
 public class DslTreeBuilder {
     private final ValidationContext context;
     private final List<ValidationError> errors;
-    private final NodeBuilderContext builderContext;
-    private final FieldNodeBuilder fieldBuilder;
     private final CollectionNodeBuilder collectionBuilder;
 
     public DslTreeBuilder(GeneratorRegistry generatorRegistry) {
         this.context = new ValidationContext(generatorRegistry.getRegisteredGeneratorNames());
         this.errors = new ArrayList<>();
-        this.builderContext = new NodeBuilderContext(context, errors);
-        this.fieldBuilder = new FieldNodeBuilder(builderContext);
-        this.collectionBuilder = new CollectionNodeBuilder(builderContext, fieldBuilder);
+        this.collectionBuilder = initCollectionBuilder();
     }
 
     public DslTreeBuildResult build(JsonNode dslJson) {
@@ -103,8 +99,8 @@ public class DslTreeBuilder {
         }
     }
 
-
-    private void addError(String message) {
-        builderContext.addError(message);
+    private CollectionNodeBuilder initCollectionBuilder() {
+        NodeBuilderContext builderContext = new NodeBuilderContext(context, new ArrayList<>());
+        return new CollectionNodeBuilder(builderContext, new FieldNodeBuilder(builderContext));
     }
 }
