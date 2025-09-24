@@ -1,7 +1,6 @@
 {
     "categories": {
         "count": 3,
-        "tags": ["category"],
         "item": {
             "id": {"gen": "uuid"},
             "name": {"gen": "choice", "options": ["Electronics", "Clothing", "Books"]},

@@ -10,7 +10,6 @@ import com.github.eddranca.datagenerator.node.PickReferenceNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
 import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
-import com.github.eddranca.datagenerator.node.TagReferenceNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -152,9 +151,7 @@ class ReferenceFieldNodeBuilder {
 
         reference = reference.trim();
 
-        if (reference.startsWith("byTag[")) {
-            return parseTagReference(fieldName, reference, filters, sequential);
-        } else if (reference.startsWith(THIS_PREFIX)) {
+        if (reference.startsWith(THIS_PREFIX)) {
             return parseSelfReference(fieldName, reference, filters, sequential);
         } else if (reference.contains("[*].")) {
             return parseArrayFieldReference(fieldName, reference, filters, sequential);
@@ -167,30 +164,6 @@ class ReferenceFieldNodeBuilder {
         }
     }
 
-    private TagReferenceNode parseTagReference(String fieldName, String reference,
-                                               List<FilterNode> filters, boolean sequential) {
-        int start = reference.indexOf('[') + 1;
-        int end = reference.indexOf(']');
-
-        if (start >= end) {
-            addReferenceFieldError(fieldName, "has malformed byTag reference: " + reference);
-            return null;
-        }
-
-        String tagExpr = reference.substring(start, end);
-        String fieldNamePart = "";
-
-        if (reference.length() > end + 1 && reference.charAt(end + 1) == '.') {
-            fieldNamePart = reference.substring(end + 2);
-        }
-
-        if (!tagExpr.startsWith(THIS_PREFIX) && !context.isTagDeclared(tagExpr)) {
-            addReferenceFieldError(fieldName, "references undeclared tag: " + tagExpr);
-            return null;
-        }
-
-        return new TagReferenceNode(tagExpr, fieldNamePart, filters, sequential);
-    }
 
     private SelfReferenceNode parseSelfReference(String fieldName, String reference,
                                                  List<FilterNode> filters, boolean sequential) {

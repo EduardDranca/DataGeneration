@@ -114,7 +114,7 @@ public class DslDataGenerator {
             // For lazy generation, analyze dependencies first
             PathDependencyAnalyzer analyzer = new PathDependencyAnalyzer();
             Map<String, Set<String>> referencedPaths = analyzer.analyzeRoot(rootNode);
-            
+
             LazyGenerationContext lazyContext = new LazyGenerationContext(generatorRegistry, random,
                 maxFilteringRetries, filteringBehavior);
             lazyContext.setReferencedPaths(referencedPaths);
@@ -135,7 +135,8 @@ public class DslDataGenerator {
                 ? LazyGeneration.class.getDeclaredConstructor(Map.class)
                 : EagerGeneration.class.getDeclaredConstructor(Map.class);
             return constructor.newInstance(context.getNamedCollections());
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                 NoSuchMethodException e) {
             throw new DataGenerationException("Could not create Generation instance.", e);
         }
     }

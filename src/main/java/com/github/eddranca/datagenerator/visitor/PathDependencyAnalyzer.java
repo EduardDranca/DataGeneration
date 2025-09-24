@@ -18,7 +18,6 @@ import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
 import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
-import com.github.eddranca.datagenerator.node.TagReferenceNode;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -95,20 +94,6 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
         return null;
     }
 
-    @Override
-    public Void visitTagReference(TagReferenceNode node) {
-        // For tag references, we use the tag expression as the collection identifier
-        String collectionName = "byTag[" + node.getTagExpression() + "]";
-        String fieldName = node.getFieldName();
-
-        if (fieldName != null && !fieldName.isEmpty()) {
-            addReferencedPath(collectionName, fieldName);
-        } else {
-            // Entire object referenced
-            addReferencedPath(collectionName, "*");
-        }
-        return null;
-    }
 
     @Override
     public Void visitPickReference(PickReferenceNode node) {
@@ -195,8 +180,6 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
             return arrayFieldReferenceNode.getCollectionName();
         } else if (referenceNode instanceof IndexedReferenceNode indexedReferenceNode) {
             return indexedReferenceNode.getCollectionName();
-        } else if (referenceNode instanceof TagReferenceNode tagReferenceNode) {
-            return "byTag[" + tagReferenceNode.getTagExpression() + "]";
         }
         return null;
     }

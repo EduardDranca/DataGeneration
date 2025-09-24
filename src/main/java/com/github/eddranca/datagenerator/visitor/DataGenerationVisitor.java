@@ -23,12 +23,10 @@ import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
 import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
-import com.github.eddranca.datagenerator.node.TagReferenceNode;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -121,11 +119,6 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
         }
     }
 
-    @Override
-    public JsonNode visitTagReference(TagReferenceNode node) {
-        List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
-        return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
-    }
 
     @Override
     public JsonNode visitIndexedReference(IndexedReferenceNode node) {

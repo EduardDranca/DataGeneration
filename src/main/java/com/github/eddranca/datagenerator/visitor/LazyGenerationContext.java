@@ -23,7 +23,6 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
     // Lazy collection support for memory optimization
     private final Map<String, List<LazyItemProxy>> lazyNamedCollections;
     private final Map<String, List<LazyItemProxy>> lazyReferenceCollections;
-    private final Map<String, List<LazyItemProxy>> lazyTaggedCollections;
     private final Map<String, JsonNode> namedPicks;
 
     // Cache for materialized lazy collections to ensure consistency
@@ -37,7 +36,6 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
         super(generatorRegistry, random, maxFilteringRetries, filteringBehavior);
         this.lazyNamedCollections = new HashMap<>();
         this.lazyReferenceCollections = new HashMap<>();
-        this.lazyTaggedCollections = new HashMap<>();
         this.namedPicks = new HashMap<>();
         this.materializedCollectionCache = new HashMap<>();
 
@@ -63,16 +61,6 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
         lazyReferenceCollections.put(name, new ArrayList<>(collection));
     }
 
-    @Override
-    public void registerTaggedCollection(String tag, List<LazyItemProxy> collection) {
-        List<LazyItemProxy> existing = lazyTaggedCollections.get(tag);
-        if (existing == null) {
-            lazyTaggedCollections.put(tag, new ArrayList<>(collection));
-        } else {
-            // Merge collections with the same tag
-            existing.addAll(collection);
-        }
-    }
 
     @Override
     public void registerPick(String name, JsonNode value) {
@@ -106,25 +94,6 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
         return List.of();
     }
 
-    @Override
-    public List<JsonNode> getTaggedCollection(String tag) {
-        // Check cache first to ensure consistency
-        String cacheKey = "tag:" + tag;
-        List<JsonNode> cached = materializedCollectionCache.get(cacheKey);
-        if (cached != null) {
-            return cached;
-        }
-
-        // Check lazy tagged collections
-        List<LazyItemProxy> lazyCollection = lazyTaggedCollections.get(tag);
-        if (lazyCollection != null) {
-            List<JsonNode> materialized = materializeLazyCollection(lazyCollection);
-            materializedCollectionCache.put(cacheKey, materialized);
-            return materialized;
-        }
-
-        return List.of();
-    }
 
     @Override
     public JsonNode getNamedPick(String name) {
@@ -157,7 +126,6 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
     }
 
 
-
     @Override
     public JsonNode createAndRegisterCollection(CollectionNode node, DataGenerationVisitor<LazyItemProxy> visitor) {
         Set<String> paths = getReferencedPaths(node.getCollectionName());
@@ -172,9 +140,6 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
             registerReferenceCollection(node.getName(), lazyCollection);
         }
 
-        for (String tag : node.getTags()) {
-            registerTaggedCollection(tag, lazyCollection);
-        }
 
         return mapper.createArrayNode();
     }
@@ -204,10 +169,10 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
 
         for (int i = 0; i < count; i++) {
             LazyItemProxy item = new LazyItemProxy(
-                node.getCollectionName(),
-                node.getItem().getFields(),
-                referencedPaths,
-                visitor
+                    node.getCollectionName(),
+                    node.getItem().getFields(),
+                    referencedPaths,
+                    visitor
             );
             items.add(item);
         }

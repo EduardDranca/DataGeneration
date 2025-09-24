@@ -1,9 +1,6 @@
 {
     "departments": {
         "count": 4,
-        "tags": [
-            "department"
-        ],
         "item": {
             "id": {
                 "gen": "uuid"

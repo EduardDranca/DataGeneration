@@ -1,7 +1,6 @@
 {
     "schools": {
         "count": 2,
-        "tags": ["school"],
         "item": {
             "id": {"gen": "uuid"},
             "name": {"gen": "choice", "options": ["State University", "Tech Institute", "Community College", "Liberal Arts College"]},

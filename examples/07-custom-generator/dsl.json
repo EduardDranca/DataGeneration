@@ -1,7 +1,6 @@
 {
     "departments": {
         "count": 3,
-        "tags": ["department"],
         "item": {
             "id": {"gen": "uuid"},
             "name": {"gen": "choice", "options": ["Engineering", "Marketing", "Sales"]},
@@ -10,7 +9,6 @@
     },
     "job_levels": {
         "count": 4,
-        "tags": ["level"],
         "item": {
             "id": {"gen": "uuid"},
             "...": {"gen": "jobLevelInfo"}

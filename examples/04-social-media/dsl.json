@@ -1,7 +1,6 @@
 {
     "users": {
         "count": 8,
-        "tags": ["user"],
         "item": {
             "id": {"gen": "uuid"},
             "username": {"gen": "internet.userName"},

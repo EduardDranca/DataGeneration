@@ -15,7 +15,6 @@ import java.util.stream.Stream;
  * lazy
  * evaluation to reduce memory usage for large datasets.
  * see {@link LazyGeneration} and {@link EagerGeneration}
- *
  */
 public interface Generation {
 

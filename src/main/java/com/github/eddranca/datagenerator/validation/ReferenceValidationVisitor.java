@@ -19,7 +19,6 @@ import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
 import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
-import com.github.eddranca.datagenerator.node.TagReferenceNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,16 +84,6 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
         return null;
     }
 
-
-    @Override
-    public Void visitTagReference(TagReferenceNode node) {
-        // Tag references don't need additional validation beyond what was done during parsing
-        // Visit filters if present
-        for (FilterNode filter : node.getFilters()) {
-            filter.accept(this);
-        }
-        return null;
-    }
 
     @Override
     public Void visitIndexedReference(IndexedReferenceNode node) {

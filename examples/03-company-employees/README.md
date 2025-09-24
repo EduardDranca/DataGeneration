@@ -10,7 +10,6 @@ This example shows a corporate structure with departments, employees, and projec
 
 ## Key features demonstrated
 
-- **Tags system** for grouping collections
 - **Array generation** with dynamic counts (employee skills)
 - **Weighted choices** for manager probability (20% managers)
 - **Multiple references** (projects reference both departments and employees)
@@ -20,8 +19,8 @@ This example shows a corporate structure with departments, employees, and projec
 
 ```
 Departments (4) ← Employees (15) ← Projects (6)
-     ↑                ↓
-   Tags           Skills Array
+                      ↓
+                  Skills Array
 ```
 
 ## Use cases
