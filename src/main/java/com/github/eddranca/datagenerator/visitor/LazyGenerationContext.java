@@ -149,14 +149,6 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
     }
 
     @Override
-    public Set<String> getReferencedPaths(String collection) {
-        if (referencedPaths == null) {
-            return Set.of();
-        }
-        return referencedPaths.getOrDefault(collection, Set.of());
-    }
-
-    @Override
     public void setReferencedPaths(String collection, Set<String> paths) {
         if (referencedPaths == null) {
             referencedPaths = new HashMap<>();
@@ -170,11 +162,11 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
     }
 
     @Override
-    public JsonNode createAndRegisterCollection(CollectionNode node, DataGenerationVisitor visitor) {
-        Set<String> referencedPaths = getReferencedPaths(node.getCollectionName());
+    public JsonNode createAndRegisterCollection(CollectionNode node, DataGenerationVisitor<LazyItemProxy> visitor) {
+        Set<String> paths = getReferencedPaths(node.getCollectionName());
 
         // Generate all items with only referenced fields materialized
-        List<LazyItemProxy> lazyCollection = createLazyItemList(node, referencedPaths, visitor);
+        List<LazyItemProxy> lazyCollection = createLazyItemList(node, paths, visitor);
 
         // Register the lazy collection
         registerCollection(node.getCollectionName(), lazyCollection);
@@ -209,7 +201,7 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
     /**
      * Creates a list of LazyItemProxy objects for a collection.
      */
-    private List<LazyItemProxy> createLazyItemList(CollectionNode node, Set<String> referencedPaths, DataGenerationVisitor visitor) {
+    private List<LazyItemProxy> createLazyItemList(CollectionNode node, Set<String> referencedPaths, DataGenerationVisitor<LazyItemProxy> visitor) {
         List<LazyItemProxy> items = new ArrayList<>();
         int count = node.getCount();
 
@@ -224,5 +216,12 @@ public class LazyGenerationContext extends AbstractGenerationContext<LazyItemPro
         }
 
         return items;
+    }
+
+    private Set<String> getReferencedPaths(String collection) {
+        if (referencedPaths == null) {
+            return Set.of();
+        }
+        return referencedPaths.getOrDefault(collection, Set.of());
     }
 }

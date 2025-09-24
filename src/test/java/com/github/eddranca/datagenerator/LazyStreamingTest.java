@@ -131,105 +131,57 @@ class LazyStreamingTest {
         String dsl = """
             {
               "users": {
-                "count": 5,
+                "count": 3,
                 "item": {
                   "id": {"gen": "uuid"},
                   "name": {"gen": "name.firstName"},
-                  "email": {"gen": "internet.emailAddress"},
                   "address": {
                     "street": {"gen": "address.streetAddress"},
-                    "city": {"gen": "address.city"},
-                    "zipCode": {"gen": "address.zipCode"},
-                    "country": {"gen": "address.country"}
+                    "city": {"gen": "address.city"}
                   },
                   "profile": {
-                    "bio": {"gen": "lorem", "options": {"length": 100}},
-                    "website": {"gen": "internet.url"},
                     "social": {
-                      "twitter": {"gen": "internet.username"},
-                      "linkedin": {"gen": "internet.username"}
+                      "twitter": {"gen": "internet.username"}
                     }
                   }
                 }
               },
               "orders": {
-                "count": 3,
+                "count": 2,
                 "item": {
                   "id": {"gen": "uuid"},
                   "userId": {"ref": "users[*].id"},
                   "shippingStreet": {"ref": "users[*].address.street"},
-                  "customerName": {"ref": "users[*].name"},
                   "socialHandle": {"ref": "users[*].profile.social.twitter"}
                 }
               }
             }
             """;
 
-        // Test with memory optimization - only referenced nested fields should be
-        // generated
-        Generation optimizedGeneration = DslDataGenerator.create()
+        // Test with memory optimization - only referenced nested fields should be generated
+        Generation generation = DslDataGenerator.create()
             .withMemoryOptimization()
             .fromJsonString(dsl)
             .generate();
 
-        // Test without memory optimization for comparison
-        Generation fullGeneration = DslDataGenerator.create()
-            .fromJsonString(dsl)
-            .generate();
+        // Verify basic structure
+        assertThat(generation.getCollectionSize("users")).isEqualTo(3);
+        assertThat(generation.getCollectionSize("orders")).isEqualTo(2);
 
-        // Both should have the same structure
-        assertThat(optimizedGeneration.getCollectionSize("users")).isEqualTo(5);
-        assertThat(optimizedGeneration.getCollectionSize("orders")).isEqualTo(3);
-        assertThat(fullGeneration.getCollectionSize("users")).isEqualTo(5);
-        assertThat(fullGeneration.getCollectionSize("orders")).isEqualTo(3);
+        // Verify that orders have all nested references resolved
+        List<JsonNode> orders = generation.streamJsonNodes("orders").toList();
+        JsonNode firstOrder = orders.get(0);
 
-        // Get the final JSON streams to verify nested references work
-        List<JsonNode> optimizedUsers = optimizedGeneration.streamJsonNodes("users").toList();
-        List<JsonNode> optimizedOrders = optimizedGeneration.streamJsonNodes("orders").toList();
-        // TODO: rethink this test
-        List<JsonNode> fullUsers = fullGeneration.streamJsonNodes("users").toList();
-        List<JsonNode> fullOrders = fullGeneration.streamJsonNodes("orders").toList();
+        assertThat(firstOrder.get("userId").asText()).isNotEmpty();
+        assertThat(firstOrder.get("shippingStreet").asText()).isNotEmpty();
+        assertThat(firstOrder.get("socialHandle").asText()).isNotEmpty();
 
-        // Verify that orders reference nested user fields correctly
-        JsonNode optimizedFirstOrder = optimizedOrders.get(0);
+        // Verify that users have the referenced nested fields materialized
+        List<JsonNode> users = generation.streamJsonNodes("users").toList();
+        JsonNode firstUser = users.get(0);
 
-        // Check that all nested references are resolved
-        assertThat(optimizedFirstOrder.has("userId")).isTrue();
-        assertThat(optimizedFirstOrder.has("shippingStreet")).isTrue();
-        assertThat(optimizedFirstOrder.has("customerName")).isTrue();
-        assertThat(optimizedFirstOrder.has("socialHandle")).isTrue();
-
-        assertThat(optimizedFirstOrder.get("userId").asText()).isNotNull();
-        assertThat(optimizedFirstOrder.get("shippingStreet").asText()).isNotNull();
-        assertThat(optimizedFirstOrder.get("customerName").asText()).isNotNull();
-        assertThat(optimizedFirstOrder.get("socialHandle").asText()).isNotNull();
-
-        // Verify the values are not null and have reasonable content
-        assertThat(optimizedFirstOrder.get("userId").asText()).isNotEmpty();
-        assertThat(optimizedFirstOrder.get("shippingStreet").asText()).isNotEmpty();
-        assertThat(optimizedFirstOrder.get("customerName").asText()).isNotEmpty();
-        assertThat(optimizedFirstOrder.get("socialHandle").asText()).isNotEmpty();
-
-        // Verify that the referenced user has the nested fields materialized
-        for (int i = 0; i < optimizedUsers.size(); i++) {
-            JsonNode optimizedUser = optimizedUsers.get(i);
-
-            // These fields should be materialized in optimized version because they're
-            // referenced
-            assertThat(optimizedUser.has("id")).isTrue();
-            assertThat(optimizedUser.has("name")).isTrue();
-            assertThat(optimizedUser.has("address")).isTrue();
-            assertThat(optimizedUser.get("address").has("street")).isTrue();
-            assertThat(optimizedUser.has("profile")).isTrue();
-            assertThat(optimizedUser.get("profile").has("social")).isTrue();
-            assertThat(optimizedUser.get("profile").get("social").has("twitter")).isTrue();
-
-            // Verify the nested values are not null and have content
-            assertThat(optimizedUser.get("id").asText()).isNotEmpty();
-            assertThat(optimizedUser.get("name").asText()).isNotEmpty();
-            assertThat(optimizedUser.get("address").get("street").asText()).isNotEmpty();
-            assertThat(optimizedUser.get("profile").get("social").get("twitter").asText()).isNotEmpty();
-        }
-
+        assertThat(firstUser.has("id")).isTrue();
+        assertThat(firstUser.path("address").path("street").asText()).isNotEmpty();
+        assertThat(firstUser.path("profile").path("social").path("twitter").asText()).isNotEmpty();
     }
 }

@@ -217,10 +217,6 @@ public abstract class AbstractGenerationContext<T> {
         }
     }
 
-    public Set<String> getReferencedPaths(String collection) {
-        return Set.of(); // Default to empty set for eager context
-    }
-
     public void setReferencedPaths(String collection, Set<String> paths) {
         // No-op for eager context
     }
