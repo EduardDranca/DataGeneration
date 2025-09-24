@@ -40,8 +40,8 @@ jobs:
         reporter: java-junit
 
     - name: SonarQube Analysis
-        env:
-          HEAD_REF: ${{ github.head_ref }}
+      env:
+        HEAD_REF: ${{ github.head_ref }}
       run: |
         if [ "${{ github.event_name }}" = "pull_request" ]; then
           # PR Analysis
