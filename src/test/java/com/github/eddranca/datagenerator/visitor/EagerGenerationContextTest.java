@@ -129,37 +129,6 @@ class EagerGenerationContextTest {
         assertThat(retrieved.get(0).asText()).isEqualTo("refValue");
     }
 
-    @Test
-    void testRegisterAndGetTaggedCollection() {
-        JsonNode item1 = mapper.valueToTree("tagged1");
-        JsonNode item2 = mapper.valueToTree("tagged2");
-        List<JsonNode> collection = List.of(item1, item2);
-
-        context.registerTaggedCollection("testTag", collection);
-
-        List<JsonNode> retrieved = context.getTaggedCollection("testTag");
-        assertThat(retrieved).hasSize(2);
-        assertThat(retrieved.get(0).asText()).isEqualTo("tagged1");
-        assertThat(retrieved.get(1).asText()).isEqualTo("tagged2");
-    }
-
-    @Test
-    void testRegisterTaggedCollectionMergesExisting() {
-        JsonNode item1 = mapper.valueToTree("tagged1");
-        JsonNode item2 = mapper.valueToTree("tagged2");
-
-        context.registerTaggedCollection("testTag", List.of(item1));
-        context.registerTaggedCollection("testTag", List.of(item2));
-
-        List<JsonNode> retrieved = context.getTaggedCollection("testTag");
-        assertThat(retrieved).hasSize(2);
-    }
-
-    @Test
-    void testGetTaggedCollectionReturnsEmptyForNonExistent() {
-        List<JsonNode> retrieved = context.getTaggedCollection("nonExistentTag");
-        assertThat(retrieved).isEmpty();
-    }
 
     @Test
     void testRegisterAndGetPick() {

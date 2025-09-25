@@ -20,7 +20,6 @@ String dsl = """
     {
         "departments": {
             "count": 4,
-            "tags": ["department"],
             "item": {
                 "id": {"gen": "uuid"},
                 "name": {"gen": "choice", "options": ["Engineering", "Marketing", "Sales", "HR"]},
@@ -99,7 +98,6 @@ Create realistic data with foreign keys and references:
 {
     "categories": {
         "count": 3,
-        "tags": ["category"],
         "item": {
             "id": {"gen": "uuid"},
             "name": {"gen": "choice", "options": ["Electronics", "Clothing", "Books"]}
@@ -166,29 +164,7 @@ Generate arrays with size constraints:
 }
 ```
 
-### **Tag System**
-Reference collections by tags for flexible relationships:
 
-```json
-{
-    "categories": {
-        "count": 3,
-        "tags": ["category"],
-        "item": {
-            "id": {"gen": "uuid"},
-            "name": {"gen": "choice", "options": ["Electronics", "Clothing", "Books"]}
-        }
-    },
-    "products": {
-        "count": 8,
-        "item": {
-            "id": {"gen": "uuid"},
-            "name": {"gen": "choice", "options": ["Laptop Pro", "T-Shirt", "Programming Book"]},
-            "category": {"ref": "byTag[category]"}
-        }
-    }
-}
-```
 
 ### **Multiple Output Formats**
 
@@ -302,7 +278,6 @@ DslDataGenerator.create()
 {
     "categories": {
         "count": 3,
-        "tags": ["category"],
         "item": {
             "id": {"gen": "uuid"},
             "name": {"gen": "choice", "options": ["Electronics", "Clothing", "Books"]},

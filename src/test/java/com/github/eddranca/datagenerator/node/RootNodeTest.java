@@ -6,7 +6,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashMap;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -100,7 +99,6 @@ class RootNodeTest {
             "users",
             10,
             mockItem,
-            List.of("tag1"),
             new HashMap<>(),
             null
         );

@@ -15,7 +15,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 /**
  * Abstract base class for generation contexts that provides shared functionality
@@ -69,18 +68,13 @@ public abstract class AbstractGenerationContext<T> {
 
     public abstract void registerReferenceCollection(String name, List<T> collection);
 
-    public abstract void registerTaggedCollection(String tag, List<T> collection);
-
     public abstract void registerPick(String name, JsonNode value);
 
     public abstract List<JsonNode> getCollection(String name);
 
-    public abstract List<JsonNode> getTaggedCollection(String tag);
-
     public abstract JsonNode getNamedPick(String name);
 
     public abstract Map<String, List<T>> getNamedCollections();
-
 
 
     /**

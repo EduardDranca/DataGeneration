@@ -5,18 +5,16 @@ import com.github.eddranca.datagenerator.node.CollectionNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.ItemNode;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.github.eddranca.datagenerator.builder.KeyWords.COUNT;
 import static com.github.eddranca.datagenerator.builder.KeyWords.ITEM;
 import static com.github.eddranca.datagenerator.builder.KeyWords.NAME;
 import static com.github.eddranca.datagenerator.builder.KeyWords.PICK;
-import static com.github.eddranca.datagenerator.builder.KeyWords.TAGS;
+
 
 /**
  * Builder for collection nodes.
@@ -41,11 +39,10 @@ class CollectionNodeBuilder {
             return null;
         }
 
-        List<String> tags = buildCollectionTags(name, def);
         Map<String, Integer> picks = buildCollectionPicks(name, def, count);
         String collectionName = def.has(NAME) ? def.get(NAME).asText() : null;
 
-        return new CollectionNode(name, count, item, tags, picks, collectionName);
+        return new CollectionNode(name, count, item, picks, collectionName);
     }
 
     private boolean validateCollectionStructure(String name, JsonNode def) {
@@ -69,20 +66,6 @@ class CollectionNodeBuilder {
         return count;
     }
 
-    private List<String> buildCollectionTags(String name, JsonNode def) {
-        List<String> tags = new ArrayList<>();
-        if (def.has(TAGS)) {
-            JsonNode tagsNode = def.get(TAGS);
-            if (tagsNode.isArray()) {
-                for (JsonNode tagNode : tagsNode) {
-                    tags.add(tagNode.asText());
-                }
-            } else {
-                addCollectionError(name, "tags must be an array");
-            }
-        }
-        return tags;
-    }
 
     private Map<String, Integer> buildCollectionPicks(String name, JsonNode def, int count) {
         Map<String, Integer> picks = new HashMap<>();

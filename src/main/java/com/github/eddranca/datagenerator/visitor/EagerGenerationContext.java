@@ -21,7 +21,6 @@ import java.util.Random;
 public class EagerGenerationContext extends AbstractGenerationContext<JsonNode> {
     private final Map<String, List<JsonNode>> namedCollections; // Final collections for output
     private final Map<String, List<JsonNode>> referenceCollections; // Collections available for references (includes DSL keys)
-    private final Map<String, List<JsonNode>> taggedCollections;
     private final Map<String, JsonNode> namedPicks;
 
     public EagerGenerationContext(GeneratorRegistry generatorRegistry, Random random,
@@ -29,7 +28,6 @@ public class EagerGenerationContext extends AbstractGenerationContext<JsonNode> 
         super(generatorRegistry, random, maxFilteringRetries, filteringBehavior);
         this.namedCollections = new HashMap<>();
         this.referenceCollections = new HashMap<>();
-        this.taggedCollections = new HashMap<>();
         this.namedPicks = new HashMap<>();
     }
 
@@ -53,16 +51,6 @@ public class EagerGenerationContext extends AbstractGenerationContext<JsonNode> 
         referenceCollections.put(name, new ArrayList<>(collection));
     }
 
-    @Override
-    public void registerTaggedCollection(String tag, List<JsonNode> collection) {
-        List<JsonNode> existing = taggedCollections.get(tag);
-        if (existing == null) {
-            taggedCollections.put(tag, new ArrayList<>(collection));
-        } else {
-            // Merge collections with the same tag
-            existing.addAll(collection);
-        }
-    }
 
     @Override
     public void registerPick(String name, JsonNode value) {
@@ -79,11 +67,6 @@ public class EagerGenerationContext extends AbstractGenerationContext<JsonNode> 
         return collection != null ? collection : List.of();
     }
 
-    @Override
-    public List<JsonNode> getTaggedCollection(String tag) {
-        List<JsonNode> collection = taggedCollections.get(tag);
-        return collection != null ? collection : List.of();
-    }
 
     @Override
     public JsonNode getNamedPick(String name) {
@@ -94,7 +77,6 @@ public class EagerGenerationContext extends AbstractGenerationContext<JsonNode> 
     public Map<String, List<JsonNode>> getNamedCollections() {
         return namedCollections;
     }
-
 
 
     @Override
@@ -114,9 +96,6 @@ public class EagerGenerationContext extends AbstractGenerationContext<JsonNode> 
             registerReferenceCollection(node.getName(), items);
         }
 
-        for (String tag : node.getTags()) {
-            registerTaggedCollection(tag, items);
-        }
 
         return mapper.valueToTree(items);
     }

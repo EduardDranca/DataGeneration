@@ -191,55 +191,6 @@ class SequentialReferenceTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementationsTest
-    void testSequentialReferenceWithTaggedCollections(boolean memoryOptimized)
-        throws IOException {
-        JsonNode dslNode = mapper.readTree("""
-            {
-                "staff_admins": {
-                    "name": "staff",
-                    "count": 2,
-                    "tags": ["staff"],
-                    "item": {
-                        "id": {"gen": "number", "min": 1, "max": 2},
-                        "role": "admin"
-                    }
-                },
-                "staff_managers": {
-                    "name": "staff",
-                    "count": 2,
-                    "tags": ["staff"],
-                    "item": {
-                        "id": {"gen": "number", "min": 3, "max": 4},
-                        "role": "manager"
-                    }
-                },
-                "tasks": {
-                    "count": 8,
-                    "item": {
-                        "id": {"gen": "uuid"},
-                        "assignedTo": {
-                            "ref": "byTag[staff].id",
-                            "sequential": true
-                        }
-                    }
-                }
-            }
-            """);
-
-        Generation generation = generateFromDsl(dslNode, memoryOptimized);
-
-        Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
-        List<JsonNode> tasks = collections.get("tasks");
-
-        assertThat(tasks).hasSize(8);
-
-        assertThat(tasks)
-            .extracting(task -> task.get("assignedTo").intValue())
-            .as("All tasks should be assigned to valid staff member IDs (1-4)")
-            .allSatisfy(assignedTo -> assertThat(assignedTo).isBetween(1, 4));
-    }
-
-    @BothImplementationsTest
     void testSequentialReferenceDefaultBehavior(boolean memoryOptimized) throws IOException {
         JsonNode dslNode = mapper.readTree("""
             {

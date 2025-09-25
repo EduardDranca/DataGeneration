@@ -27,9 +27,6 @@ class NodeBuilderContext {
         return validationContext.isGeneratorRegistered(generatorName);
     }
 
-    public boolean isTagDeclared(String tag) {
-        return validationContext.isTagDeclared(tag);
-    }
 
     public boolean isCollectionDeclared(String collection) {
         return validationContext.isCollectionDeclared(collection);

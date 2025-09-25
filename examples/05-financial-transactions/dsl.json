@@ -1,7 +1,6 @@
 {
     "banks": {
         "count": 3,
-        "tags": ["bank"],
         "item": {
             "id": {"gen": "uuid"},
             "name": {"gen": "choice", "options": ["First National Bank", "City Trust Bank", "Global Finance Corp"]},

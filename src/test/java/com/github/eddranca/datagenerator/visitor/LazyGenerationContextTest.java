@@ -83,10 +83,10 @@ class LazyGenerationContextTest {
             "users", Set.of("id", "name"),
             "posts", Set.of("title")
         );
-        
+
         // This method should not throw an exception
         context.setReferencedPaths(paths);
-        
+
         // The actual behavior will be tested through integration tests
         // since getReferencedPaths is private
     }
@@ -136,18 +136,6 @@ class LazyGenerationContextTest {
         assertThat(retrieved.get(0).get("value").asText()).isEqualTo("refValue");
     }
 
-    @Test
-    void testRegisterLazyTaggedCollection() {
-        List<LazyItemProxy> collection = List.of(mockLazyItem);
-        context.registerTaggedCollection("testTag", collection);
-
-        ObjectNode taggedValue = mapper.createObjectNode().put("value", "taggedValue");
-        when(mockLazyItem.getMaterializedCopy()).thenReturn(taggedValue);
-
-        List<JsonNode> retrieved = context.getTaggedCollection("testTag");
-        assertThat(retrieved).hasSize(1);
-        assertThat(retrieved.get(0).get("value").asText()).isEqualTo("taggedValue");
-    }
 
     @Test
     void testGetCollectionMaterializesLazyCollection() {
@@ -184,40 +172,6 @@ class LazyGenerationContextTest {
         assertThat(retrieved).isEmpty();
     }
 
-    @Test
-    void testGetTaggedCollectionMaterializesLazyCollection() {
-        ObjectNode expectedValue = mapper.createObjectNode().put("value", "taggedValue");
-        when(mockLazyItem.getMaterializedCopy()).thenReturn(expectedValue);
-
-        List<LazyItemProxy> collection = List.of(mockLazyItem);
-        context.registerTaggedCollection("testTag", collection);
-
-        List<JsonNode> retrieved = context.getTaggedCollection("testTag");
-        assertThat(retrieved).hasSize(1);
-        assertThat(retrieved.get(0)).isEqualTo(expectedValue);
-    }
-
-    @Test
-    void testGetTaggedCollectionCachesResults() {
-        ObjectNode expectedValue = mapper.createObjectNode().put("value", "cachedTagValue");
-        when(mockLazyItem.getMaterializedCopy()).thenReturn(expectedValue);
-
-        List<LazyItemProxy> collection = List.of(mockLazyItem);
-        context.registerTaggedCollection("testTag", collection);
-
-        // First call should materialize
-        List<JsonNode> first = context.getTaggedCollection("testTag");
-        // Second call should return cached result
-        List<JsonNode> second = context.getTaggedCollection("testTag");
-
-        assertThat(first).isSameAs(second); // Should be the same cached instance
-    }
-
-    @Test
-    void testGetTaggedCollectionReturnsEmptyForNonExistent() {
-        List<JsonNode> retrieved = context.getTaggedCollection("nonExistentTag");
-        assertThat(retrieved).isEmpty();
-    }
 
     @Test
     void testRegisterAndGetPick() {

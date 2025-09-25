@@ -58,7 +58,7 @@ public class LazyItemProxy extends AbstractLazyProxy {
             // Get the materialized copy for storage in the delegate
             return lazyObjectProxy.getMaterializedCopy();
         } else {
-            // Set current item context for self-references and tag references
+            // Set current item context for self-references
             ObjectNode previousItem = visitor.getCurrentItem();
             try {
                 visitor.setCurrentItem(delegate);

@@ -58,7 +58,6 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                     {
                         "countries": {
                             "count": 3,
-                            "tags": ["country"],
                             "item": {
                                 "name": {"gen": "country.name"},
                                 "isoCode": {"gen": "country.countryCode"},
@@ -68,7 +67,6 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                         },
                         "companies": {
                             "count": 10,
-                            "tags": ["company"],
                             "item": {
                                 "id": {"gen": "uuid"},
                                 "name": {"gen": "company.name"},
@@ -224,7 +222,6 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                     {
                         "countries": {
                             "count": 3,
-                            "tags": ["country"],
                             "item": {
                                 "name": {"gen": "country.name"},
                                 "isoCode": {"gen": "country.countryCode"},
@@ -234,7 +231,6 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                         },
                         "companies": {
                             "count": 10,
-                            "tags": ["company"],
                             "item": {
                                 "id": {"gen": "uuid"},
                                 "name": {"gen": "company.name"},
@@ -264,13 +260,12 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
         }
 
         @BothImplementationsTest
-        void testTagReferenceWithFiltering(boolean memoryOptimized) throws Exception {
+        void testDirectReferenceWithFiltering(boolean memoryOptimized) throws Exception {
             JsonNode dslNode = mapper.readTree(
                 """
                     {
                         "locations": {
                             "count": 5,
-                            "tags": ["location"],
                             "item": {
                                 "name": {"gen": "choice", "options": ["New York", "London", "Tokyo", "Paris", "Berlin"]},
                                 "country": {"gen": "choice", "options": ["USA", "UK", "Japan", "France", "Germany"]},
@@ -281,9 +276,9 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                             "count": 10,
                             "item": {
                                 "name": {"gen": "choice", "options": ["Conference", "Workshop", "Meetup"]},
-                                "location": {"ref": "byTag[location]"},
-                                "filteredLocationName": {"ref": "byTag[location].name", "filter": ["New York", "London"]},
-                                "continentBasedLocation": {"ref": "byTag[location].continent", "filter": ["Asia"]}
+                                "location": {"ref": "locations[*]"},
+                                "filteredLocationName": {"ref": "locations[*].name", "filter": ["New York", "London"]},
+                                "continentBasedLocation": {"ref": "locations[*].continent", "filter": ["Asia"]}
                             }
                         }
                     }
@@ -1367,7 +1362,6 @@ class DslDataGeneratorTest extends ParameterizedGenerationTest {
                 {
                     "countries": {
                         "count": 2,
-                        "tags": ["country"],
                         "item": {
                             "name": {"gen": "country.name"},
                             "isoCode": {"gen": "country.countryCode"},

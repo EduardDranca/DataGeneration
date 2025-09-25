@@ -16,7 +16,7 @@ import java.util.Map;
 
 import static com.github.eddranca.datagenerator.builder.KeyWords.NAME;
 import static com.github.eddranca.datagenerator.builder.KeyWords.SEED;
-import static com.github.eddranca.datagenerator.builder.KeyWords.TAGS;
+
 
 /**
  * Builder that parses JSON DSL and creates a validated node tree.
@@ -27,16 +27,12 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.TAGS;
 public class DslTreeBuilder {
     private final ValidationContext context;
     private final List<ValidationError> errors;
-    private final NodeBuilderContext builderContext;
-    private final FieldNodeBuilder fieldBuilder;
     private final CollectionNodeBuilder collectionBuilder;
 
     public DslTreeBuilder(GeneratorRegistry generatorRegistry) {
         this.context = new ValidationContext(generatorRegistry.getRegisteredGeneratorNames());
         this.errors = new ArrayList<>();
-        this.builderContext = new NodeBuilderContext(context, errors);
-        this.fieldBuilder = new FieldNodeBuilder(builderContext);
-        this.collectionBuilder = new CollectionNodeBuilder(builderContext, fieldBuilder);
+        this.collectionBuilder = initCollectionBuilder();
     }
 
     public DslTreeBuildResult build(JsonNode dslJson) {
@@ -86,29 +82,9 @@ public class DslTreeBuilder {
             context.declareCollection(finalCollectionName);
         }
 
-        // Also declare tags if present
-        declareTags(collectionDef, finalCollectionName);
+
     }
 
-    private void declareTags(JsonNode collectionDef, String collectionName) {
-        if (collectionDef.has(TAGS)) {
-            JsonNode tagsNode = collectionDef.get(TAGS);
-            if (tagsNode.isArray()) {
-                for (JsonNode tagNode : tagsNode) {
-                    declareTag(tagNode.asText(), collectionName);
-                }
-            }
-        }
-    }
-
-    private void declareTag(String tag, String collectionName) {
-        if (!context.declareTagForCollection(tag, collectionName)) {
-            String existingCollection = context.getTagCollection(tag);
-            addError("Tag '" + tag + "' is already declared by collection '" +
-                existingCollection + "' and cannot be redeclared by collection '" +
-                collectionName + "'. Tags can only be shared by collections with the same final name.");
-        }
-    }
 
     private void buildCollectionNodes(JsonNode dslJson, RootNode root) {
         for (Iterator<Map.Entry<String, JsonNode>> it = dslJson.fields(); it.hasNext(); ) {
@@ -123,8 +99,8 @@ public class DslTreeBuilder {
         }
     }
 
-
-    private void addError(String message) {
-        builderContext.addError(message);
+    private CollectionNodeBuilder initCollectionBuilder() {
+        NodeBuilderContext builderContext = new NodeBuilderContext(context, errors);
+        return new CollectionNodeBuilder(builderContext, new FieldNodeBuilder(builderContext));
     }
 }

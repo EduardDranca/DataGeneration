@@ -16,7 +16,6 @@ class GenerationTest extends ParameterizedGenerationTest {
         {
             "countries": {
                 "count": 3,
-                "tags": ["country"],
                 "item": {
                     "name": {"gen": "country.name"},
                     "isoCode": {"gen": "country.countryCode"},
@@ -26,7 +25,6 @@ class GenerationTest extends ParameterizedGenerationTest {
             },
             "companies": {
                 "count": 10,
-                "tags": ["company"],
                 "item": {
                     "id": {"gen": "uuid"},
                     "name": {"gen": "company.name"},
