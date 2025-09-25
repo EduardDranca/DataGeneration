@@ -100,7 +100,7 @@ public class DslTreeBuilder {
     }
 
     private CollectionNodeBuilder initCollectionBuilder() {
-        NodeBuilderContext builderContext = new NodeBuilderContext(context, new ArrayList<>());
+        NodeBuilderContext builderContext = new NodeBuilderContext(context, errors);
         return new CollectionNodeBuilder(builderContext, new FieldNodeBuilder(builderContext));
     }
 }
