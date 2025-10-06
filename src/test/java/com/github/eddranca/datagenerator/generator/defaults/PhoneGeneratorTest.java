@@ -2,33 +2,26 @@ package com.github.eddranca.datagenerator.generator.defaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import net.datafaker.Faker;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PhoneGeneratorTest {
-    private PhoneGenerator generator;
-    private ObjectMapper mapper;
-
-    @BeforeEach
-    void setUp() {
-        Faker faker = new Faker();
-        generator = new PhoneGenerator(faker);
-        mapper = new ObjectMapper();
-    }
+    private final PhoneGenerator generator = new PhoneGenerator();
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final Faker faker = new Faker();
 
     @Test
     void testGenerateDefault() {
-        JsonNode result = generator.generate(null);
+        JsonNode result = generator.generate(new GeneratorContext(faker, null, mapper));
         assertThat(result.isTextual()).isTrue();
         assertThat(result.asText()).isNotEmpty();
 
@@ -42,7 +35,7 @@ class PhoneGeneratorTest {
     @Test
     void testGenerateWithDefaultFormat() throws Exception {
         JsonNode options = mapper.readTree("{}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
         assertThat(result.isTextual()).isTrue();
         assertThat(result.asText()).isNotEmpty();
     }
@@ -51,7 +44,7 @@ class PhoneGeneratorTest {
     @ValueSource(strings = {"international", "cell", "mobile"})
     void testGeneratePhoneFormats(String format) throws Exception {
         JsonNode options = mapper.readTree("{\"format\": \"" + format + "\"}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result.isTextual()).isTrue();
         assertThat(result.asText()).isNotEmpty();
@@ -65,7 +58,7 @@ class PhoneGeneratorTest {
     @Test
     void testGenerateExtensionFormat() throws Exception {
         JsonNode options = mapper.readTree("{\"format\": \"extension\"}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
         assertThat(result.isTextual()).isTrue();
         assertThat(result.asText()).isNotEmpty();
 
@@ -79,7 +72,7 @@ class PhoneGeneratorTest {
     @Test
     void testUnknownFormat() throws Exception {
         JsonNode options = mapper.readTree("{\"format\": \"unknown\"}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
         assertThat(result.isTextual()).isTrue();
         assertThat(result.asText()).isNotEmpty();
 
@@ -91,62 +84,39 @@ class PhoneGeneratorTest {
     }
 
     @Test
-    void testFieldSuppliers() {
-        Map<String, Supplier<JsonNode>> suppliers = generator.getFieldSuppliers(null);
-
-        assertThat(suppliers)
-            .isNotNull()
-            .containsKeys("phoneNumber", "cellPhone", "extension");
-
-        // Test that suppliers actually work
-        JsonNode phoneResult = suppliers.get("phoneNumber").get();
-        assertThat(phoneResult.isTextual()).isTrue();
-        assertThat(phoneResult.asText()).isNotEmpty();
-
-        JsonNode cellResult = suppliers.get("cellPhone").get();
-        assertThat(cellResult.isTextual()).isTrue();
-        assertThat(cellResult.asText()).isNotEmpty();
-
-        JsonNode extensionResult = suppliers.get("extension").get();
-        assertThat(extensionResult.isTextual()).isTrue();
-        assertThat(extensionResult.asText()).isNotEmpty();
-        assertThat(extensionResult.asText()).matches("\\d+");
-    }
-
-    @Test
     void testFilteringWithNoFilters() {
-        JsonNode result = generator.generateWithFilter(null, null);
+        JsonNode result = generator.generateWithFilter(new GeneratorContext(faker, null, mapper), null);
         assertThat(result.isTextual()).isTrue();
 
-        result = generator.generateWithFilter(null, List.of());
+        result = generator.generateWithFilter(new GeneratorContext(faker, null, mapper), List.of());
         assertThat(result.isTextual()).isTrue();
     }
 
     @Test
     void testFilteringWithSpecificPhone() {
         // Generate a phone number to use as filter
-        JsonNode firstResult = generator.generate(null);
+        JsonNode firstResult = generator.generate(new GeneratorContext(faker, null, mapper));
         String phoneToFilter = firstResult.asText();
 
         List<JsonNode> filters = Collections.singletonList(mapper.valueToTree(phoneToFilter));
 
         // Try a few times to see if filtering works
-        boolean foundDifferent = java.util.stream.IntStream.range(0, 10)
-            .mapToObj(i -> generator.generateWithFilter(null, filters))
+        boolean foundDifferent = IntStream.range(0, 10)
+            .mapToObj(i -> generator.generateWithFilter(new GeneratorContext(faker, null, mapper), filters))
             .anyMatch(result -> result.isTextual() && !result.asText().equals(phoneToFilter));
 
         // Phone numbers have high variety, so this should usually work
-        assertThat(foundDifferent || generator.generateWithFilter(null, filters).isNull()).isTrue();
+        assertThat(foundDifferent || generator.generateWithFilter(new GeneratorContext(faker, null, mapper),  filters).isNull()).isTrue();
     }
 
     @Test
     void testCaseInsensitiveFormat() throws Exception {
         JsonNode options1 = mapper.readTree("{\"format\": \"CELL\"}");
-        JsonNode result1 = generator.generate(options1);
+        JsonNode result1 = generator.generate(new GeneratorContext(faker, options1, mapper));
         assertThat(result1.isTextual()).isTrue();
 
         JsonNode options2 = mapper.readTree("{\"format\": \"Cell\"}");
-        JsonNode result2 = generator.generate(options2);
+        JsonNode result2 = generator.generate(new GeneratorContext(faker, options2, mapper));
         assertThat(result2.isTextual()).isTrue();
 
         // Both should work (case insensitive)

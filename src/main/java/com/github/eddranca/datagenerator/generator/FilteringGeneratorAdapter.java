@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.exception.FilteringException;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -22,40 +21,40 @@ public class FilteringGeneratorAdapter implements Generator {
     }
 
     @Override
-    public JsonNode generate(JsonNode options) {
-        return delegate.generate(options);
+    public JsonNode generate(GeneratorContext context) {
+        return delegate.generate(context);
     }
 
     @Override
-    public JsonNode generateWithFilter(JsonNode options, List<JsonNode> filterValues) {
+    public JsonNode generateWithFilter(GeneratorContext context, List<JsonNode> filterValues) {
         if (delegate.supportsFiltering()) {
             // Delegate supports filtering natively
-            return delegate.generateWithFilter(options, filterValues);
+            return delegate.generateWithFilter(context, filterValues);
         }
 
         // Apply retry logic for generators that don't support filtering
         return generateWithRetryFiltering(
-            () -> delegate.generate(options),
+            () -> delegate.generate(context),
             filterValues,
             "Generator filtering"
         );
     }
 
     @Override
-    public JsonNode generateAtPath(JsonNode options, String path) {
-        return delegate.generateAtPath(options, path);
+    public JsonNode generateAtPath(GeneratorContext context, String path) {
+        return delegate.generateAtPath(context, path);
     }
 
     @Override
-    public JsonNode generateAtPathWithFilter(JsonNode options, String path, List<JsonNode> filterValues) {
+    public JsonNode generateAtPathWithFilter(GeneratorContext context, String path, List<JsonNode> filterValues) {
         if (delegate.supportsFiltering()) {
             // Delegate supports filtering natively
-            return delegate.generateAtPathWithFilter(options, path, filterValues);
+            return delegate.generateAtPathWithFilter(context, path, filterValues);
         }
 
         // Apply retry logic for path generation with filtering
         return generateWithRetryFiltering(
-            () -> delegate.generateAtPath(options, path),
+            () -> delegate.generateAtPath(context, path),
             filterValues,
             "Generator path filtering"
         );
@@ -64,11 +63,6 @@ public class FilteringGeneratorAdapter implements Generator {
     @Override
     public boolean supportsFiltering() {
         return true; // Adapter always supports filtering through retry logic
-    }
-
-    @Override
-    public Map<String, Supplier<JsonNode>> getFieldSuppliers(JsonNode options) {
-        return delegate.getFieldSuppliers(options);
     }
 
     /**

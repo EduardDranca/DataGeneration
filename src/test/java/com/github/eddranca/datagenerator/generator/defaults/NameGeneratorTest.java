@@ -2,33 +2,24 @@ package com.github.eddranca.datagenerator.generator.defaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import net.datafaker.Faker;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
 import java.util.Random;
-import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class NameGeneratorTest {
 
-    private NameGenerator generator;
-    private ObjectMapper mapper;
-    private JsonNode options;
-
-    @BeforeEach
-    void setUp() {
-        Faker faker = new Faker();
-        generator = new NameGenerator(faker);
-        mapper = new ObjectMapper();
-        options = mapper.createObjectNode();
-    }
+    private final NameGenerator generator = new NameGenerator();
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final Faker faker = new Faker();
+    private final JsonNode options = mapper.createObjectNode();
 
     @Test
     void testGenerate() {
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isObject()).isTrue();
@@ -46,32 +37,12 @@ class NameGeneratorTest {
     }
 
     @Test
-    void testGetFieldSuppliers() {
-        Map<String, Supplier<JsonNode>> suppliers = generator.getFieldSuppliers(options);
-
-        assertThat(suppliers)
-            .isNotNull()
-            .containsKeys("firstName", "lastName", "fullName", "prefix", "suffix", "title");
-
-        // Test each supplier
-        assertThat(suppliers.get("firstName").get().asText()).isNotNull();
-        assertThat(suppliers.get("lastName").get().asText()).isNotNull();
-        assertThat(suppliers.get("fullName").get().asText()).isNotNull();
-        assertThat(suppliers.get("prefix").get().asText()).isNotNull();
-        assertThat(suppliers.get("suffix").get().asText()).isNotNull();
-        assertThat(suppliers.get("title").get().asText()).isNotNull();
-    }
-
-    @Test
     void testSeedConsistency() {
         Faker faker1 = new Faker(new Random(123L));
         Faker faker2 = new Faker(new Random(123L));
 
-        NameGenerator gen1 = new NameGenerator(faker1);
-        NameGenerator gen2 = new NameGenerator(faker2);
-
-        JsonNode result1 = gen1.generate(options);
-        JsonNode result2 = gen2.generate(options);
+        JsonNode result1 = generator.generate(new GeneratorContext(faker1, options, mapper));
+        JsonNode result2 = generator.generate(new GeneratorContext(faker2, options, mapper));
 
         assertThat(result1).isEqualTo(result2);
     }

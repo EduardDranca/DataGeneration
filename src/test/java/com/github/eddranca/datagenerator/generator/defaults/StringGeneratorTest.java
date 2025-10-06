@@ -2,8 +2,8 @@ package com.github.eddranca.datagenerator.generator.defaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import net.datafaker.Faker;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -14,20 +14,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class StringGeneratorTest {
 
-    private StringGenerator generator;
-    private ObjectMapper mapper;
-
-    @BeforeEach
-    void setUp() {
-        Faker faker = new Faker();
-        generator = new StringGenerator(faker);
-        mapper = new ObjectMapper();
-    }
+    private final StringGenerator generator = new StringGenerator();
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final Faker faker = new Faker();
 
     @Test
     void testGenerateDefaultLength() {
         JsonNode options = mapper.createObjectNode();
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isTextual()).isTrue();
@@ -41,7 +35,7 @@ class StringGeneratorTest {
     @ValueSource(ints = {5, 100, 0})
     void testGenerateWithSpecificLengths(int length) throws Exception {
         JsonNode options = mapper.readTree("{\"length\": " + length + "}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isTextual()).isTrue();
@@ -59,7 +53,7 @@ class StringGeneratorTest {
     @Test
     void testGenerateNegativeLength() throws Exception {
         JsonNode options = mapper.readTree("{\"length\": -5}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isTextual()).isTrue();
@@ -69,7 +63,7 @@ class StringGeneratorTest {
     @Test
     void testGenerateWithInvalidLengthType() throws Exception {
         JsonNode options = mapper.readTree("{\"length\": \"invalid\"}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isTextual()).isTrue();
@@ -79,7 +73,7 @@ class StringGeneratorTest {
     @Test
     void testGenerateWithMinMaxLength() throws Exception {
         JsonNode options = mapper.readTree("{\"minLength\": 5, \"maxLength\": 10}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isTextual()).isTrue();
@@ -91,7 +85,7 @@ class StringGeneratorTest {
     @Test
     void testGenerateWithCustomAllowedChars() throws Exception {
         JsonNode options = mapper.readTree("{\"length\": 10, \"allowedChars\": \"ABC\"}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isTextual()).isTrue();
@@ -103,7 +97,7 @@ class StringGeneratorTest {
     @Test
     void testCharacterSet() throws Exception {
         JsonNode options = mapper.readTree("{\"length\": 1000}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         String value = result.asText();
         assertThat(value.chars())
@@ -123,7 +117,7 @@ class StringGeneratorTest {
     @Test
     void testVeryLargeLength() throws Exception {
         JsonNode options = mapper.readTree("{\"length\": 10000}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isTextual()).isTrue();
@@ -140,11 +134,8 @@ class StringGeneratorTest {
         Faker faker1 = new Faker(new Random(123L));
         Faker faker2 = new Faker(new Random(123L));
 
-        StringGenerator gen1 = new StringGenerator(faker1);
-        StringGenerator gen2 = new StringGenerator(faker2);
-
-        JsonNode result1 = gen1.generate(options);
-        JsonNode result2 = gen2.generate(options);
+        JsonNode result1 = generator.generate(new GeneratorContext(faker1, options, mapper));
+        JsonNode result2 = generator.generate(new GeneratorContext(faker2, options, mapper));
 
         assertThat(result1.asText()).isEqualTo(result2.asText());
     }
@@ -152,7 +143,7 @@ class StringGeneratorTest {
     @Test
     void testGenerateWithRegex() throws Exception {
         JsonNode options = mapper.readTree("{\"regex\": \"[a-z]{5}[0-9]{5}\"}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isTextual()).isTrue();

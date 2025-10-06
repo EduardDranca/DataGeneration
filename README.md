@@ -234,11 +234,14 @@ result.streamSqlInserts("users")
 See the [Memory Optimization Example](examples/04-memory-optimization/) for detailed usage.
 
 ### Custom Generators
+Create custom generators with access to the shared Faker instance for consistent randomization:
+
 ```java
-Generator employeeIdGenerator = (options) -> {
-    String prefix = options.has("prefix") ? options.get("prefix").asText() : "EMP";
-    int number = faker.number().numberBetween(1000, 9999);
-    return mapper.valueToTree(prefix + "-" + String.format("%04d", number));
+Generator employeeIdGenerator = context -> {
+    String prefix = context.getStringOption("prefix");
+    if (prefix == null) prefix = "EMP";
+    int number = context.faker().number().numberBetween(1000, 9999);
+    return context.mapper().valueToTree(prefix + "-" + String.format("%04d", number));
 };
 
 DslDataGenerator.create()
@@ -246,6 +249,12 @@ DslDataGenerator.create()
     .fromJsonString(dsl)
     .generate();
 ```
+
+**Key Benefits:**
+- **Shared Faker**: `context.faker()` ensures reproducible results when using seeds
+- **Convenient Options**: `context.getStringOption()`, `getIntOption()`, `getBooleanOption()`, `getDoubleOption()`
+- **ObjectMapper Access**: `context.mapper()` for creating JsonNode values
+- **Type Safety**: Clear contract with `GeneratorContext` parameter
 
 ### Weighted Choices
 ```json

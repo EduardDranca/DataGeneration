@@ -3,38 +3,30 @@ package com.github.eddranca.datagenerator.generator.defaults;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.generator.Generator;
-import net.datafaker.Faker;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 
 import java.util.List;
 
 public class BooleanGenerator implements Generator {
-    private final Faker faker;
-    private final ObjectMapper mapper;
-
-    public BooleanGenerator(Faker faker) {
-        this.faker = faker;
-        this.mapper = new ObjectMapper();
-    }
 
     @Override
-    public JsonNode generate(JsonNode options) {
-        double probability = 0.5; // Default 50/50
+    public JsonNode generate(GeneratorContext context) {
+        ObjectMapper mapper = context.mapper();
+        double probability = context.getDoubleOption("probability", 0.5); // Default 50/50
 
-        if (options != null && options.has("probability")) {
-            probability = options.get("probability").asDouble();
-            // Clamp probability between 0.0 and 1.0
-            probability = Math.max(0.0, Math.min(1.0, probability));
-        }
+        // Clamp probability between 0.0 and 1.0
+        probability = Math.max(0.0, Math.min(1.0, probability));
 
-        boolean result = faker.random().nextDouble() < probability;
+        boolean result = context.faker().random().nextDouble() < probability;
         return mapper.valueToTree(result);
     }
 
     @Override
-    public JsonNode generateWithFilter(JsonNode options, List<JsonNode> filterValues) {
+    public JsonNode generateWithFilter(GeneratorContext context, List<JsonNode> filterValues) {
         if (filterValues == null || filterValues.isEmpty()) {
-            return generate(options);
+            return generate(context);
         }
+        ObjectMapper mapper = context.mapper();
 
         // Convert filter values to booleans using streams
         boolean filterTrue = filterValues.stream()
@@ -61,7 +53,7 @@ public class BooleanGenerator implements Generator {
         }
 
         // No filtering needed
-        return generate(options);
+        return generate(context);
     }
 
     @Override

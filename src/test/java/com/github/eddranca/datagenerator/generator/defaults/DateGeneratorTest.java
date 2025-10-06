@@ -2,8 +2,8 @@ package com.github.eddranca.datagenerator.generator.defaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import net.datafaker.Faker;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,28 +14,20 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@DisplayName("DateGenerator Tests")
 class DateGeneratorTest {
 
-    private DateGenerator dateGenerator;
-    private ObjectMapper objectMapper;
-    private Faker faker;
-
-    @BeforeEach
-    void setUp() {
-        faker = new Faker();
-        dateGenerator = new DateGenerator(faker);
-        objectMapper = new ObjectMapper();
-    }
+    private final DateGenerator dateGenerator = new DateGenerator();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Faker faker = new Faker();
 
     @Test
     @DisplayName("Should generate date with default range (epoch to next year)")
     void shouldGenerateDateWithDefaultRange() throws Exception {
         // Given
-        JsonNode config = objectMapper.readTree("{}");
+        JsonNode options = objectMapper.readTree("{}");
 
         // When
-        JsonNode result = dateGenerator.generate(config);
+        JsonNode result = dateGenerator.generate(new GeneratorContext(faker, options, objectMapper));
 
         // Then
         assertThat(result.isTextual()).isTrue();
@@ -51,10 +43,10 @@ class DateGeneratorTest {
     @DisplayName("Should generate date between specified dates")
     void shouldGenerateDateBetweenSpecifiedDates() throws Exception {
         // Given
-        JsonNode config = objectMapper.readTree("{\"from\": \"2023-01-01\", \"to\": \"2023-12-31\"}");
+        JsonNode options = objectMapper.readTree("{\"from\": \"2023-01-01\", \"to\": \"2023-12-31\"}");
 
         // When
-        JsonNode result = dateGenerator.generate(config);
+        JsonNode result = dateGenerator.generate(new GeneratorContext(faker, options, objectMapper));
 
         // Then
         assertThat(result.isTextual()).isTrue();
@@ -68,10 +60,10 @@ class DateGeneratorTest {
     @DisplayName("Should throw exception when from date is after to date")
     void shouldThrowExceptionWhenFromDateIsAfterToDate() throws Exception {
         // Given
-        JsonNode config = objectMapper.readTree("{\"from\": \"2023-12-31\", \"to\": \"2023-01-01\"}");
+        JsonNode options = objectMapper.readTree("{\"from\": \"2023-12-31\", \"to\": \"2023-01-01\"}");
 
         // When & Then
-        assertThatThrownBy(() -> dateGenerator.generate(config))
+        assertThatThrownBy(() -> dateGenerator.generate(new GeneratorContext(faker, options, objectMapper)))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("'from' date must be before 'to' date");
     }
@@ -80,10 +72,10 @@ class DateGeneratorTest {
     @DisplayName("Should format date as ISO by default")
     void shouldFormatDateAsIsoByDefault() throws Exception {
         // Given
-        JsonNode config = objectMapper.readTree("{\"from\": \"2023-06-15\", \"to\": \"2023-06-15\"}");
+        JsonNode options = objectMapper.readTree("{\"from\": \"2023-06-15\", \"to\": \"2023-06-15\"}");
 
         // When
-        JsonNode result = dateGenerator.generate(config);
+        JsonNode result = dateGenerator.generate(new GeneratorContext(faker, options, objectMapper));
 
         // Then
         assertThat(result.asText()).isEqualTo("2023-06-15");
@@ -100,11 +92,11 @@ class DateGeneratorTest {
     @DisplayName("Should format date with various formats")
     void shouldFormatDateWithVariousFormats(String format, String expected) throws Exception {
         // Given
-        JsonNode config = objectMapper
+        JsonNode options = objectMapper
             .readTree("{\"from\": \"2023-06-15\", \"to\": \"2023-06-15\", \"format\": \"" + format + "\"}");
 
         // When
-        JsonNode result = dateGenerator.generate(config);
+        JsonNode result = dateGenerator.generate(new GeneratorContext(faker, options, objectMapper));
 
         // Then
         assertThat(result.asText()).isEqualTo(expected);
@@ -124,12 +116,12 @@ class DateGeneratorTest {
         LocalDate testDate = LocalDate.of(2023, 6, 15);
         String dateStr = testDate.toString();
 
-        JsonNode config = objectMapper.readTree(
+        JsonNode options = objectMapper.readTree(
             String.format("{\"from\": \"%s\", \"to\": \"%s\", \"format\": \"%s\"}",
                 dateStr, dateStr, format));
 
         // When
-        JsonNode result = dateGenerator.generate(config);
+        JsonNode result = dateGenerator.generate(new GeneratorContext(faker, options, objectMapper));
 
         // Then
         assertThat(result.asText()).isEqualTo(expected);

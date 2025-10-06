@@ -36,7 +36,7 @@ public class PickReferenceNode extends AbstractReferenceNode {
             return context.getMapper().nullNode();
         }
 
-        JsonNode value = hasFieldName() ? NestedPathUtils.extractNestedField(pick, fieldName) : pick;
+        JsonNode value = hasFieldName() ? extractNestedField(pick, fieldName) : pick;
 
         // Check filtering if needed
         if (filterValues != null && !filterValues.isEmpty() && filterValues.contains(value)) {

@@ -2,8 +2,8 @@ package com.github.eddranca.datagenerator.generator.defaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import net.datafaker.Faker;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -16,20 +16,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class NumberGeneratorTest {
 
-    private NumberGenerator generator;
-    private ObjectMapper mapper;
-
-    @BeforeEach
-    void setUp() {
-        Faker faker = new Faker();
-        generator = new NumberGenerator(faker);
-        mapper = new ObjectMapper();
-    }
+    private final NumberGenerator generator = new NumberGenerator();
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final Faker faker = new Faker();
 
     @Test
     void testGenerateDefaultRange() {
         JsonNode options = mapper.createObjectNode();
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();
@@ -45,7 +39,7 @@ class NumberGeneratorTest {
     })
     void testGenerateWithRanges(int min, int max, int expectedMin, int expectedMax) throws Exception {
         JsonNode options = mapper.readTree("{\"min\": " + min + ", \"max\": " + max + "}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();
@@ -55,7 +49,7 @@ class NumberGeneratorTest {
     @Test
     void testGenerateWithMissingMin() throws Exception {
         JsonNode options = mapper.readTree("{\"max\": 50}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();
@@ -65,7 +59,7 @@ class NumberGeneratorTest {
     @Test
     void testGenerateWithMissingMax() throws Exception {
         JsonNode options = mapper.readTree("{\"min\": 50}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();
@@ -75,7 +69,7 @@ class NumberGeneratorTest {
     @Test
     void testGenerateWithInvalidTypes() throws Exception {
         JsonNode options = mapper.readTree("{\"min\": \"invalid\", \"max\": \"also_invalid\"}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();
@@ -86,7 +80,7 @@ class NumberGeneratorTest {
     @Test
     void testGenerateWithSpecificRange() throws Exception {
         JsonNode options = mapper.readTree("{\"min\": 100, \"max\": 200}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();
@@ -99,7 +93,7 @@ class NumberGeneratorTest {
 
         // Generate multiple values and verify they're all valid numbers in range
         List<Integer> generatedValues = IntStream.range(0, 10)
-            .mapToObj(i -> generator.generate(options).asInt())
+            .mapToObj(i -> generator.generate(new GeneratorContext(faker, options, mapper)).asInt())
             .toList();
 
         assertThat(generatedValues)
@@ -115,11 +109,8 @@ class NumberGeneratorTest {
         Faker faker1 = new Faker(new Random(123L));
         Faker faker2 = new Faker(new Random(123L));
 
-        NumberGenerator gen1 = new NumberGenerator(faker1);
-        NumberGenerator gen2 = new NumberGenerator(faker2);
-
-        JsonNode result1 = gen1.generate(options);
-        JsonNode result2 = gen2.generate(options);
+        JsonNode result1 = generator.generate(new GeneratorContext(faker1, options, mapper));
+        JsonNode result2 = generator.generate(new GeneratorContext(faker2, options, mapper));
 
         assertThat(result1.asInt()).isEqualTo(result2.asInt());
     }
@@ -128,7 +119,7 @@ class NumberGeneratorTest {
     void testNullOptions() {
         // Generator should handle null options by using empty options
         JsonNode emptyOptions = mapper.createObjectNode();
-        JsonNode result = generator.generate(emptyOptions);
+        JsonNode result = generator.generate(new GeneratorContext(faker, emptyOptions, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();
@@ -138,7 +129,7 @@ class NumberGeneratorTest {
     @Test
     void testLargeRange() throws Exception {
         JsonNode options = mapper.readTree("{\"min\": -1000000, \"max\": 1000000}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();
@@ -148,7 +139,7 @@ class NumberGeneratorTest {
     @Test
     void testFloatInputsHandledAsIntegers() throws Exception {
         JsonNode options = mapper.readTree("{\"min\": 5.7, \"max\": 10.3}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();

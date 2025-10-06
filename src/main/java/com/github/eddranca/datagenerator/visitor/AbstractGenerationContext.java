@@ -6,6 +6,7 @@ import com.github.eddranca.datagenerator.FilteringBehavior;
 import com.github.eddranca.datagenerator.exception.FilteringException;
 import com.github.eddranca.datagenerator.generator.FilteringGeneratorAdapter;
 import com.github.eddranca.datagenerator.generator.Generator;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
 import com.github.eddranca.datagenerator.node.CollectionNode;
 import com.github.eddranca.datagenerator.node.Sequential;
@@ -200,11 +201,12 @@ public abstract class AbstractGenerationContext<T> {
     public JsonNode generateWithFilter(Generator generator, JsonNode options, String path,
                                        List<JsonNode> filterValues) {
         FilteringGeneratorAdapter adapter = new FilteringGeneratorAdapter(generator, maxFilteringRetries);
+        GeneratorContext context = generatorRegistry.createContext(options, mapper);
         try {
             if (path != null) {
-                return adapter.generateAtPathWithFilter(options, path, filterValues);
+                return adapter.generateAtPathWithFilter(context, path, filterValues);
             } else {
-                return adapter.generateWithFilter(options, filterValues);
+                return adapter.generateWithFilter(context, filterValues);
             }
         } catch (FilteringException e) {
             return handleFilteringFailure(e.getMessage());

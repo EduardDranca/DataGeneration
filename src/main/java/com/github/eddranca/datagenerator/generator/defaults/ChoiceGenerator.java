@@ -3,37 +3,38 @@ package com.github.eddranca.datagenerator.generator.defaults;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.exception.FilteringException;
 import com.github.eddranca.datagenerator.generator.Generator;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
+import net.datafaker.service.RandomService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Generator that handles choice field logic by selecting from pre-generated options.
  * Supports both weighted and unweighted random selection with filtering.
  */
 public class ChoiceGenerator implements Generator {
-    private final Random random;
-
-    public ChoiceGenerator(Random random) {
-        this.random = random;
-    }
 
     @Override
-    public JsonNode generate(JsonNode options) {
+    public JsonNode generate(GeneratorContext context) {
+        JsonNode options = context.options();
         JsonNode optionsArray = options.get("options");
         List<Double> weights = getWeights(options, optionsArray.size());
-        int chosenIndex = chooseWeightedIndex(weights);
+
+        // Use the Faker's random instance for consistency
+        RandomService contextRandom = context.faker().random();
+        int chosenIndex = chooseWeightedIndex(weights, contextRandom);
         return optionsArray.get(chosenIndex);
     }
 
     @Override
-    public JsonNode generateWithFilter(JsonNode options, List<JsonNode> filterValues) {
+    public JsonNode generateWithFilter(GeneratorContext context, List<JsonNode> filterValues) {
+        JsonNode options = context.options();
         JsonNode optionsArray = options.get("options");
 
         // If no filtering needed, use regular generate
         if (filterValues == null || filterValues.isEmpty()) {
-            return generate(options);
+            return generate(context);
         }
 
         // Get weights if present, default to 1.0 for each option
@@ -59,7 +60,8 @@ public class ChoiceGenerator implements Generator {
         }
 
         // Choose from valid options using their weights
-        int chosenIndex = chooseWeightedIndex(validWeights);
+        RandomService contextRandom = context.faker().random();
+        int chosenIndex = chooseWeightedIndex(validWeights, contextRandom);
         return validOptions.get(chosenIndex);
     }
 
@@ -69,9 +71,9 @@ public class ChoiceGenerator implements Generator {
     }
 
     @Override
-    public JsonNode generateAtPath(JsonNode options, String path) {
+    public JsonNode generateAtPath(GeneratorContext context, String path) {
         // Choice generators don't support path extraction
-        return generate(options);
+        return generate(context);
     }
 
     private List<Double> getWeights(JsonNode options, int optionsCount) {
@@ -92,7 +94,7 @@ public class ChoiceGenerator implements Generator {
         return weights;
     }
 
-    private int chooseWeightedIndex(List<Double> weights) {
+    private int chooseWeightedIndex(List<Double> weights, RandomService randomInstance) {
         if (weights.size() == 1) {
             return 0;
         }
@@ -102,11 +104,11 @@ public class ChoiceGenerator implements Generator {
 
         // If all weights are equal (or total is 0), use simple random selection
         if (totalWeight == 0.0 || weights.stream().allMatch(w -> w.equals(weights.get(0)))) {
-            return random.nextInt(weights.size());
+            return randomInstance.nextInt(weights.size());
         }
 
         // Weighted selection
-        double randomValue = random.nextDouble() * totalWeight;
+        double randomValue = randomInstance.nextDouble() * totalWeight;
         double cumulativeWeight = 0.0;
 
         for (int i = 0; i < weights.size(); i++) {

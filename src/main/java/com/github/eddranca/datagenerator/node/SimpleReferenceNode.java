@@ -58,7 +58,7 @@ public class SimpleReferenceNode extends AbstractReferenceNode {
         JsonNode selected = context.getElementFromCollection(collection, this, sequential);
 
         // Extract field if specified (supporting nested paths)
-        return hasFieldName() ? NestedPathUtils.extractNestedField(selected, fieldName) : selected;
+        return hasFieldName() ? extractNestedField(selected, fieldName) : selected;
     }
 
     @Override

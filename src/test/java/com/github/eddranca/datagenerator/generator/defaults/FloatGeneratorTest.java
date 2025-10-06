@@ -2,8 +2,8 @@ package com.github.eddranca.datagenerator.generator.defaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import net.datafaker.Faker;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Random;
@@ -12,20 +12,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class FloatGeneratorTest {
 
-    private FloatGenerator generator;
-    private ObjectMapper mapper;
-
-    @BeforeEach
-    void setUp() {
-        Faker faker = new Faker();
-        generator = new FloatGenerator(faker);
-        mapper = new ObjectMapper();
-    }
+    private final FloatGenerator generator = new FloatGenerator();
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final Faker faker = new Faker();
 
     @Test
     void testGenerateDefault() {
         JsonNode options = mapper.createObjectNode();
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();
@@ -38,7 +32,7 @@ class FloatGeneratorTest {
     @Test
     void testGenerateWithRange() throws Exception {
         JsonNode options = mapper.readTree("{\"min\": 1, \"max\": 3}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();
@@ -51,7 +45,7 @@ class FloatGeneratorTest {
     @Test
     void testGenerateWithDecimals() throws Exception {
         JsonNode options = mapper.readTree("{\"min\": 1, \"max\": 2, \"decimals\": 2}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();
@@ -71,7 +65,7 @@ class FloatGeneratorTest {
     @Test
     void testGenerateWithZeroDecimals() throws Exception {
         JsonNode options = mapper.readTree("{\"min\": 1, \"max\": 10, \"decimals\": 0}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();
@@ -85,7 +79,7 @@ class FloatGeneratorTest {
     @Test
     void testGenerateWithHighDecimals() throws Exception {
         JsonNode options = mapper.readTree("{\"min\": 1, \"max\": 2, \"decimals\": 5}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isNumber()).isTrue();
@@ -96,13 +90,13 @@ class FloatGeneratorTest {
     void testGenerateWithInvalidDecimals() throws Exception {
         // Test negative decimals (should default to 0)
         JsonNode options1 = mapper.readTree("{\"min\": 1, \"max\": 2, \"decimals\": -1}");
-        JsonNode result1 = generator.generate(options1);
+        JsonNode result1 = generator.generate(new GeneratorContext(faker, options1, mapper));
         assertThat(result1).isNotNull();
         assertThat(result1.isNumber()).isTrue();
 
         // Test very high decimals (should be capped at 10)
         JsonNode options2 = mapper.readTree("{\"min\": 1, \"max\": 2, \"decimals\": 15}");
-        JsonNode result2 = generator.generate(options2);
+        JsonNode result2 = generator.generate(new GeneratorContext(faker, options2, mapper));
         assertThat(result2).isNotNull();
         assertThat(result2.isNumber()).isTrue();
     }
@@ -114,11 +108,8 @@ class FloatGeneratorTest {
         Faker faker1 = new Faker(new Random(123L));
         Faker faker2 = new Faker(new Random(123L));
 
-        FloatGenerator gen1 = new FloatGenerator(faker1);
-        FloatGenerator gen2 = new FloatGenerator(faker2);
-
-        JsonNode result1 = gen1.generate(options);
-        JsonNode result2 = gen2.generate(options);
+        JsonNode result1 = generator.generate(new GeneratorContext(faker1, options, mapper));
+        JsonNode result2 = generator.generate(new GeneratorContext(faker2, options, mapper));
 
         assertThat(result1.asDouble()).isEqualTo(result2.asDouble());
     }
