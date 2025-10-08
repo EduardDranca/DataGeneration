@@ -24,7 +24,7 @@ public class StringGenerator implements Generator {
         // Handle length (overrides min/max if specified)
         int length;
         JsonNode options = context.options();
-        if (options.has("length")) {
+        if (options != null && options.has("length")) {
             length = context.getIntOption("length", 10);
         } else {
             // Ensure minLength doesn't exceed maxLength

@@ -36,20 +36,21 @@ public class LoremGenerator implements Generator {
             );
         }
 
+        // Use syntactic sugar methods for option retrieval
         if (options.has(WORDS)) {
-            int wordCount = options.get(WORDS).asInt(5);
+            int wordCount = context.getIntOption(WORDS, 5);
             List<String> words = faker.lorem().words(Math.max(1, wordCount));
             return mapper.valueToTree(String.join(" ", words));
         }
 
         if (options.has(SENTENCES)) {
-            int sentenceCount = options.get(SENTENCES).asInt(1);
+            int sentenceCount = context.getIntOption(SENTENCES, 1);
             List<String> sentences = faker.lorem().sentences(Math.max(1, sentenceCount));
             return mapper.valueToTree(String.join(" ", sentences));
         }
 
         if (options.has(PARAGRAPHS)) {
-            int paragraphCount = options.get(PARAGRAPHS).asInt(1);
+            int paragraphCount = context.getIntOption(PARAGRAPHS, 1);
             List<String> paragraphs = faker.lorem().paragraphs(Math.max(1, paragraphCount));
             return mapper.valueToTree(String.join("\n\n", paragraphs));
         }

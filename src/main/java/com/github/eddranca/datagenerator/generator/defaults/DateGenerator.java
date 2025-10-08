@@ -20,14 +20,17 @@ public class DateGenerator implements Generator {
     public JsonNode generate(GeneratorContext context) {
         Faker faker = context.faker();
         ObjectMapper mapper = context.mapper();
-        JsonNode options = context.options();
+        
         // Default date range: epoch time to next year
         LocalDate defaultFrom = LocalDate.of(1970, 1, 1); // Unix epoch
         LocalDate defaultTo = LocalDate.now().plusYears(1);
 
-        // Parse from and to dates
-        LocalDate from = options.has("from") ? LocalDate.parse(options.get("from").asText()) : defaultFrom;
-        LocalDate to = options.has("to") ? LocalDate.parse(options.get("to").asText()) : defaultTo;
+        // Parse from and to dates using syntactic sugar
+        String fromStr = context.getStringOption("from");
+        String toStr = context.getStringOption("to");
+        
+        LocalDate from = fromStr != null ? LocalDate.parse(fromStr) : defaultFrom;
+        LocalDate to = toStr != null ? LocalDate.parse(toStr) : defaultTo;
 
         // Generate random date between from and to
         long daysBetween = ChronoUnit.DAYS.between(from, to);
@@ -37,8 +40,8 @@ public class DateGenerator implements Generator {
 
         LocalDate randomDate = from.plusDays(faker.random().nextLong(daysBetween + 1));
 
-        // Format the date
-        String format = options.has("format") ? options.get("format").asText() : null;
+        // Format the date using syntactic sugar
+        String format = context.getStringOption("format");
         String formattedDate = formatDate(randomDate, format);
 
         return mapper.valueToTree(formattedDate);

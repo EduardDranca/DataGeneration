@@ -12,15 +12,13 @@ public class PhoneGenerator implements Generator {
     public JsonNode generate(GeneratorContext context) {
         Faker faker = context.faker();
         ObjectMapper mapper = context.mapper();
-        JsonNode options = context.options();
-        if (options == null) {
-            // Default: return a phone number
-            return mapper.valueToTree(faker.phoneNumber().phoneNumber());
+        String format = context.getStringOption("format");
+
+        if (format == null) {
+            format = "international";
         }
 
-        String format = options.has("format") ? options.get("format").asText() : "default";
-
-        return switch (format.toLowerCase()) {
+        return switch (format) {
             case "international" -> mapper.valueToTree(faker.phoneNumber().phoneNumber());
             case "cell", "mobile" -> mapper.valueToTree(faker.phoneNumber().cellPhone());
             case "extension" -> mapper.valueToTree(faker.phoneNumber().extension());
