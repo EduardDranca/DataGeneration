@@ -36,7 +36,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
 class DslDataGeneratorTest extends ParameterizedGenerationTest {
-    private final ObjectMapper mapper = new ObjectMapper();
 
     @Nested
     class SeedConsistencyTests extends ParameterizedGenerationTest {

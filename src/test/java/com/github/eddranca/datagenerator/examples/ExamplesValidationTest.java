@@ -155,7 +155,6 @@ class ExamplesValidationTest {
         Path dslPath = Paths.get(EXAMPLES_DIR, "07-custom-generator", "dsl.json");
         File dslFile = dslPath.toFile();
         ObjectMapper mapper = new ObjectMapper();
-        Faker faker = new Faker(new Random(4202331));
 
         // Create the same custom generators as in the example
         Generator employeeIdGenerator = context -> {
