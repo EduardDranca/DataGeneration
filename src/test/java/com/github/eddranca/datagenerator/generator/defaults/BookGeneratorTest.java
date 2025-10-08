@@ -1,7 +1,9 @@
 package com.github.eddranca.datagenerator.generator.defaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,17 +17,18 @@ class BookGeneratorTest {
 
     private BookGenerator generator;
     private JsonNode options;
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final Faker faker = new Faker();
 
     @BeforeEach
     void setUp() {
-        Faker faker = new Faker();
-        generator = new BookGenerator(faker);
+        generator = new BookGenerator();
         options = mock(ObjectNode.class);
     }
 
     @Test
     void testGenerate() {
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isObject()).isTrue();
@@ -44,11 +47,11 @@ class BookGeneratorTest {
         Faker faker1 = new Faker(new Random(123L));
         Faker faker2 = new Faker(new Random(123L));
 
-        BookGenerator gen1 = new BookGenerator(faker1);
-        BookGenerator gen2 = new BookGenerator(faker2);
+        BookGenerator gen1 = new BookGenerator();
+        BookGenerator gen2 = new BookGenerator();
 
-        JsonNode result1 = gen1.generate(options);
-        JsonNode result2 = gen2.generate(options);
+        Object result1 = gen1.generate(new GeneratorContext(faker1, options, mapper));
+        Object result2 = gen2.generate(new GeneratorContext(faker2, options, mapper));
 
         assertThat(result1).isEqualTo(result2);
     }

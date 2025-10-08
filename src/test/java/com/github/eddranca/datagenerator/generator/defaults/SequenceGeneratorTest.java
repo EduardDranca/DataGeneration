@@ -2,7 +2,8 @@ package com.github.eddranca.datagenerator.generator.defaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
+import net.datafaker.Faker;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -11,21 +12,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class SequenceGeneratorTest {
 
-    private SequenceGenerator generator;
-    private ObjectMapper mapper;
-
-    @BeforeEach
-    void setUp() {
-        generator = new SequenceGenerator();
-        mapper = new ObjectMapper();
-    }
+    private final SequenceGenerator generator = new SequenceGenerator();
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final Faker faker = new Faker();
 
     @Test
     void testGenerateDefaultSequence() {
         JsonNode options = mapper.createObjectNode();
-        JsonNode result1 = generator.generate(options);
-        JsonNode result2 = generator.generate(options);
-        JsonNode result3 = generator.generate(options);
+        JsonNode result1 = generator.generate(new GeneratorContext(faker, options, mapper));
+        JsonNode result2 = generator.generate(new GeneratorContext(faker, options, mapper));
+        JsonNode result3 = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result1).isNotNull();
         assertThat(result1.isInt()).isTrue();
@@ -49,9 +45,9 @@ class SequenceGeneratorTest {
     void testGenerateSequences(int start, int increment, int expected1, int expected2, int expected3) throws Exception {
         JsonNode options = mapper.readTree("{\"start\": " + start + ", \"increment\": " + increment + "}");
 
-        JsonNode result1 = generator.generate(options);
-        JsonNode result2 = generator.generate(options);
-        JsonNode result3 = generator.generate(options);
+        JsonNode result1 = generator.generate(new GeneratorContext(faker, options, mapper));
+        JsonNode result2 = generator.generate(new GeneratorContext(faker, options, mapper));
+        JsonNode result3 = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result1).isNotNull();
         assertThat(result1.isInt()).isTrue();
@@ -69,8 +65,8 @@ class SequenceGeneratorTest {
     @Test
     void testGenerateZeroIncrement() throws Exception {
         JsonNode options = mapper.readTree("{\"start\": 5, \"increment\": 0}");
-        JsonNode result1 = generator.generate(options);
-        JsonNode result2 = generator.generate(options);
+        JsonNode result1 = generator.generate(new GeneratorContext(faker, options, mapper));
+        JsonNode result2 = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result1).isNotNull();
         assertThat(result1.isInt()).isTrue();
@@ -84,9 +80,9 @@ class SequenceGeneratorTest {
     @Test
     void testGenerateNegativeIncrement() throws Exception {
         JsonNode options = mapper.readTree("{\"start\": 10, \"increment\": -2}");
-        JsonNode result1 = generator.generate(options);
-        JsonNode result2 = generator.generate(options);
-        JsonNode result3 = generator.generate(options);
+        JsonNode result1 = generator.generate(new GeneratorContext(faker, options, mapper));
+        JsonNode result2 = generator.generate(new GeneratorContext(faker, options, mapper));
+        JsonNode result3 = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result1).isNotNull();
         assertThat(result1.isInt()).isTrue();
@@ -108,15 +104,15 @@ class SequenceGeneratorTest {
         JsonNode options2 = mapper.readTree("{\"start\": 1, \"increment\": 3}");
 
         // Generate values for first field
-        JsonNode result1a = generator.generate(options1);
-        JsonNode result1b = generator.generate(options1);
+        JsonNode result1a = generator.generate(new GeneratorContext(faker, options1, mapper));
+        JsonNode result1b = generator.generate(new GeneratorContext(faker, options1, mapper));
 
         // Generate values for second field
-        JsonNode result2a = generator.generate(options2);
-        JsonNode result2b = generator.generate(options2);
+        JsonNode result2a = generator.generate(new GeneratorContext(faker, options2, mapper));
+        JsonNode result2b = generator.generate(new GeneratorContext(faker, options2, mapper));
 
         // First field sequence: 0, 2, 4, ...
-        assertThat(result1a.asInt()).isEqualTo(0);
+        assertThat(result1a.asInt()).isZero();
         assertThat(result1b.asInt()).isEqualTo(2);
 
         // Second field sequence: 1, 4, 7, ...
@@ -127,12 +123,12 @@ class SequenceGeneratorTest {
     @Test
     void testSequenceWithMissingStart() throws Exception {
         JsonNode options = mapper.readTree("{\"increment\": 5}");
-        JsonNode result1 = generator.generate(options);
-        JsonNode result2 = generator.generate(options);
+        JsonNode result1 = generator.generate(new GeneratorContext(faker, options, mapper));
+        JsonNode result2 = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result1).isNotNull();
         assertThat(result1.isInt()).isTrue();
-        assertThat(result1.asInt()).isEqualTo(0); // Default start is 0
+        assertThat(result1.asInt()).isZero(); // Default start is 0
 
         assertThat(result2).isNotNull();
         assertThat(result2.isInt()).isTrue();
@@ -142,8 +138,8 @@ class SequenceGeneratorTest {
     @Test
     void testSequenceWithMissingIncrement() throws Exception {
         JsonNode options = mapper.readTree("{\"start\": 3}");
-        JsonNode result1 = generator.generate(options);
-        JsonNode result2 = generator.generate(options);
+        JsonNode result1 = generator.generate(new GeneratorContext(faker, options, mapper));
+        JsonNode result2 = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result1).isNotNull();
         assertThat(result1.isInt()).isTrue();

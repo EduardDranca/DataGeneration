@@ -2,6 +2,7 @@ package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.generator.Generator;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 
 import java.io.IOException;
 import java.util.List;
@@ -275,12 +276,12 @@ class GeneratorFilteringTest extends ParameterizedGenerationTest {
         // Create a custom generator that supports native filtering
         Generator customFilteringGenerator = new Generator() {
             @Override
-            public JsonNode generate(JsonNode options) {
+            public JsonNode generate(GeneratorContext context) {
                 return mapper.valueToTree("default_value");
             }
 
             @Override
-            public JsonNode generateWithFilter(JsonNode options, List<JsonNode> filterValues) {
+            public JsonNode generateWithFilter(GeneratorContext context, List<JsonNode> filterValues) {
                 // Custom logic: if "filtered" is in filter values, return "custom_filtered"
                 if (filterValues != null) {
                     for (JsonNode filter : filterValues) {

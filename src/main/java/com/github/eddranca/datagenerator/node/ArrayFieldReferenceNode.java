@@ -59,7 +59,7 @@ public class ArrayFieldReferenceNode extends AbstractReferenceNode {
 
         // Select an element and extract the field (supporting nested paths)
         JsonNode selected = context.getElementFromCollection(collection, this, sequential);
-        JsonNode fieldValue = NestedPathUtils.extractNestedField(selected, fieldName);
+        JsonNode fieldValue = extractNestedField(selected, fieldName);
 
         return fieldValue.isMissingNode() ? context.getMapper().nullNode() : fieldValue;
     }

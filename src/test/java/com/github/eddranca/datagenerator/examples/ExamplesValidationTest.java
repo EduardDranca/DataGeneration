@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.DslDataGenerator;
 import com.github.eddranca.datagenerator.Generation;
 import com.github.eddranca.datagenerator.generator.Generator;
-import net.datafaker.Faker;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -155,22 +153,22 @@ class ExamplesValidationTest {
         Path dslPath = Paths.get(EXAMPLES_DIR, "07-custom-generator", "dsl.json");
         File dslFile = dslPath.toFile();
         ObjectMapper mapper = new ObjectMapper();
-        Faker faker = new Faker(new Random(4202331));
 
         // Create the same custom generators as in the example
-        Generator employeeIdGenerator = options -> {
-            String prefix = options.has("prefix") ? options.get("prefix").asText() : "EMP";
-            int number = faker.number().numberBetween(1000, 9999);
+        Generator employeeIdGenerator = context -> {
+            String prefix = context.getStringOption("prefix");
+            if (prefix == null) prefix = "EMP";
+            int number = context.faker().number().numberBetween(1000, 9999);
             return mapper.valueToTree(prefix + "-" + String.format("%04d", number));
         };
 
         // Complex generator that creates complete job level information (except UUID)
-        Generator jobLevelInfoGenerator = options -> {
+        Generator jobLevelInfoGenerator = context -> {
             String[] levels = {"Junior", "Mid", "Senior", "Lead"};
             String[] codes = {"L1", "L2", "L3", "L4"};
             String[] salaryRanges = {"$40,000 - $60,000", "$60,000 - $85,000", "$85,000 - $120,000", "$120,000 - $160,000"};
 
-            int index = faker.number().numberBetween(0, levels.length);
+            int index = context.faker().number().numberBetween(0, levels.length);
 
             // Create a complete job level object that will be spread using "..."
             var jobLevel = mapper.createObjectNode();

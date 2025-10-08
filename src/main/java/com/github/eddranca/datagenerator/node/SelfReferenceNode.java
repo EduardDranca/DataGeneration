@@ -34,7 +34,7 @@ public class SelfReferenceNode extends AbstractReferenceNode {
             return context.getMapper().nullNode();
         }
 
-        JsonNode value = NestedPathUtils.extractNestedField(currentItem, fieldName);
+        JsonNode value = extractNestedField(currentItem, fieldName);
 
         // Self-references typically don't need filtering since they reference the current item
         // But if filtering is requested, we can check if the value matches any filter

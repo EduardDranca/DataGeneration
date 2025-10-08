@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.exception.DataGenerationException;
-import org.junit.jupiter.api.BeforeEach;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
+import net.datafaker.Faker;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -16,16 +17,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CsvGeneratorTest {
 
-    private CsvGenerator csvGenerator;
-    private ObjectMapper objectMapper;
-    private File testCsv;
-
-    @BeforeEach
-    void setUp() {
-        csvGenerator = new CsvGenerator();
-        objectMapper = new ObjectMapper();
-        testCsv = new File("src/test/resources/test.csv");
-    }
+    private final CsvGenerator csvGenerator = new CsvGenerator();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final File testCsv = new File("src/test/resources/test.csv");
+    private final Faker faker = new Faker();
 
     @Test
     void testGenerateSequential() {
@@ -33,15 +28,15 @@ class CsvGeneratorTest {
         options.put("file", testCsv.getAbsolutePath());
         options.put("sequential", true);
 
-        JsonNode result1 = csvGenerator.generate(options);
+        JsonNode result1 = csvGenerator.generate(new GeneratorContext(faker, options, objectMapper));
         assertThat(result1.get("header1").asText()).isEqualTo("value1");
         assertThat(result1.get("header2").asText()).isEqualTo("value2");
 
-        JsonNode result2 = csvGenerator.generate(options);
+        JsonNode result2 = csvGenerator.generate(new GeneratorContext(faker, options, objectMapper));
         assertThat(result2.get("header1").asText()).isEqualTo("value3");
         assertThat(result2.get("header2").asText()).isEqualTo("value4");
 
-        JsonNode result3 = csvGenerator.generate(options);
+        JsonNode result3 = csvGenerator.generate(new GeneratorContext(faker, options, objectMapper));
         assertThat(result3.get("header1").asText()).isEqualTo("value1");
         assertThat(result3.get("header2").asText()).isEqualTo("value2");
     }
@@ -54,7 +49,7 @@ class CsvGeneratorTest {
 
         // Generate multiple results and verify they all have required headers
         List<JsonNode> results = IntStream.range(0, 10)
-            .mapToObj(i -> csvGenerator.generate(options))
+            .mapToObj(i -> csvGenerator.generate(new GeneratorContext(faker, options, objectMapper)))
             .toList();
 
         assertThat(results)
@@ -68,7 +63,7 @@ class CsvGeneratorTest {
         options.put("file", "non_existent_file.csv");
         options.put("sequential", true);
 
-        assertThatThrownBy(() -> csvGenerator.generate(options))
+        assertThatThrownBy(() -> csvGenerator.generate(new GeneratorContext(faker, options, objectMapper)))
             .isInstanceOf(DataGenerationException.class);
     }
 }

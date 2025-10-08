@@ -1,5 +1,7 @@
 package com.github.eddranca.datagenerator.node;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,4 +34,11 @@ public abstract class AbstractReferenceNode implements DslNode, Sequential, Refe
      * Returns a string representation of this reference for debugging and error messages.
      */
     public abstract String getReferenceString();
+
+    protected JsonNode extractNestedField(JsonNode node, String fieldPath) {
+        if (fieldPath == null || fieldPath.isEmpty()) {
+            return node;
+        }
+        return node.path(fieldPath);
+    }
 }

@@ -86,7 +86,7 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
 
         // Select an element
         JsonNode selected = context.getElementFromCollection(collection, this, sequential);
-        return hasFieldName() ? NestedPathUtils.extractNestedField(selected, fieldName) : selected;
+        return hasFieldName() ? extractNestedField(selected, fieldName) : selected;
     }
 
     private JsonNode resolveNumericIndex(AbstractGenerationContext<?> context, List<JsonNode> collection, List<JsonNode> filterValues) {
@@ -96,7 +96,7 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
         }
 
         JsonNode selected = collection.get(numericIndex);
-        JsonNode value = hasFieldName() ? NestedPathUtils.extractNestedField(selected, fieldName) : selected;
+        JsonNode value = hasFieldName() ? extractNestedField(selected, fieldName) : selected;
 
         // Check filtering for numeric index
         if (filterValues != null && !filterValues.isEmpty() && filterValues.contains(value)) {

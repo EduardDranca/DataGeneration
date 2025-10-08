@@ -2,6 +2,7 @@ package com.github.eddranca.datagenerator.generator.defaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,21 +13,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class FinanceGeneratorTest {
 
-    private FinanceGenerator generator;
-    private ObjectMapper mapper;
+    private final FinanceGenerator generator = new FinanceGenerator();
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final Faker faker = new Faker();
     private JsonNode options;
 
     @BeforeEach
     void setUp() {
-        Faker faker = new Faker();
-        generator = new FinanceGenerator(faker);
-        mapper = new ObjectMapper();
         options = mapper.createObjectNode();
     }
 
     @Test
     void testGenerate() {
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isObject()).isTrue();
@@ -45,11 +44,8 @@ class FinanceGeneratorTest {
         Faker faker1 = new Faker(new Random(123L));
         Faker faker2 = new Faker(new Random(123L));
 
-        FinanceGenerator gen1 = new FinanceGenerator(faker1);
-        FinanceGenerator gen2 = new FinanceGenerator(faker2);
-
-        JsonNode result1 = gen1.generate(options);
-        JsonNode result2 = gen2.generate(options);
+        JsonNode result1 = generator.generate(new GeneratorContext(faker1, options, mapper));
+        JsonNode result2 = generator.generate(new GeneratorContext(faker2, options, mapper));
 
         assertThat(result1).isEqualTo(result2);
     }

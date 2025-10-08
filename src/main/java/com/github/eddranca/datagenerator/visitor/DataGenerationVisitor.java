@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.generator.Generator;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import com.github.eddranca.datagenerator.generator.defaults.ChoiceGenerator;
 import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
@@ -27,7 +28,6 @@ import com.github.eddranca.datagenerator.node.SpreadFieldNode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * Visitor that generates actual data from the DSL node tree.
@@ -108,14 +108,11 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
         }
 
         if (node.hasPath()) {
-            Map<String, Supplier<JsonNode>> fieldSuppliers = generator.getFieldSuppliers(node.getOptions());
-            if (fieldSuppliers != null && fieldSuppliers.containsKey(node.getPath())) {
-                return fieldSuppliers.get(node.getPath()).get();
-            } else {
-                return generator.generateAtPath(node.getOptions(), node.getPath());
-            }
+            GeneratorContext generatorContext = context.getGeneratorRegistry().createContext(node.getOptions(), context.getMapper());
+            return generator.generateAtPath(generatorContext, node.getPath());
         } else {
-            return generator.generate(node.getOptions());
+            GeneratorContext generatorContext = context.getGeneratorRegistry().createContext(node.getOptions(), context.getMapper());
+            return generator.generate(generatorContext);
         }
     }
 
@@ -181,14 +178,15 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
         }
 
         // Use ChoiceGenerator to make the selection
-        ChoiceGenerator choiceGenerator = new ChoiceGenerator(context.getRandom());
+        ChoiceGenerator choiceGenerator = new ChoiceGenerator();
 
         if (node.hasFilters()) {
             List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
             return context.generateWithFilter(choiceGenerator, choiceOptions, null, filterValues);
         }
 
-        return choiceGenerator.generate(choiceOptions);
+        GeneratorContext choiceContext = context.getGeneratorRegistry().createContext(choiceOptions, context.getMapper());
+        return choiceGenerator.generate(choiceContext);
     }
 
     private List<JsonNode> computeFilteredValues(List<FilterNode> filters) {
@@ -237,7 +235,8 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
             throw new IllegalArgumentException("Unknown generator: " + node.getGeneratorName());
         }
 
-        JsonNode generated = generator.generate(node.getOptions());
+        GeneratorContext generatorContext = context.getGeneratorRegistry().createContext(node.getOptions(), context.getMapper());
+        JsonNode generated = generator.generate(generatorContext);
         ObjectNode spreadObject = context.getMapper().createObjectNode();
         spreadInto(spreadObject, generated, node.getFields());
         return spreadObject;

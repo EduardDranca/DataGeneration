@@ -3,23 +3,15 @@ package com.github.eddranca.datagenerator.generator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.datafaker.Faker;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class GeneratorRegistryTest {
 
-    private GeneratorRegistry registry;
-    private Faker faker;
-    private ObjectMapper mapper;
-
-    @BeforeEach
-    void setUp() {
-        faker = new Faker();
-        registry = GeneratorRegistry.withDefaultGenerators(faker);
-        mapper = new ObjectMapper();
-    }
+    private final Faker faker = new Faker();
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final GeneratorRegistry registry = GeneratorRegistry.withDefaultGenerators(faker);
 
     @Test
     void testDefaultGeneratorsRegistered() {
@@ -44,7 +36,7 @@ class GeneratorRegistryTest {
         assertThat(uuidGenerator).isNotNull();
 
         JsonNode options = mapper.createObjectNode();
-        JsonNode result = uuidGenerator.generate(options);
+        JsonNode result = uuidGenerator.generate(new GeneratorContext(faker, options, mapper));
         assertThat(result).isNotNull();
         assertThat(result.isTextual()).isTrue();
         assertThat(result.asText()).matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
@@ -56,9 +48,9 @@ class GeneratorRegistryTest {
         assertThat(sequenceGenerator).isNotNull();
 
         JsonNode options = mapper.readTree("{\"start\": 0, \"increment\": 2}");
-        JsonNode result1 = sequenceGenerator.generate(options);
-        JsonNode result2 = sequenceGenerator.generate(options);
-        JsonNode result3 = sequenceGenerator.generate(options);
+        JsonNode result1 = sequenceGenerator.generate(new GeneratorContext(faker, options, mapper));
+        JsonNode result2 = sequenceGenerator.generate(new GeneratorContext(faker, options, mapper));
+        JsonNode result3 = sequenceGenerator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result1).isNotNull();
         assertThat(result1.isInt()).isTrue();
@@ -81,7 +73,7 @@ class GeneratorRegistryTest {
 
     @Test
     void testRegisterCustomGenerator() {
-        Generator customGenerator = options -> mapper.valueToTree("CUSTOM_VALUE");
+        Generator customGenerator = context -> mapper.valueToTree("CUSTOM_VALUE");
 
         registry.register("custom", customGenerator);
 
@@ -89,20 +81,20 @@ class GeneratorRegistryTest {
         assertThat(retrieved).isNotNull();
 
         JsonNode options = mapper.createObjectNode();
-        JsonNode result = retrieved.generate(options);
+        JsonNode result = retrieved.generate(new GeneratorContext(faker, options, mapper));
         assertThat(result.asText()).isEqualTo("CUSTOM_VALUE");
     }
 
     @Test
     void testOverrideExistingGenerator() {
-        Generator customUuidGenerator = options -> mapper.valueToTree("CUSTOM_UUID");
+        Generator customUuidGenerator = context -> mapper.valueToTree("CUSTOM_UUID");
 
         // Override existing uuid generator
         registry.register("uuid", customUuidGenerator);
 
         Generator retrieved = registry.get("uuid");
         JsonNode options = mapper.createObjectNode();
-        JsonNode result = retrieved.generate(options);
+        JsonNode result = retrieved.generate(new GeneratorContext(faker, options, mapper));
         assertThat(result.asText()).isEqualTo("CUSTOM_UUID");
     }
 }

@@ -2,9 +2,7 @@ package com.github.eddranca.datagenerator.generator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.function.Supplier;
+import java.util.List;
 
 public interface Generator {
     /**
@@ -28,48 +26,55 @@ public interface Generator {
         return current;
     }
 
-    JsonNode generate(JsonNode options);
+    /**
+     * Generates data using the provided context.
+     * The context contains the Faker instance and generation options.
+     *
+     * @param context the generation context containing Faker and options
+     * @return the generated JsonNode value
+     */
+    JsonNode generate(GeneratorContext context);
 
     /**
      * Generates data with filtering support. Custom generators can override this
      * to implement native filtering (e.g., database queries with WHERE clauses).
      * Default implementation delegates to generate() and ignores filter values.
      *
-     * @param options      the generation options
+     * @param context      the generation context containing Faker and options
      * @param filterValues values to exclude from generation (null if no filtering)
      * @return generated value that is not in the filter list
      */
-    default JsonNode generateWithFilter(JsonNode options, java.util.List<JsonNode> filterValues) {
-        return generate(options);
+    default JsonNode generateWithFilter(GeneratorContext context, List<JsonNode> filterValues) {
+        return generate(context);
     }
 
     /**
      * Generates data and extracts a value at the specified path.
      * For example, if the generator produces {"firstName": "John", "lastName": "Doe"},
-     * calling generateAtPath(options, "firstName") would return "John".
+     * calling generateAtPath(context, "firstName") would return "John".
      * <p>
      * Default implementation generates the full object and extracts the path,
      * but generators can override this for more efficient path-specific generation.
      *
-     * @param options the generation options
+     * @param context the generation context containing Faker and options
      * @param path    the dot-separated path to extract (e.g., "firstName", "address.street")
      * @return the value at the specified path, or null if path doesn't exist
      */
-    default JsonNode generateAtPath(JsonNode options, String path) {
-        JsonNode fullObject = generate(options);
+    default JsonNode generateAtPath(GeneratorContext context, String path) {
+        JsonNode fullObject = generate(context);
         return extractPath(fullObject, path);
     }
 
     /**
      * Generates data at a specific path with filtering support.
      *
-     * @param options      the generation options
+     * @param context      the generation context containing Faker and options
      * @param path         the dot-separated path to extract
      * @param filterValues values to exclude from generation (null if no filtering)
      * @return generated value at path that is not in the filter list
      */
-    default JsonNode generateAtPathWithFilter(JsonNode options, String path, java.util.List<JsonNode> filterValues) {
-        JsonNode fullObject = generateWithFilter(options, filterValues);
+    default JsonNode generateAtPathWithFilter(GeneratorContext context, String path, List<JsonNode> filterValues) {
+        JsonNode fullObject = generateWithFilter(context, filterValues);
         return extractPath(fullObject, path);
     }
 
@@ -81,19 +86,5 @@ public interface Generator {
      */
     default boolean supportsFiltering() {
         return false;
-    }
-
-    /**
-     * Returns a map of field suppliers for lazy field generation.
-     * This allows generators to provide field-specific suppliers that are only
-     * evaluated when that specific field is requested, avoiding unnecessary computation.
-     * <p>
-     * Generators should override this method to provide efficient field-specific generation.
-     *
-     * @param options the generation options
-     * @return a map of field names to suppliers, or null if not supported
-     */
-    default Map<String, Supplier<JsonNode>> getFieldSuppliers(JsonNode options) {
-        return Collections.emptyMap();
     }
 }

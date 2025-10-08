@@ -3,31 +3,29 @@ package com.github.eddranca.datagenerator.generator.defaults;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.generator.Generator;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import net.datafaker.Faker;
 
 public class StringGenerator implements Generator {
     private static final String DEFAULT_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    private final Faker faker;
-    private final ObjectMapper mapper;
-
-    public StringGenerator(Faker faker) {
-        this.faker = faker;
-        this.mapper = new ObjectMapper();
-    }
 
     @Override
-    public JsonNode generate(JsonNode options) {
-        // Default allowed characters (alphanumeric)
+    public JsonNode generate(GeneratorContext context) {
+        Faker faker = context.faker();
+        ObjectMapper mapper = context.mapper();
 
         // Parse configuration options
-        String allowedChars = options.has("allowedChars") ? options.get("allowedChars").asText() : DEFAULT_CHARS;
-        int maxLength = options.has("maxLength") ? options.get("maxLength").asInt() : 20;
-        int minLength = options.has("minLength") ? options.get("minLength").asInt() : 1;
+        String allowedChars = context.getStringOption("allowedChars");
+        if (allowedChars == null) allowedChars = DEFAULT_CHARS;
+
+        int maxLength = context.getIntOption("maxLength", 20);
+        int minLength = context.getIntOption("minLength", 1);
 
         // Handle length (overrides min/max if specified)
         int length;
-        if (options.has("length")) {
-            length = options.get("length").asInt(10);
+        JsonNode options = context.options();
+        if (options != null && options.has("length")) {
+            length = context.getIntOption("length", 10);
         } else {
             // Ensure minLength doesn't exceed maxLength
             minLength = Math.min(minLength, maxLength);
@@ -35,7 +33,8 @@ public class StringGenerator implements Generator {
         }
 
         // Generate string using allowed characters
-        if (!options.has("regex")) {
+        String regexPattern = context.getStringOption("regex");
+        if (regexPattern == null) {
             StringBuilder result = new StringBuilder();
             for (int i = 0; i < length; i++) {
                 int randomIndex = faker.number().numberBetween(0, allowedChars.length());
@@ -44,7 +43,6 @@ public class StringGenerator implements Generator {
             return mapper.valueToTree(result.toString());
         }
 
-        String regexPattern = options.get("regex").asText();
         return mapper.valueToTree(faker.regexify(regexPattern));
     }
 }

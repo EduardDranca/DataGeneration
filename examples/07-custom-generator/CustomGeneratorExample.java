@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.DslDataGenerator;
 import com.github.eddranca.datagenerator.Generation;
 import com.github.eddranca.datagenerator.generator.Generator;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import net.datafaker.Faker;
 
 import java.io.File;
@@ -24,16 +25,17 @@ public class CustomGeneratorExample {
             Faker faker = new Faker(new Random(42));
 
             // Create custom employee ID generator
-            Generator employeeIdGenerator = (options) -> {
-                String prefix = options.has("prefix") ? options.get("prefix").asText() : "EMP";
-                int number = faker.number().numberBetween(1000, 9999);
+            Generator employeeIdGenerator = (GeneratorContext context) -> {
+                String prefix = context.getStringOption("prefix");
+                if (prefix == null) prefix = "EMP";
+                int number = context.getFaker().number().numberBetween(1000, 9999);
                 return mapper.valueToTree(prefix + "-" + String.format("%04d", number));
             };
 
             // Create custom department code generator
-            Generator departmentCodeGenerator = (options) -> {
-                if (options.has("department")) {
-                    String deptName = options.get("department").asText();
+            Generator departmentCodeGenerator = (GeneratorContext context) -> {
+                String deptName = context.getStringOption("department");
+                if (deptName != null) {
                     String code;
                     switch (deptName.toLowerCase()) {
                         case "engineering":
@@ -59,7 +61,7 @@ public class CustomGeneratorExample {
             };
 
             // Create complex job level info generator that creates complete objects
-            Generator jobLevelInfoGenerator = (options) -> {
+            Generator jobLevelInfoGenerator = (GeneratorContext context) -> {
                 String[] levels = {"Junior", "Mid", "Senior", "Lead"};
                 String[] codes = {"L1", "L2", "L3", "L4"};
                 String[] titles = {"Software Engineer", "Senior Software Engineer", "Staff Engineer", "Principal Engineer"};
@@ -71,7 +73,7 @@ public class CustomGeneratorExample {
                     "Strategic technical leader driving architectural decisions"
                 };
 
-                int index = faker.number().numberBetween(0, levels.length);
+                int index = context.getFaker().number().numberBetween(0, levels.length);
 
                 // Create a complete job level object that will be spread using "..."
                 var jobLevel = mapper.createObjectNode();

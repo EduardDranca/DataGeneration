@@ -5,26 +5,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.exception.DataGenerationException;
 import com.github.eddranca.datagenerator.generator.Generator;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
+import net.datafaker.service.RandomService;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 public class CsvGenerator implements Generator {
-    private final ObjectMapper mapper = new ObjectMapper();
-    private final Random random = new Random();
     private final Map<JsonNode, Integer> sequentialCounters = new IdentityHashMap<>();
     private final Map<String, List<String[]>> csvCache = new IdentityHashMap<>();
 
     @Override
-    public JsonNode generate(JsonNode options) {
-        String file = options.path("file").asText();
-        boolean sequential = options.path("sequential").asBoolean(true);
+    public JsonNode generate(GeneratorContext context) {
+        JsonNode options = context.options();
+        String file = context.getStringOption("file");
+        boolean sequential = context.getBooleanOption("sequential", true);
+        ObjectMapper mapper = context.mapper();
+
         List<String[]> records = csvCache.computeIfAbsent(file, f -> {
             try (CSVReader reader = new CSVReader(new FileReader(f))) {
                 return reader.readAll();
@@ -45,7 +47,9 @@ public class CsvGenerator implements Generator {
             recordIndex = 1 + (currentIndex % (records.size() - 1));
             sequentialCounters.put(options, currentIndex + 1);
         } else {
-            recordIndex = 1 + random.nextInt(records.size() - 1);
+            // Use the Faker's random instance for consistency
+            RandomService contextRandom = context.faker().random();
+            recordIndex = 1 + contextRandom.nextInt(records.size() - 1);
         }
 
         String[] values = records.get(recordIndex);

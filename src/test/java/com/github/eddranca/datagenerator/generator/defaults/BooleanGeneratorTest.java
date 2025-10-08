@@ -2,8 +2,8 @@ package com.github.eddranca.datagenerator.generator.defaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import net.datafaker.Faker;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -14,26 +14,20 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BooleanGeneratorTest {
-    private BooleanGenerator generator;
-    private ObjectMapper mapper;
-
-    @BeforeEach
-    void setUp() {
-        Faker faker = new Faker();
-        generator = new BooleanGenerator(faker);
-        mapper = new ObjectMapper();
-    }
+    private final BooleanGenerator generator = new BooleanGenerator();
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final Faker faker = new Faker();
 
     @Test
     void testGenerateDefault() {
-        JsonNode result = generator.generate(null);
+        JsonNode result = generator.generate(new GeneratorContext(faker, null, mapper));
         assertThat(result.isBoolean()).isTrue();
     }
 
     @Test
     void testGenerateWithEmptyOptions() throws Exception {
         JsonNode options = mapper.readTree("{}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
         assertThat(result.isBoolean()).isTrue();
     }
 
@@ -41,12 +35,12 @@ class BooleanGeneratorTest {
     void testGenerateWithProbability() throws Exception {
         // Test with 100% probability (always true)
         JsonNode options = mapper.readTree("{\"probability\": 1.0}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
         assertThat(result.asBoolean()).isTrue();
 
         // Test with 0% probability (always false)
         options = mapper.readTree("{\"probability\": 0.0}");
-        result = generator.generate(options);
+        result = generator.generate(new GeneratorContext(faker, options, mapper));
         assertThat(result.asBoolean()).isFalse();
     }
 
@@ -57,7 +51,7 @@ class BooleanGeneratorTest {
         int totalTests = 1000;
 
         long trueCount = IntStream.range(0, totalTests)
-            .mapToObj(i -> generator.generate(options))
+            .mapToObj(i -> generator.generate(new GeneratorContext(faker, options, mapper)))
             .mapToInt(result -> result.asBoolean() ? 1 : 0)
             .sum();
 
@@ -72,11 +66,11 @@ class BooleanGeneratorTest {
     void testProbabilityBounds() throws Exception {
         // Test values outside bounds are clamped
         JsonNode options = mapper.readTree("{\"probability\": 1.5}");
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
         assertThat(result.asBoolean()).isTrue(); // Should be clamped to 1.0
 
         options = mapper.readTree("{\"probability\": -0.5}");
-        result = generator.generate(options);
+        result = generator.generate(new GeneratorContext(faker, options, mapper));
         assertThat(result.asBoolean()).isFalse(); // Should be clamped to 0.0
     }
 
@@ -87,24 +81,24 @@ class BooleanGeneratorTest {
 
     @Test
     void testFilteringWithNoFilters() {
-        JsonNode result = generator.generateWithFilter(null, null);
+        JsonNode result = generator.generateWithFilter(new GeneratorContext(faker, null, mapper), null);
         assertThat(result.isBoolean()).isTrue();
 
-        result = generator.generateWithFilter(null, List.of());
+        result = generator.generateWithFilter(new GeneratorContext(faker, null, mapper), List.of());
         assertThat(result.isBoolean()).isTrue();
     }
 
     @Test
     void testFilteringTrue() {
         List<JsonNode> filters = Collections.singletonList(mapper.valueToTree(true));
-        JsonNode result = generator.generateWithFilter(null, filters);
+        JsonNode result = generator.generateWithFilter(new GeneratorContext(faker, null, mapper), filters);
         assertThat(result.asBoolean()).isFalse(); // Should return false when true is filtered
     }
 
     @Test
     void testFilteringFalse() {
         List<JsonNode> filters = Collections.singletonList(mapper.valueToTree(false));
-        JsonNode result = generator.generateWithFilter(null, filters);
+        JsonNode result = generator.generateWithFilter(new GeneratorContext(faker, null, mapper), filters);
         assertThat(result.asBoolean()).isTrue(); // Should return true when false is filtered
     }
 
@@ -114,7 +108,7 @@ class BooleanGeneratorTest {
             mapper.valueToTree(true),
             mapper.valueToTree(false)
         );
-        JsonNode result = generator.generateWithFilter(null, filters);
+        JsonNode result = generator.generateWithFilter(new GeneratorContext(faker, null, mapper), filters);
         assertThat(result.isNull()).isTrue(); // Should return null when both are filtered
     }
 
@@ -124,7 +118,7 @@ class BooleanGeneratorTest {
             mapper.valueToTree("not a boolean"),
             mapper.valueToTree(42)
         );
-        JsonNode result = generator.generateWithFilter(null, filters);
+        JsonNode result = generator.generateWithFilter(new GeneratorContext(faker, null, mapper), filters);
         assertThat(result.isBoolean()).isTrue(); // Should ignore non-boolean filters
     }
 }

@@ -2,13 +2,12 @@ package com.github.eddranca.datagenerator.generator.defaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
 import java.util.Random;
-import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,19 +15,20 @@ class AddressGeneratorTest {
 
     private AddressGenerator generator;
     private ObjectMapper mapper;
+    private Faker faker;
     private JsonNode options;
 
     @BeforeEach
     void setUp() {
-        Faker faker = new Faker();
-        generator = new AddressGenerator(faker);
+        faker = new Faker();
+        generator = new AddressGenerator();
         mapper = new ObjectMapper();
         options = mapper.createObjectNode();
     }
 
     @Test
     void testGenerate() {
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isObject()).isTrue();
@@ -47,29 +47,15 @@ class AddressGeneratorTest {
     }
 
     @Test
-    void testGetFieldSuppliers() {
-        Map<String, Supplier<JsonNode>> suppliers = generator.getFieldSuppliers(options);
-
-        assertThat(suppliers)
-            .isNotNull()
-            .containsKeys("streetAddress", "city", "state", "zipCode", "country", "countryCode", "fullAddress");
-
-        // Test each supplier produces non-empty values
-        assertThat(suppliers.get("streetAddress").get().asText()).isNotEmpty();
-        assertThat(suppliers.get("city").get().asText()).isNotEmpty();
-        assertThat(suppliers.get("country").get().asText()).isNotEmpty();
-    }
-
-    @Test
     void testSeedConsistency() {
         Faker faker1 = new Faker(new Random(123L));
         Faker faker2 = new Faker(new Random(123L));
 
-        AddressGenerator gen1 = new AddressGenerator(faker1);
-        AddressGenerator gen2 = new AddressGenerator(faker2);
+        AddressGenerator gen1 = new AddressGenerator();
+        AddressGenerator gen2 = new AddressGenerator();
 
-        JsonNode result1 = gen1.generate(options);
-        JsonNode result2 = gen2.generate(options);
+        JsonNode result1 = gen1.generate(new GeneratorContext(faker1, options, mapper));
+        JsonNode result2 = gen2.generate(new GeneratorContext(faker2, options, mapper));
 
         assertThat(result1).isEqualTo(result2);
     }

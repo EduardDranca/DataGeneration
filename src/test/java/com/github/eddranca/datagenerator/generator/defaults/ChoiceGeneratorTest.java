@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.exception.FilteringException;
-import org.junit.jupiter.api.BeforeEach;
+import com.github.eddranca.datagenerator.generator.GeneratorContext;
+import net.datafaker.Faker;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -21,16 +22,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ChoiceGeneratorTest {
-    private ObjectMapper mapper;
-    private ChoiceGenerator generator;
-    private Random random;
-
-    @BeforeEach
-    void setUp() {
-        mapper = new ObjectMapper();
-        random = new Random(42);
-        generator = new ChoiceGenerator(random);
-    }
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final ChoiceGenerator generator = new ChoiceGenerator();
+    private final Faker faker = new Faker();
 
     @Test
     void testGenerateWithValidOptions() {
@@ -40,7 +34,7 @@ class ChoiceGeneratorTest {
         optionsArray.add("option2");
         optionsArray.add("option3");
 
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.isTextual()).isTrue();
@@ -56,7 +50,7 @@ class ChoiceGeneratorTest {
         optionsArray.add(true);
         optionsArray.add(mapper.nullNode());
 
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(options.get("options"))
@@ -78,7 +72,7 @@ class ChoiceGeneratorTest {
         optionsArray.add("option3");
 
         // For choice generators, generateAtPath should behave the same as generate
-        JsonNode result = generator.generateAtPath(options, "someField");
+        JsonNode result = generator.generateAtPath(new GeneratorContext(faker, options, mapper), "someField");
 
         assertThat(result).isNotNull();
         assertThat(result.isTextual()).isTrue();
@@ -86,18 +80,10 @@ class ChoiceGeneratorTest {
     }
 
     @Test
-    void testGetFieldSuppliers() {
-        assertThat(generator.getFieldSuppliers(null)).isEmpty();
-    }
-
-    @Test
     void testDeterministicBehaviorWithSeed() {
         // Test that the same seed produces the same results
-        Random random1 = new Random(123);
-        Random random2 = new Random(123);
-
-        ChoiceGenerator generator1 = new ChoiceGenerator(random1);
-        ChoiceGenerator generator2 = new ChoiceGenerator(random2);
+        Faker faker1 = new Faker(new Random(123));
+        Faker faker2 = new Faker(new Random(123));
 
         ObjectNode options = mapper.createObjectNode();
         ArrayNode optionsArray = options.putArray("options");
@@ -105,8 +91,8 @@ class ChoiceGeneratorTest {
         optionsArray.add("option2");
         optionsArray.add("option3");
 
-        JsonNode result1 = generator1.generate(options);
-        JsonNode result2 = generator2.generate(options);
+        JsonNode result1 = generator.generate(new GeneratorContext(faker1, options, mapper));
+        JsonNode result2 = generator.generate(new GeneratorContext(faker2, options, mapper));
 
         assertThat(result1).isEqualTo(result2);
     }
@@ -117,7 +103,7 @@ class ChoiceGeneratorTest {
         ArrayNode optionsArray = options.putArray("options");
         optionsArray.add("only_option");
 
-        JsonNode result = generator.generate(options);
+        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
         assertThat(result).isNotNull();
         assertThat(result.asText()).isEqualTo("only_option");
@@ -131,7 +117,7 @@ class ChoiceGeneratorTest {
         optionsArray.add("option2");
         optionsArray.add("option3");
 
-        JsonNode result = generator.generateWithFilter(options, null);
+        JsonNode result = generator.generateWithFilter(new GeneratorContext(faker, options, mapper), null);
 
         assertThat(result).isNotNull();
         assertThat(result.isTextual()).isTrue();
@@ -151,7 +137,7 @@ class ChoiceGeneratorTest {
             mapper.valueToTree("option2")
         );
 
-        JsonNode result = generator.generateWithFilter(options, filterValues);
+        JsonNode result = generator.generateWithFilter(new GeneratorContext(faker, options, mapper), filterValues);
 
         assertThat(result).isNotNull();
         assertThat(result.asText()).isEqualTo("option3");
@@ -171,7 +157,7 @@ class ChoiceGeneratorTest {
             mapper.valueToTree("option3")
         );
 
-        assertThatThrownBy(() -> generator.generateWithFilter(options, filterValues))
+        assertThatThrownBy(() -> generator.generateWithFilter(new GeneratorContext(faker, options, mapper), filterValues))
             .isInstanceOf(FilteringException.class)
             .hasMessage("All choice options were filtered out");
     }
@@ -193,7 +179,7 @@ class ChoiceGeneratorTest {
         int iterations = 1000;
 
         Map<String, Long> counts = IntStream.range(0, iterations)
-            .mapToObj(i -> generator.generate(options).asText())
+            .mapToObj(i -> generator.generate(new GeneratorContext(faker, options, mapper)).asText())
             .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
         assertThat(counts.get("option3"))
@@ -223,7 +209,7 @@ class ChoiceGeneratorTest {
         int iterations = 1000;
 
         Map<String, Long> counts = IntStream.range(0, iterations)
-            .mapToObj(i -> generator.generateWithFilter(options, filterValues).asText())
+            .mapToObj(i -> generator.generateWithFilter(new GeneratorContext(faker, options, mapper), filterValues).asText())
             .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
         // option1 should never appear (it's filtered)
