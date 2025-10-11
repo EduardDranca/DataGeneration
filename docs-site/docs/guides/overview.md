@@ -9,6 +9,12 @@ Step-by-step guides for specific tasks:
 - [Custom Generators](./how-to/custom-generators.md) - Create your own generators
 - [Memory Optimization](./how-to/memory-optimization.md) - Handle large datasets efficiently
 
+## Patterns
+
+Learn how to handle advanced scenarios:
+
+- [Complex Scenarios](./patterns/complex-scenarios.md) - Multi-tier systems, hierarchies, and skill matching
+
 ## Best Practices
 
 ### Use Seeds for Reproducibility

@@ -149,6 +149,13 @@ const sidebars: SidebarsConfig = {
         'guides/how-to/memory-optimization',
       ],
     },
+    {
+      type: 'category',
+      label: 'Patterns',
+      items: [
+        'guides/patterns/complex-scenarios',
+      ],
+    },
   ],
 };
 
