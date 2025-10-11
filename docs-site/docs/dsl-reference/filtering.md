@@ -199,10 +199,9 @@ Generation generation = DslDataGenerator.create()
 
 **Options:**
 - `THROW_EXCEPTION` (default) - Throws `FilteringException` if all values filtered
-- `ALLOW_NULL` - Returns `null` if all values filtered
-- `SKIP_FIELD` - Omits the field if all values filtered
+- `RETURN_NULL` - Returns `null` if all values filtered
 
-### Example with ALLOW_NULL
+### Example with RETURN_NULL
 
 ```java
 String dsl = """
@@ -224,7 +223,7 @@ String dsl = """
     """;
 
 Generation generation = DslDataGenerator.create()
-    .withFilteringBehavior(FilteringBehavior.ALLOW_NULL)
+    .withFilteringBehavior(FilteringBehavior.RETURN_NULL)
     .fromJsonString(dsl)
     .generate();
 
@@ -383,7 +382,7 @@ Thrown when all possible values are filtered:
 
 **Error:** `FilteringException: All values have been filtered out`
 
-**Solution:** Either reduce filters or use `FilteringBehavior.ALLOW_NULL`
+**Solution:** Either reduce filters or use `FilteringBehavior.RETURN_NULL`
 
 ## Next Steps
 
