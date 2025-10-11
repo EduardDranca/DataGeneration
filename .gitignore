@@ -133,3 +133,12 @@ generated-test-sources/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Git worktrees
+.drafts/
+
+# Docusaurus
+docs-site/node_modules/
+docs-site/build/
+docs-site/.docusaurus/
+docs-site/.cache-loader/
