@@ -334,4 +334,4 @@ See [Filtering](./filtering.md) for more details.
 
 - [Filtering](./filtering.md) - Exclude specific values from references
 - [Arrays](./arrays.md) - Generate arrays with references
-- [Common Patterns](../guides/patterns/relationships.md) - Learn relationship patterns
+- [Generators Overview](../generators/overview.md) - Explore all generators

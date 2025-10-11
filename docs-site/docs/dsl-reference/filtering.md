@@ -358,4 +358,4 @@ Thrown when all possible values are filtered:
 
 - [References](./references.md) - Learn about reference types
 - [Collections](./collections.md) - Understand pick syntax
-- [Common Patterns](../guides/patterns/filtering.md) - See filtering patterns
+- [Boolean Generator](../generators/boolean.md) - Generator with built-in filtering support

@@ -83,6 +83,6 @@ Lazy generation uses proxy objects for on-demand field materialization.
 
 ## Next Steps
 
-- [Visitor Pattern Details](./visitor-pattern.md)
-- [Lazy vs Eager Generation](./lazy-vs-eager.md)
-- [Extending the Library](../guides/how-to/custom-generators.md)
+- [Custom Generators](../guides/how-to/custom-generators.md) - Extend the library
+- [Memory Optimization](../guides/how-to/memory-optimization.md) - Lazy vs eager generation
+- [Java API](../api/java-api.md) - Full API documentation
