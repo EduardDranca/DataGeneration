@@ -291,37 +291,6 @@ For other generators, use the Choice generator:
 }
 ```
 
-### Exclude Inactive Items
-
-```json
-{
-  "products": {
-    "count": 50,
-    "item": {
-      "id": {"gen": "uuid"},
-      "status": {
-        "gen": "choice",
-        "options": ["active", "inactive", "discontinued"]
-      }
-    }
-  },
-  "orders": {
-    "count": 200,
-    "item": {
-      "productId": {
-        "ref": "products[*].id",
-        "filter": [
-          {"ref": "products[*].status", "value": "inactive"},
-          {"ref": "products[*].status", "value": "discontinued"}
-        ]
-      }
-    }
-  }
-}
-```
-
-Note: The above pattern is conceptual - current implementation requires filtering by specific item references, not by field values.
-
 ### Self-Exclusion
 
 Prevent items from referencing themselves:
@@ -351,6 +320,7 @@ Prevent items from referencing themselves:
 
 ## Limitations
 
+- Can only filter by specific item references (e.g., `{"ref": "users[0].id"}`), not by field values
 - Cannot filter based on complex conditions (e.g., "all users where age > 30")
 - Cannot filter based on computed values
 - Filtering all values throws exception (unless configured otherwise)

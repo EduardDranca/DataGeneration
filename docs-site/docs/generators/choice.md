@@ -294,4 +294,4 @@ Note: Sequential behavior is primarily for references, not the Choice generator 
 
 - [Boolean Generator](./boolean.md) - For true/false values
 - [Filtering](../dsl-reference/filtering.md) - Filter choice options
-- [Weighted Patterns](../guides/patterns/weighted-choices.md) - Advanced weighted choice patterns
+- [Number Generator](./number.md) - For random integers

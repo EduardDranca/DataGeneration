@@ -116,6 +116,6 @@ DslDataGenerator.create()
 
 ## Next Steps
 
-- [Generation Modes](./generation-modes.md)
-- [Output Formats](./output-formats.md)
 - [Custom Generators Guide](../guides/how-to/custom-generators.md)
+- [Memory Optimization](../guides/how-to/memory-optimization.md)
+- [Generators Overview](../generators/overview.md)

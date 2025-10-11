@@ -195,5 +195,6 @@ try (BufferedWriter writer = Files.newBufferedWriter(Path.of("output.json"))) {
 
 ## Next Steps
 
-- [Streaming Guide](./streaming.md) - Advanced streaming patterns
-- [Performance Tuning](./performance-tuning.md) - Optimize generation speed
+- [Java API](../../api/java-api.md) - Full API documentation
+- [Custom Generators](./custom-generators.md) - Create your own generators
+- [DSL Reference](../../dsl-reference/overview.md) - Complete DSL syntax
