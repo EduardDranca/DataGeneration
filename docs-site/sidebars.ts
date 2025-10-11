@@ -137,6 +137,14 @@ const sidebars: SidebarsConfig = {
   ],
   guidesSidebar: [
     'guides/overview',
+    {
+      type: 'category',
+      label: 'How-To Guides',
+      items: [
+        'guides/how-to/custom-generators',
+        'guides/how-to/memory-optimization',
+      ],
+    },
   ],
 };
 
