@@ -44,11 +44,39 @@ const sidebars: SidebarsConfig = {
         id: 'generators/overview',
       },
       items: [
-        'generators/uuid',
-        'generators/name',
-        'generators/number',
-        'generators/choice',
-        'generators/sequence',
+        {
+          type: 'category',
+          label: 'Data Generators',
+          collapsed: false,
+          items: [
+            'generators/uuid',
+            'generators/name',
+            'generators/internet',
+            'generators/address',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Primitive Generators',
+          collapsed: false,
+          items: [
+            'generators/number',
+            'generators/float',
+            'generators/boolean',
+            'generators/string',
+            'generators/date',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Utility Generators',
+          collapsed: false,
+          items: [
+            'generators/lorem',
+            'generators/sequence',
+            'generators/choice',
+          ],
+        },
       ],
     },
     {
@@ -68,11 +96,36 @@ const sidebars: SidebarsConfig = {
   ],
   generatorsSidebar: [
     'generators/overview',
-    'generators/uuid',
-    'generators/name',
-    'generators/number',
-    'generators/choice',
-    'generators/sequence',
+    {
+      type: 'category',
+      label: 'Data Generators',
+      items: [
+        'generators/uuid',
+        'generators/name',
+        'generators/internet',
+        'generators/address',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Primitive Generators',
+      items: [
+        'generators/number',
+        'generators/float',
+        'generators/boolean',
+        'generators/string',
+        'generators/date',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Utility Generators',
+      items: [
+        'generators/lorem',
+        'generators/sequence',
+        'generators/choice',
+      ],
+    },
   ],
   guidesSidebar: [
     'guides/overview',

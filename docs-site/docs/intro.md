@@ -5,7 +5,7 @@
 ## Why DataGeneration?
 
 - **Declarative DSL**: Define complex data structures in simple JSON
-- **Built-in Generators**: 18+ generators for common data types (names, emails, addresses, UUIDs, dates, etc.)
+- **Built-in Generators**: 18 generators for common data types (names, emails, addresses, UUIDs, dates, etc.)
 - **Relationships**: Cross-collection references and foreign key relationships
 - **Memory Efficient**: Lazy generation mode for streaming large datasets
 - **Reproducible**: Seed-based generation for consistent test data
@@ -70,22 +70,22 @@ String json = generation.toJson();
 
 ## Features at a Glance
 
-### 🎯 Declarative DSL
+### Declarative DSL
 Define your data structure in JSON - no code required for basic scenarios.
 
-### 🔗 Relationships
+### Relationships
 Create realistic relationships between collections with references, sequential access, and filtering.
 
-### 🎲 18+ Generators
+### 18 Built-in Generators
 UUID, Name, Internet, Address, Company, Country, Book, Finance, Phone, Number, Float, Boolean, String, Date, Lorem, Sequence, Choice, CSV.
 
-### 🚀 Performance
+### Performance
 Lazy generation mode streams data without loading everything into memory.
 
-### 🔄 Reproducible
+### Reproducible
 Use seeds to generate the same data every time - perfect for testing.
 
-### 📤 Multiple Outputs
+### Multiple Outputs
 Export as JSON, SQL INSERT statements, or implement custom serializers.
 
 ## Use Cases
