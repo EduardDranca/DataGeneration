@@ -29,6 +29,26 @@ const sidebars: SidebarsConfig = {
       label: 'DSL Reference',
       items: [
         'dsl-reference/overview',
+        'dsl-reference/collections',
+        'dsl-reference/references',
+        'dsl-reference/arrays',
+        'dsl-reference/filtering',
+        'dsl-reference/static-values',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Generators',
+      link: {
+        type: 'doc',
+        id: 'generators/overview',
+      },
+      items: [
+        'generators/uuid',
+        'generators/name',
+        'generators/number',
+        'generators/choice',
+        'generators/sequence',
       ],
     },
     {
@@ -48,6 +68,11 @@ const sidebars: SidebarsConfig = {
   ],
   generatorsSidebar: [
     'generators/overview',
+    'generators/uuid',
+    'generators/name',
+    'generators/number',
+    'generators/choice',
+    'generators/sequence',
   ],
   guidesSidebar: [
     'guides/overview',
