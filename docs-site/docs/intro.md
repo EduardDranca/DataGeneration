@@ -45,28 +45,9 @@ String json = generation.toJson();
 
 ## Get Started
 
-<div style={{display: 'flex', gap: '1rem', marginTop: '2rem'}}>
-  <a href="/DataGeneration/docs/getting-started/installation" style={{
-    padding: '0.75rem 1.5rem',
-    background: '#0066cc',
-    color: 'white',
-    borderRadius: '4px',
-    textDecoration: 'none',
-    fontWeight: 'bold'
-  }}>
-    Installation →
-  </a>
-  <a href="/DataGeneration/docs/getting-started/quick-start" style={{
-    padding: '0.75rem 1.5rem',
-    border: '2px solid #0066cc',
-    color: '#0066cc',
-    borderRadius: '4px',
-    textDecoration: 'none',
-    fontWeight: 'bold'
-  }}>
-    Quick Start
-  </a>
-</div>
+**Get Started:**
+- [Installation](./getting-started/installation.md) - Add to your project
+- [Quick Start](./getting-started/quick-start.md) - Build your first generator
 
 ## Features at a Glance
 
@@ -98,8 +79,8 @@ Export as JSON, SQL INSERT statements, or implement custom serializers.
 
 ## Next Steps
 
-1. [Install DataGeneration](/DataGeneration/docs/getting-started/installation)
-2. [Follow the Quick Start Guide](/DataGeneration/docs/getting-started/quick-start)
-3. [Learn Core Concepts](/DataGeneration/docs/getting-started/core-concepts)
-4. [Explore Generators](/DataGeneration/docs/generators/overview)
-5. [Browse Common Patterns](/DataGeneration/docs/guides/overview)
+1. [Install DataGeneration](./getting-started/installation.md)
+2. [Follow the Quick Start Guide](./getting-started/quick-start.md)
+3. [Learn Core Concepts](./getting-started/core-concepts.md)
+4. [Explore Generators](./generators/overview.md)
+5. [Browse Common Patterns](./guides/overview.md)

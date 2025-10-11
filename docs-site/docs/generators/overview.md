@@ -14,8 +14,6 @@ Generate realistic domain-specific data:
 | [Address](./address.md) | Addresses and locations | `123 Main St`, `New York`, `10001` |
 | [Company](./company.md) | Company names and industries | `Acme Corp`, `Technology` |
 | [Country](./country.md) | Countries and codes | `United States`, `US`, `USD` |
-| [Book](./book.md) | Book titles and authors | `The Great Gatsby`, `F. Scott Fitzgerald` |
-| [Finance](./finance.md) | Financial data | IBAN, BIC, credit cards |
 | [Phone](./phone.md) | Phone numbers | `+1-555-123-4567` |
 
 ## Primitive Generators
