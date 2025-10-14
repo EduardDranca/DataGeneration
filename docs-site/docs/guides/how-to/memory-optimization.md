@@ -5,7 +5,7 @@ Handle large datasets efficiently with lazy generation mode.
 ## When to Use Memory Optimization
 
 Enable memory optimization when:
-- Generating more than 10,000 items
+- Generating a large number of items (e.g. > 100,000)
 - Working with limited memory
 - Streaming data to external systems
 - Processing data in batches
@@ -180,7 +180,7 @@ try (BufferedWriter writer = Files.newBufferedWriter(Path.of("output.json"))) {
 
 ## Best Practices
 
-1. **Use for Large Datasets**: Enable for > 10,000 items
+1. **Use for Large Datasets**: Enable for > 100,000 items
 2. **Stream Once**: Remember you can only stream each collection once
 3. **Batch Processing**: Process in batches for efficiency
 4. **Resource Management**: Use try-with-resources for streams

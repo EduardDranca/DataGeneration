@@ -30,7 +30,7 @@ Using seeds ensures the same data is generated every time, perfect for testing.
 
 ### Enable Memory Optimization for Large Datasets
 
-For datasets with more than 10,000 items, enable memory optimization:
+For datasets with more than 100,000 items, enable memory optimization:
 
 ```java
 Generation gen = DslDataGenerator.create()

@@ -1,5 +1,5 @@
-import {themes as prismThemes} from 'prism-react-renderer';
-import type {Config} from '@docusaurus/types';
+import { themes as prismThemes } from 'prism-react-renderer';
+import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
@@ -7,7 +7,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'DataGeneration',
   tagline: 'Generate complex, realistic test data with a declarative JSON DSL',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -62,7 +62,8 @@ const config: Config = {
       title: 'DataGeneration',
       logo: {
         alt: 'DataGeneration Logo',
-        src: 'img/logo.svg',
+        src: 'img/dg_logo.svg',
+        srcDark: 'img/logo-dark.svg',
       },
       items: [
         {
