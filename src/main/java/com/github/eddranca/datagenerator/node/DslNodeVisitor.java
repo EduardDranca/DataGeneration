@@ -27,6 +27,8 @@ public interface DslNodeVisitor<T> {
 
     T visitPickReference(PickReferenceNode node);
 
+    T visitConditionalReference(ConditionalReferenceNode node);
+
     T visitChoiceField(ChoiceFieldNode node);
 
     T visitObjectField(ObjectFieldNode node);

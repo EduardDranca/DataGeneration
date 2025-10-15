@@ -10,6 +10,7 @@ import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
+import com.github.eddranca.datagenerator.node.ConditionalReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
 import com.github.eddranca.datagenerator.node.FilterNode;
@@ -143,6 +144,12 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
 
     @Override
     public JsonNode visitPickReference(PickReferenceNode node) {
+        List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
+        return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
+    }
+
+    @Override
+    public JsonNode visitConditionalReference(ConditionalReferenceNode node) {
         List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
         return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
     }

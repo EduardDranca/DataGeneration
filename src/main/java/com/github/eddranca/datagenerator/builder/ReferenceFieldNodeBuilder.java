@@ -3,6 +3,10 @@ package com.github.eddranca.datagenerator.builder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.node.AbstractReferenceNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
+import com.github.eddranca.datagenerator.node.ComparisonCondition;
+import com.github.eddranca.datagenerator.node.ComparisonOperator;
+import com.github.eddranca.datagenerator.node.Condition;
+import com.github.eddranca.datagenerator.node.ConditionalReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
@@ -46,16 +50,12 @@ class ReferenceFieldNodeBuilder {
         boolean sequential = fieldDef.path(SEQUENTIAL).asBoolean(false);
 
         List<FilterNode> filters = buildReferenceFilters(fieldName, fieldDef);
-        // filters is never null now, always returns empty list on error
 
         AbstractReferenceNode referenceNode = parseReference(fieldName, reference, filters, sequential);
         if (referenceNode != null) {
-            // Return the typed reference node directly
             return referenceNode;
         }
 
-        // If parsing fails, create a SimpleReferenceNode as fallback
-        // This handles cases where validation fails but the reference might still work at runtime
         return new SimpleReferenceNode(reference, null, filters, sequential);
     }
 
@@ -71,7 +71,6 @@ class ReferenceFieldNodeBuilder {
             return new ReferenceSpreadFieldNode(referenceNode, fields);
         }
 
-        // Fallback to SimpleReferenceNode for invalid cases
         SimpleReferenceNode fallbackNode = new SimpleReferenceNode(reference, null, filters, sequential);
         return new ReferenceSpreadFieldNode(fallbackNode, fields);
     }
@@ -87,11 +86,9 @@ class ReferenceFieldNodeBuilder {
                     if (filterExpression != null) {
                         filters.add(new FilterNode(filterExpression));
                     }
-                    // Continue processing other filters even if one fails
                 }
             } else {
                 addReferenceFieldError(fieldName, "filter must be an array");
-                // Return empty list instead of null
             }
         }
 
@@ -104,7 +101,7 @@ class ReferenceFieldNodeBuilder {
             JsonNode fieldsNode = fieldDef.get(FIELDS);
             if (!fieldsNode.isArray()) {
                 addReferenceSpreadFieldError(fieldName, "fields must be an array");
-                return fields; // Return empty list instead of null
+                return fields;
             }
 
             for (JsonNode fieldNode : fieldsNode) {
@@ -116,7 +113,6 @@ class ReferenceFieldNodeBuilder {
 
             if (fields.isEmpty()) {
                 addReferenceSpreadFieldError(fieldName, "must have at least one valid field when fields array is provided");
-                // Return empty list - this will spread all fields from the reference
             }
         }
         return fields;
@@ -132,11 +128,9 @@ class ReferenceFieldNodeBuilder {
                     if (filterExpression != null) {
                         filters.add(new FilterNode(filterExpression));
                     }
-                    // Continue processing other filters even if one fails
                 }
             } else {
                 addReferenceSpreadFieldError(fieldName, "filter must be an array");
-                // Return empty list instead of null
             }
         }
         return filters;
@@ -155,6 +149,8 @@ class ReferenceFieldNodeBuilder {
             return parseSelfReference(fieldName, reference, filters, sequential);
         } else if (reference.contains("[*].")) {
             return parseArrayFieldReference(fieldName, reference, filters, sequential);
+        } else if (reference.contains("[") && reference.contains("=")) {
+            return parseConditionalReference(fieldName, reference, filters, sequential);
         } else if (reference.contains("[")) {
             return parseIndexedReference(fieldName, reference, filters, sequential);
         } else if (reference.contains(".")) {
@@ -252,6 +248,115 @@ class ReferenceFieldNodeBuilder {
 
         addReferenceFieldError(fieldName, "references undeclared collection or pick: " + reference);
         return null;
+    }
+
+    private ConditionalReferenceNode parseConditionalReference(String fieldName, String reference,
+                                                               List<FilterNode> filters, boolean sequential) {
+        int bracketStart = reference.indexOf("[");
+        int bracketEnd = reference.indexOf("]");
+        
+        if (bracketEnd == -1) {
+            addReferenceFieldError(fieldName, "has unclosed bracket in conditional reference: " + reference);
+            return null;
+        }
+        
+        String collectionName = reference.substring(0, bracketStart);
+        String conditionStr = reference.substring(bracketStart + 1, bracketEnd);
+        String fieldPart = "";
+        
+        if (reference.length() > bracketEnd + 1 && reference.charAt(bracketEnd + 1) == '.') {
+            fieldPart = reference.substring(bracketEnd + 2);
+        }
+        
+        if (!context.isCollectionDeclared(collectionName)) {
+            addReferenceFieldError(fieldName, "references undeclared collection: " + collectionName);
+            return null;
+        }
+        
+        List<Condition> conditions = parseConditions(fieldName, conditionStr);
+        if (conditions == null || conditions.isEmpty()) {
+            return null;
+        }
+        
+        return new ConditionalReferenceNode(collectionName, fieldPart, conditions, filters, sequential);
+    }
+
+    private List<Condition> parseConditions(String fieldName, String conditionStr) {
+        List<Condition> conditions = new ArrayList<>();
+        
+        ComparisonOperator operator;
+        String[] parts;
+        
+        if (conditionStr.contains("!=")) {
+            operator = ComparisonOperator.NOT_EQUALS;
+            parts = conditionStr.split("!=", 2);
+        } else if (conditionStr.contains("=")) {
+            operator = ComparisonOperator.EQUALS;
+            parts = conditionStr.split("=", 2);
+        } else {
+            addReferenceFieldError(fieldName, "has invalid condition format: " + conditionStr + " (expected field=value or field!=value)");
+            return null;
+        }
+        
+        if (parts.length != 2) {
+            addReferenceFieldError(fieldName, "has invalid condition format: " + conditionStr);
+            return null;
+        }
+        
+        String field = parts[0].trim();
+        String valueStr = parts[1].trim();
+        
+        if (field.isEmpty()) {
+            addReferenceFieldError(fieldName, "has empty field name in condition");
+            return null;
+        }
+        
+        Object value = parseConditionValue(valueStr);
+        conditions.add(new ComparisonCondition(field, operator, value));
+        
+        return conditions;
+    }
+
+    /**
+     * Parses a condition value from string to appropriate type.
+     * Supports: 'string', true, false, null, numbers
+     */
+    private Object parseConditionValue(String valueStr) {
+        if (valueStr.isEmpty()) {
+            return "";
+        }
+        
+        // Check for quoted string (single quotes)
+        if (valueStr.startsWith("'") && valueStr.endsWith("'") && valueStr.length() >= 2) {
+            return valueStr.substring(1, valueStr.length() - 1);
+        }
+        
+        // Check for null
+        if ("null".equalsIgnoreCase(valueStr)) {
+            return null;
+        }
+        
+        // Check for boolean
+        if ("true".equalsIgnoreCase(valueStr)) {
+            return true;
+        }
+        if ("false".equalsIgnoreCase(valueStr)) {
+            return false;
+        }
+        
+        // Check for number
+        try {
+            if (valueStr.contains(".")) {
+                return Double.parseDouble(valueStr);
+            } else {
+                return Integer.parseInt(valueStr);
+            }
+        } catch (NumberFormatException e) {
+            // Not a number, treat as unquoted string (for backward compatibility)
+        }
+        
+        // Default: unquoted string value (for backward compatibility)
+        return valueStr;
     }
 
     private void addReferenceFieldError(String fieldName, String message) {

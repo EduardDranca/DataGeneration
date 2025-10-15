@@ -4,6 +4,8 @@ import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
+import com.github.eddranca.datagenerator.node.Condition;
+import com.github.eddranca.datagenerator.node.ConditionalReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
 import com.github.eddranca.datagenerator.node.FilterNode;
@@ -98,6 +100,28 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
     @Override
     public Void visitPickReference(PickReferenceNode node) {
         // Pick references don't reference collection fields directly
+        return null;
+    }
+
+    @Override
+    public Void visitConditionalReference(ConditionalReferenceNode node) {
+        String collectionName = node.getCollectionName();
+        String fieldName = node.getFieldName();
+
+        // Add all paths referenced by conditions
+        for (Condition condition : node.getConditions()) {
+            for (String path : condition.getReferencedPaths()) {
+                addReferencedPath(collectionName, path);
+            }
+        }
+
+        // Add the extracted field if specified
+        if (fieldName != null && !fieldName.isEmpty()) {
+            addReferencedPath(collectionName, fieldName);
+        } else {
+            // Entire object referenced
+            addReferencedPath(collectionName, "*");
+        }
         return null;
     }
 
