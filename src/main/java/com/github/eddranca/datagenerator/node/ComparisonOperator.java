@@ -5,7 +5,11 @@ package com.github.eddranca.datagenerator.node;
  */
 public enum ComparisonOperator {
     EQUALS("="),
-    NOT_EQUALS("!=");
+    NOT_EQUALS("!="),
+    LESS_THAN("<"),
+    LESS_THAN_OR_EQUAL("<="),
+    GREATER_THAN(">"),
+    GREATER_THAN_OR_EQUAL(">=");
 
     private final String symbol;
 
@@ -15,6 +19,15 @@ public enum ComparisonOperator {
 
     public String getSymbol() {
         return symbol;
+    }
+
+    public static ComparisonOperator fromSymbol(String symbol) {
+        for (ComparisonOperator op : values()) {
+            if (op.symbol.equals(symbol)) {
+                return op;
+            }
+        }
+        throw new IllegalArgumentException("Unknown comparison operator: " + symbol);
     }
 
     @Override

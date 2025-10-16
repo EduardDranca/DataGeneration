@@ -34,11 +34,14 @@ public class ComparisonCondition implements Condition {
     @Override
     public boolean matches(JsonNode item) {
         JsonNode actualNode = extractNestedField(item, fieldPath);
-        boolean isEqual = matchesValue(actualNode, expectedValue);
         
         return switch (operator) {
-            case EQUALS -> isEqual;
-            case NOT_EQUALS -> !isEqual;
+            case EQUALS -> matchesValue(actualNode, expectedValue);
+            case NOT_EQUALS -> !matchesValue(actualNode, expectedValue);
+            case LESS_THAN -> compareNumeric(actualNode, expectedValue) < 0;
+            case LESS_THAN_OR_EQUAL -> compareNumeric(actualNode, expectedValue) <= 0;
+            case GREATER_THAN -> compareNumeric(actualNode, expectedValue) > 0;
+            case GREATER_THAN_OR_EQUAL -> compareNumeric(actualNode, expectedValue) >= 0;
         };
     }
 
@@ -110,5 +113,26 @@ public class ComparisonCondition implements Condition {
         }
 
         return actualNode.asText().equals(expectedValue.toString());
+    }
+
+    private int compareNumeric(JsonNode actualNode, Object expectedValue) {
+        if (actualNode.isMissingNode() || actualNode.isNull()) {
+            throw new IllegalArgumentException("Cannot perform numeric comparison on null or missing value");
+        }
+
+        if (!actualNode.isNumber()) {
+            throw new IllegalArgumentException("Cannot perform numeric comparison on non-numeric value: " + actualNode);
+        }
+
+        double actualDouble = actualNode.asDouble();
+        double expectedDouble;
+
+        if (expectedValue instanceof Number num) {
+            expectedDouble = num.doubleValue();
+        } else {
+            throw new IllegalArgumentException("Expected value must be numeric for comparison operators: " + expectedValue);
+        }
+
+        return Double.compare(actualDouble, expectedDouble);
     }
 }

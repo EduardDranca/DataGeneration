@@ -175,4 +175,203 @@ class ConditionalReferenceTest extends ParameterizedGenerationTest {
 
         assertThat(taskUserIds).allMatch(nonGuestIds::contains);
     }
+
+    @BothImplementationsTest
+    void testConditionalReferenceWithGreaterThan(boolean memoryOptimized) throws IOException {
+        String dsl = """
+                {
+                  "products": {
+                    "count": 10,
+                    "item": {
+                      "id": {"gen": "sequence", "start": 1},
+                      "price": {"gen": "number", "min": 10, "max": 100}
+                    }
+                  },
+                  "premiumOrders": {
+                    "count": 5,
+                    "item": {
+                      "productId": {"ref": "products[price>50].id"}
+                    }
+                  }
+                }
+                """;
+
+        Generation generation = generateFromDslWithSeed(dsl, 456L, memoryOptimized);
+        JsonNode result = createLegacyJsonNode(generation);
+
+        // Collect product IDs with price > 50
+        List<Integer> expensiveProductIds = new ArrayList<>();
+        result.get("products").forEach(product -> {
+            if (product.get("price").asInt() > 50) {
+                expensiveProductIds.add(product.get("id").asInt());
+            }
+        });
+
+        // Verify all premium orders reference expensive products
+        List<Integer> orderProductIds = new ArrayList<>();
+        result.get("premiumOrders").forEach(order -> orderProductIds.add(order.get("productId").asInt()));
+
+        assertThat(orderProductIds).allMatch(expensiveProductIds::contains);
+    }
+
+    @BothImplementationsTest
+    void testConditionalReferenceWithLessThanOrEqual(boolean memoryOptimized) throws IOException {
+        String dsl = """
+                {
+                  "items": {
+                    "count": 10,
+                    "item": {
+                      "id": {"gen": "sequence", "start": 1},
+                      "quantity": {"gen": "number", "min": 1, "max": 20}
+                    }
+                  },
+                  "lowStockAlerts": {
+                    "count": 5,
+                    "item": {
+                      "itemId": {"ref": "items[quantity<=5].id"}
+                    }
+                  }
+                }
+                """;
+
+        Generation generation = generateFromDslWithSeed(dsl, 789L, memoryOptimized);
+        JsonNode result = createLegacyJsonNode(generation);
+
+        // Collect item IDs with quantity <= 5
+        List<Integer> lowStockIds = new ArrayList<>();
+        result.get("items").forEach(item -> {
+            if (item.get("quantity").asInt() <= 5) {
+                lowStockIds.add(item.get("id").asInt());
+            }
+        });
+
+        // Verify all alerts reference low stock items
+        List<Integer> alertItemIds = new ArrayList<>();
+        result.get("lowStockAlerts").forEach(alert -> alertItemIds.add(alert.get("itemId").asInt()));
+
+        assertThat(alertItemIds).allMatch(lowStockIds::contains);
+    }
+
+    @BothImplementationsTest
+    void testConditionalReferenceWithAndOperator(boolean memoryOptimized) throws IOException {
+        String dsl = """
+                {
+                  "users": {
+                    "count": 10,
+                    "item": {
+                      "id": {"gen": "sequence", "start": 1},
+                      "age": {"gen": "number", "min": 18, "max": 70},
+                      "status": {"gen": "choice", "options": ["active", "inactive"]}
+                    }
+                  },
+                  "eligibleUsers": {
+                    "count": 5,
+                    "item": {
+                      "userId": {"ref": "users[age>=21 and status='active'].id"}
+                    }
+                  }
+                }
+                """;
+
+        Generation generation = generateFromDslWithSeed(dsl, 111L, memoryOptimized);
+        JsonNode result = createLegacyJsonNode(generation);
+
+        // Collect eligible user IDs (age >= 21 AND status = active)
+        List<Integer> eligibleIds = new ArrayList<>();
+        result.get("users").forEach(user -> {
+            if (user.get("age").asInt() >= 21 && "active".equals(user.get("status").asText())) {
+                eligibleIds.add(user.get("id").asInt());
+            }
+        });
+
+        // Verify all eligible users match criteria
+        List<Integer> selectedIds = new ArrayList<>();
+        result.get("eligibleUsers").forEach(record -> selectedIds.add(record.get("userId").asInt()));
+
+        assertThat(selectedIds).allMatch(eligibleIds::contains);
+    }
+
+    @BothImplementationsTest
+    void testConditionalReferenceWithOrOperator(boolean memoryOptimized) throws IOException {
+        String dsl = """
+                {
+                  "products": {
+                    "count": 10,
+                    "item": {
+                      "id": {"gen": "sequence", "start": 1},
+                      "category": {"gen": "choice", "options": ["electronics", "books", "clothing"]},
+                      "featured": {"gen": "boolean", "probability": 0.3}
+                    }
+                  },
+                  "promotions": {
+                    "count": 5,
+                    "item": {
+                      "productId": {"ref": "products[category='electronics' or featured=true].id"}
+                    }
+                  }
+                }
+                """;
+
+        Generation generation = generateFromDslWithSeed(dsl, 222L, memoryOptimized);
+        JsonNode result = createLegacyJsonNode(generation);
+
+        // Collect product IDs that match criteria (electronics OR featured)
+        List<Integer> matchingIds = new ArrayList<>();
+        result.get("products").forEach(product -> {
+            boolean isElectronics = "electronics".equals(product.get("category").asText());
+            boolean isFeatured = product.get("featured").asBoolean();
+            if (isElectronics || isFeatured) {
+                matchingIds.add(product.get("id").asInt());
+            }
+        });
+
+        // Verify all promotions reference matching products
+        List<Integer> promoProductIds = new ArrayList<>();
+        result.get("promotions").forEach(promo -> promoProductIds.add(promo.get("productId").asInt()));
+
+        assertThat(promoProductIds).allMatch(matchingIds::contains);
+    }
+
+    @BothImplementationsTest
+    void testConditionalReferenceWithComplexAndCondition(boolean memoryOptimized) throws IOException {
+        String dsl = """
+                {
+                  "employees": {
+                    "count": 10,
+                    "item": {
+                      "id": {"gen": "sequence", "start": 1},
+                      "salary": {"gen": "number", "min": 30000, "max": 150000},
+                      "department": {"gen": "choice", "options": ["engineering", "sales", "hr"]},
+                      "yearsOfService": {"gen": "number", "min": 0, "max": 20}
+                    }
+                  },
+                  "bonusEligible": {
+                    "count": 3,
+                    "item": {
+                      "employeeId": {"ref": "employees[salary>80000 and yearsOfService>=5 and department='engineering'].id"}
+                    }
+                  }
+                }
+                """;
+
+        Generation generation = generateFromDslWithSeed(dsl, 333L, memoryOptimized);
+        JsonNode result = createLegacyJsonNode(generation);
+
+        // Collect eligible employee IDs
+        List<Integer> eligibleIds = new ArrayList<>();
+        result.get("employees").forEach(employee -> {
+            int salary = employee.get("salary").asInt();
+            int years = employee.get("yearsOfService").asInt();
+            String dept = employee.get("department").asText();
+            if (salary > 80000 && years >= 5 && "engineering".equals(dept)) {
+                eligibleIds.add(employee.get("id").asInt());
+            }
+        });
+
+        // Verify all bonus records reference eligible employees
+        List<Integer> bonusEmployeeIds = new ArrayList<>();
+        result.get("bonusEligible").forEach(record -> bonusEmployeeIds.add(record.get("employeeId").asInt()));
+
+        assertThat(bonusEmployeeIds).allMatch(eligibleIds::contains);
+    }
 }
