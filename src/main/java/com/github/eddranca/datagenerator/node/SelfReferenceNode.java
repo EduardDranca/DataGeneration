@@ -24,6 +24,11 @@ public class SelfReferenceNode extends AbstractReferenceNode {
     }
 
     @Override
+    public String getCollectionName() {
+        return null; // Self references don't reference collections
+    }
+
+    @Override
     public String getReferenceString() {
         return THIS_PREFIX + fieldName;
     }

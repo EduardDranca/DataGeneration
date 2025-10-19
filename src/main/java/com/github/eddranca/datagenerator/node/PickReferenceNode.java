@@ -25,6 +25,11 @@ public class PickReferenceNode extends AbstractReferenceNode {
     }
 
     @Override
+    public String getCollectionName() {
+        return null; // Pick references don't reference collections
+    }
+
+    @Override
     public String getReferenceString() {
         return hasFieldName() ? pickName + "." + fieldName : pickName;
     }

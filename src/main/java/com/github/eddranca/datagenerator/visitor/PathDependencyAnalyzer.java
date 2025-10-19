@@ -35,7 +35,6 @@ import java.util.Set;
  * at any depth in the object hierarchy.
  */
 public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
-    // Clean implementation using proper node getters - no regex parsing needed!
     private final Map<String, Set<String>> referencedPaths = new HashMap<>();
 
     @Override
@@ -117,8 +116,7 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitReferenceSpreadField(ReferenceSpreadFieldNode node) {
-        // Get collection name from the reference node using proper getters
-        String collectionName = getCollectionNameFromReferenceNode(node.getReferenceNode());
+        String collectionName = node.getReferenceNode().getCollectionName();
 
         if (collectionName != null) {
             // For spread fields, we need specific fields
@@ -166,21 +164,6 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
     @Override
     public Void visitFilter(FilterNode node) {
         node.getFilterExpression().accept(this);
-        return null;
-    }
-
-    /**
-     * Helper method to get collection name from any reference node type.
-     * Now uses proper getters instead of string parsing - no more regex needed!
-     */
-    private String getCollectionNameFromReferenceNode(Object referenceNode) {
-        if (referenceNode instanceof SimpleReferenceNode simpleReferenceNode) {
-            return simpleReferenceNode.getCollectionName();
-        } else if (referenceNode instanceof ArrayFieldReferenceNode arrayFieldReferenceNode) {
-            return arrayFieldReferenceNode.getCollectionName();
-        } else if (referenceNode instanceof IndexedReferenceNode indexedReferenceNode) {
-            return indexedReferenceNode.getCollectionName();
-        }
         return null;
     }
 

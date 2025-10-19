@@ -35,6 +35,12 @@ public abstract class AbstractReferenceNode implements DslNode, Sequential, Refe
      */
     public abstract String getReferenceString();
 
+    /**
+     * Returns the name of the collection being referenced.
+     * Returns null for references that don't reference a collection (e.g., PickReferenceNode, SelfReferenceNode).
+     */
+    public abstract String getCollectionName();
+
     protected JsonNode extractNestedField(JsonNode node, String fieldPath) {
         if (fieldPath == null || fieldPath.isEmpty()) {
             return node;

@@ -38,7 +38,6 @@ public class DslTreeBuilder {
     public DslTreeBuildResult build(JsonNode dslJson) {
         RootNode root = buildRoot(dslJson);
 
-        // Run reference validation visitor on the built tree
         ReferenceValidationVisitor referenceValidator = new ReferenceValidationVisitor();
         root.accept(referenceValidator);
         errors.addAll(referenceValidator.getErrors());

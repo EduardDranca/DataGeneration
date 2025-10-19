@@ -36,6 +36,11 @@ public class ArrayFieldReferenceNode extends AbstractReferenceNode {
     }
 
     @Override
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    @Override
     public String getReferenceString() {
         return collectionName + "[*]." + fieldName;
     }
