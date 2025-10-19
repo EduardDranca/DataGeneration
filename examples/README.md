@@ -13,6 +13,7 @@ This directory contains practical examples demonstrating various use cases of th
 | **[05-financial-transactions](05-financial-transactions/)** | Banking system | Financial data, high-volume transactions  |
 | **[06-educational-system](06-educational-system/)**         | School management | Academic data, regex patterns, grading    |
 | **[07-custom-generator](07-custom-generator/)**             | Custom business logic | Custom generators, domain-specific rules  |
+| **[08-range-references](08-range-references/)**             | Range-based references | Subset selection, regional management     |
 
 ## Quick Start
 
@@ -50,6 +51,7 @@ Each example directory contains:
 | Feature | Examples Using It |
 |---------|-------------------|
 | **Entity Relationships** | All examples (using `ref` for cross-collection references) |
+| **Range References** | Range References (subset selection by index range) |
 | **Arrays & Collections** | Company (skills), Social Media (hashtags), Education (enrollments) |
 | **Weighted Choices** | Company (manager probability), Social Media (verification rates) |
 | **Complex Objects** | E-commerce (addresses), Financial (transaction details) |
@@ -68,6 +70,7 @@ Each example directory contains:
 | Financial | 73 records | 4 | Banking simulation |
 | Educational | 97 records | 4 | School system testing |
 | Custom Generator | 19 records | 3 | Custom business logic |
+| Range References | 34 records | 3 | Regional/tiered structures |
 
 ## Integration Patterns
 
