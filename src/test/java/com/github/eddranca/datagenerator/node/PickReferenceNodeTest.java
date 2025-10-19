@@ -105,7 +105,6 @@ class PickReferenceNodeTest {
         JsonNode nullPickValue = mapper.nullNode();
 
         when(mockContext.getNamedPick("userPick")).thenReturn(nullPickValue);
-        when(mockContext.getMapper()).thenReturn(mapper);
 
         JsonNode result = node.resolve(mockContext, currentItem, null);
 

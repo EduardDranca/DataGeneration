@@ -46,6 +46,18 @@ public abstract class AbstractReferenceNode implements DslNode, Sequential, Refe
         if (fieldPath == null || fieldPath.isEmpty()) {
             return node;
         }
-        return node.path(fieldPath);
+        
+        // Handle nested paths like "profile.contact.email"
+        String[] pathParts = fieldPath.split("\\.");
+        JsonNode current = node;
+        
+        for (String part : pathParts) {
+            if (current.isMissingNode() || current.isNull()) {
+                return current;
+            }
+            current = current.path(part);
+        }
+        
+        return current;
     }
 }
