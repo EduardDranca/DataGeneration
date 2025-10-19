@@ -210,15 +210,17 @@ class ReferenceFieldNodeBuilder {
             return null;
         }
 
-        if (!indexPart.equals("*") && !indexPart.matches("\\d+")) {
-            addReferenceFieldError(fieldName, "has invalid index format: " + indexPart);
+        // Validate and provide helpful error messages for index format
+        String validationError = validateIndexFormat(indexPart);
+        if (validationError != null) {
+            addReferenceFieldError(fieldName, validationError);
             return null;
         }
 
         try {
             return new IndexedReferenceNode(collectionName, indexPart, fieldPart, filters, sequential);
         } catch (IllegalArgumentException e) {
-            addReferenceFieldError(fieldName, "has invalid numeric index: " + indexPart);
+            addReferenceFieldError(fieldName, "has invalid range format '" + indexPart + "': " + e.getMessage());
             return null;
         }
     }
@@ -252,6 +254,86 @@ class ReferenceFieldNodeBuilder {
 
         addReferenceFieldError(fieldName, "references undeclared collection or pick: " + reference);
         return null;
+    }
+
+    /**
+     * Validates index format and returns error message if invalid, null if valid.
+     * Valid formats:
+     * - "*" (wildcard)
+     * - "10" (positive index)
+     * - "-10" (negative index)
+     * - "0:99" (range with both bounds)
+     * - "10:" (range with open end)
+     * - ":99" (range with open start)
+     * - ":" (full range)
+     * - "-10:-1" (range with negative bounds)
+     */
+    private String validateIndexFormat(String indexPart) {
+        if (indexPart == null || indexPart.isEmpty()) {
+            return "has empty index - use '*' for wildcard, a number for specific index, or 'start:end' for range";
+        }
+
+        // Wildcard is always valid
+        if (indexPart.equals("*")) {
+            return null;
+        }
+
+        // Check for multiple colons (invalid)
+        if (indexPart.chars().filter(ch -> ch == ':').count() > 1) {
+            return "has invalid range format '" + indexPart + "' - use 'start:end' with single colon (e.g., '0:99', '10:', ':99')";
+        }
+
+        // If it contains a colon, it's a range
+        if (indexPart.contains(":")) {
+            return validateRangeFormat(indexPart);
+        }
+
+        // Otherwise, it should be a simple numeric index
+        return validateNumericIndex(indexPart);
+    }
+
+    private String validateRangeFormat(String indexPart) {
+        String[] parts = indexPart.split(":", -1);
+        if (parts.length != 2) {
+            return "has invalid range format '" + indexPart + "' - use 'start:end' format (e.g., '0:99', '10:', ':99')";
+        }
+
+        String start = parts[0];
+        String end = parts[1];
+
+        // Both empty is valid (full range ":")
+        if (start.isEmpty() && end.isEmpty()) {
+            return null;
+        }
+
+        // Validate start if present
+        if (!start.isEmpty()) {
+            try {
+                Integer.parseInt(start);
+            } catch (NumberFormatException e) {
+                return "has invalid range start '" + start + "' - must be a number (e.g., '0:99', '-10:-1')";
+            }
+        }
+
+        // Validate end if present
+        if (!end.isEmpty()) {
+            try {
+                Integer.parseInt(end);
+            } catch (NumberFormatException e) {
+                return "has invalid range end '" + end + "' - must be a number (e.g., '0:99', '10:')";
+            }
+        }
+
+        return null; // Valid range format
+    }
+
+    private String validateNumericIndex(String indexPart) {
+        try {
+            Integer.parseInt(indexPart);
+            return null; // Valid numeric index
+        } catch (NumberFormatException e) {
+            return "has invalid index format '" + indexPart + "' - use a number (e.g., '0', '-1'), '*' for wildcard, or 'start:end' for range (e.g., '0:99')";
+        }
     }
 
     private void addReferenceFieldError(String fieldName, String message) {
