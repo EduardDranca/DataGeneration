@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,10 +19,6 @@ import java.util.logging.Logger;
 public final class SqlInsertGenerator {
     private static final Logger logger = Logger.getLogger(SqlInsertGenerator.class.getName());
     private static final ObjectMapper mapper = new ObjectMapper();
-
-    // Track complex fields per table to log once per table with all fields
-    private static final Map<String, Set<String>> complexFieldsPerTable =
-        new ConcurrentHashMap<>();
 
     private SqlInsertGenerator() {
         // Utility class
@@ -90,21 +85,12 @@ public final class SqlInsertGenerator {
 
         // Log complex fields once per table with all fields listed
         if (!complexFields.isEmpty()) {
-            complexFieldsPerTable.compute(tableName, (table, existingFields) -> {
-                if (existingFields == null) {
-                    // First time seeing this table - log the warning
-                    logger.log(Level.WARNING,
-                        "Complex objects detected in table ''{0}'', fields: {1}. " +
-                            "Converting to JSON string representation for SQL insert. " +
-                            "Consider using a database with native JSON support for optimal performance.",
-                        new Object[]{tableName, String.join(", ", complexFields)});
-                    return new HashSet<>(complexFields);
-                } else {
-                    // Add new fields to existing set (for completeness, though we won't log again)
-                    existingFields.addAll(complexFields);
-                    return existingFields;
-                }
-            });
+            // First time seeing this table - log the warning
+            logger.log(Level.WARNING,
+                "Complex objects detected in table ''{0}'', fields: {1}. " +
+                    "Converting to JSON string representation for SQL insert. " +
+                    "Consider using a database with native JSON support for optimal performance.",
+                new Object[]{tableName, String.join(", ", complexFields)});
         }
 
         return sql.toString();
