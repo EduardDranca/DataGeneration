@@ -61,35 +61,37 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitSimpleReference(SimpleReferenceNode node) {
-        String collectionName = node.getCollectionName();
-        String fieldName = node.getFieldName();
-
-        if (fieldName != null && !fieldName.isEmpty()) {
-            addReferencedPath(collectionName, fieldName);
-        } else {
-            // Entire object referenced
-            addReferencedPath(collectionName, "*");
-        }
+        node.getCollectionName().ifPresent(collectionName -> {
+            String fieldName = node.getFieldName();
+            if (fieldName != null && !fieldName.isEmpty()) {
+                addReferencedPath(collectionName, fieldName);
+            } else {
+                // Entire object referenced
+                addReferencedPath(collectionName, "*");
+            }
+        });
         return null;
     }
 
     @Override
     public Void visitArrayFieldReference(ArrayFieldReferenceNode node) {
-        addReferencedPath(node.getCollectionName(), node.getFieldName());
+        node.getCollectionName().ifPresent(collectionName -> 
+            addReferencedPath(collectionName, node.getFieldName())
+        );
         return null;
     }
 
     @Override
     public Void visitIndexedReference(IndexedReferenceNode node) {
-        String collectionName = node.getCollectionName();
-        String fieldName = node.getFieldName();
-
-        if (fieldName != null && !fieldName.isEmpty()) {
-            addReferencedPath(collectionName, fieldName);
-        } else {
-            // Entire object referenced
-            addReferencedPath(collectionName, "*");
-        }
+        node.getCollectionName().ifPresent(collectionName -> {
+            String fieldName = node.getFieldName();
+            if (fieldName != null && !fieldName.isEmpty()) {
+                addReferencedPath(collectionName, fieldName);
+            } else {
+                // Entire object referenced
+                addReferencedPath(collectionName, "*");
+            }
+        });
         return null;
     }
 
@@ -116,16 +118,14 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitReferenceSpreadField(ReferenceSpreadFieldNode node) {
-        String collectionName = node.getReferenceNode().getCollectionName();
-
-        if (collectionName != null) {
+        node.getReferenceNode().getCollectionName().ifPresent(collectionName -> {
             // For spread fields, we need specific fields
             for (String field : node.getFields()) {
                 // Handle field mappings like "name:firstName" -> we want "firstName"
                 String actualField = field.contains(":") ? field.split(":", 2)[1] : field;
                 addReferencedPath(collectionName, actualField);
             }
-        }
+        });
         return null;
     }
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Reference node for pick references.
@@ -25,8 +26,8 @@ public class PickReferenceNode extends AbstractReferenceNode {
     }
 
     @Override
-    public String getCollectionName() {
-        return null; // Pick references don't reference collections
+    public Optional<String> getCollectionName() {
+        return Optional.empty(); // Pick references don't reference collections
     }
 
     @Override

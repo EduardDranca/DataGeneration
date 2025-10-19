@@ -5,9 +5,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.exception.SerializationException;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,10 +20,10 @@ import java.util.logging.Logger;
 public final class SqlInsertGenerator {
     private static final Logger logger = Logger.getLogger(SqlInsertGenerator.class.getName());
     private static final ObjectMapper mapper = new ObjectMapper();
-    
+
     // Track complex fields per table to log once per table with all fields
-    private static final java.util.Map<String, java.util.Set<String>> complexFieldsPerTable = 
-        new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, Set<String>> complexFieldsPerTable =
+        new ConcurrentHashMap<>();
 
     private SqlInsertGenerator() {
         // Utility class
@@ -40,9 +43,9 @@ public final class SqlInsertGenerator {
 
         StringJoiner columns = new StringJoiner(", ");
         StringJoiner values = new StringJoiner(", ");
-        
+
         // Track complex fields found in this item
-        java.util.Set<String> complexFields = new java.util.HashSet<>();
+        Set<String> complexFields = new HashSet<>();
 
         Iterator<Map.Entry<String, JsonNode>> fields = item.fields();
         while (fields.hasNext()) {
@@ -84,7 +87,7 @@ public final class SqlInsertGenerator {
         }
 
         sql.append(columns).append(") VALUES (").append(values).append(");");
-        
+
         // Log complex fields once per table with all fields listed
         if (!complexFields.isEmpty()) {
             complexFieldsPerTable.compute(tableName, (table, existingFields) -> {
@@ -95,7 +98,7 @@ public final class SqlInsertGenerator {
                             "Converting to JSON string representation for SQL insert. " +
                             "Consider using a database with native JSON support for optimal performance.",
                         new Object[]{tableName, String.join(", ", complexFields)});
-                    return new java.util.HashSet<>(complexFields);
+                    return new HashSet<>(complexFields);
                 } else {
                     // Add new fields to existing set (for completeness, though we won't log again)
                     existingFields.addAll(complexFields);
@@ -103,7 +106,7 @@ public final class SqlInsertGenerator {
                 }
             });
         }
-        
+
         return sql.toString();
     }
 }

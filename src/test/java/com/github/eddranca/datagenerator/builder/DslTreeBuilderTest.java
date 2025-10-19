@@ -148,7 +148,7 @@ class DslTreeBuilderTest {
         assertThat(countryField).isInstanceOf(ArrayFieldReferenceNode.class);
         ArrayFieldReferenceNode ref = (ArrayFieldReferenceNode) countryField;
         assertThat(ref.getReferenceString()).isEqualTo("countries[*].name");
-        assertThat(ref.getCollectionName()).isEqualTo("countries");
+        assertThat(ref.getCollectionName()).contains("countries");
         assertThat(ref.getFieldName()).isEqualTo("name");
         assertThat(ref.getFilters()).isEmpty();
     }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Abstract base class for all reference nodes.
@@ -37,9 +38,9 @@ public abstract class AbstractReferenceNode implements DslNode, Sequential, Refe
 
     /**
      * Returns the name of the collection being referenced.
-     * Returns null for references that don't reference a collection (e.g., PickReferenceNode, SelfReferenceNode).
+     * Returns empty Optional for references that don't reference a collection (e.g., PickReferenceNode, SelfReferenceNode).
      */
-    public abstract String getCollectionName();
+    public abstract Optional<String> getCollectionName();
 
     protected JsonNode extractNestedField(JsonNode node, String fieldPath) {
         if (fieldPath == null || fieldPath.isEmpty()) {

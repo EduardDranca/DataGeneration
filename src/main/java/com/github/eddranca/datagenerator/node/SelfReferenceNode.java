@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.github.eddranca.datagenerator.builder.KeyWords.THIS_PREFIX;
 
@@ -24,8 +25,8 @@ public class SelfReferenceNode extends AbstractReferenceNode {
     }
 
     @Override
-    public String getCollectionName() {
-        return null; // Self references don't reference collections
+    public Optional<String> getCollectionName() {
+        return Optional.empty();
     }
 
     @Override
