@@ -84,11 +84,9 @@ class GeneratedFieldNodeBuilder {
                     if (filterExpression != null) {
                         filters.add(new FilterNode(filterExpression));
                     }
-                    // Continue processing other filters even if one fails
                 }
             } else {
                 addGeneratedFieldError(fieldName, "filter must be an array");
-                // Return empty list instead of null
             }
         }
         return filters;
@@ -152,11 +150,9 @@ class GeneratedFieldNodeBuilder {
                     if (filterExpression != null) {
                         filters.add(new FilterNode(filterExpression));
                     }
-                    // Continue processing other filters even if one fails
                 }
             } else {
                 addChoiceFieldError(fieldName, "filter must be an array");
-                // Return empty list instead of null
             }
         }
         return filters;

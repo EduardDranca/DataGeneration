@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Reference node for indexed references like "collection[0]" or "collection[*]".
@@ -83,8 +84,9 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
         return isWildcardIndex;
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    @Override
+    public Optional<String> getCollectionName() {
+        return Optional.of(collectionName);
     }
 
     public String getFieldName() {

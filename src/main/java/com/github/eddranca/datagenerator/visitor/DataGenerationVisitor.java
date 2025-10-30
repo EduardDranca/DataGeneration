@@ -44,8 +44,6 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
 
     @Override
     public JsonNode visitRoot(RootNode node) {
-        // Dependency analysis is now handled at the DslDataGenerator level
-
         ObjectNode result = context.getMapper().createObjectNode();
 
         for (Map.Entry<String, CollectionNode> entry : node.getCollections().entrySet()) {

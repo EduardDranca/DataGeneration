@@ -7,6 +7,7 @@ import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import net.datafaker.Faker;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
@@ -20,7 +21,7 @@ public class DateGenerator implements Generator {
     public JsonNode generate(GeneratorContext context) {
         Faker faker = context.faker();
         ObjectMapper mapper = context.mapper();
-        
+
         // Default date range: epoch time to next year
         LocalDate defaultFrom = LocalDate.of(1970, 1, 1); // Unix epoch
         LocalDate defaultTo = LocalDate.now().plusYears(1);
@@ -28,7 +29,7 @@ public class DateGenerator implements Generator {
         // Parse from and to dates using syntactic sugar
         String fromStr = context.getStringOption("from");
         String toStr = context.getStringOption("to");
-        
+
         LocalDate from = fromStr != null ? LocalDate.parse(fromStr) : defaultFrom;
         LocalDate to = toStr != null ? LocalDate.parse(toStr) : defaultTo;
 
@@ -56,8 +57,8 @@ public class DateGenerator implements Generator {
         return switch (format.toLowerCase()) {
             case "iso" -> date.toString();
             case "iso_datetime" -> date.atStartOfDay().toString();
-            case "timestamp" -> String.valueOf(date.atStartOfDay().toEpochSecond(java.time.ZoneOffset.UTC) * 1000);
-            case "epoch" -> String.valueOf(date.atStartOfDay().toEpochSecond(java.time.ZoneOffset.UTC));
+            case "timestamp" -> String.valueOf(date.atStartOfDay().toEpochSecond(ZoneOffset.UTC) * 1000);
+            case "epoch" -> String.valueOf(date.atStartOfDay().toEpochSecond(ZoneOffset.UTC));
             default -> {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
                 yield date.format(formatter);

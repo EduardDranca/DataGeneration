@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Reference node for array field references like "collection[*].field".
@@ -27,12 +28,13 @@ public class ArrayFieldReferenceNode extends AbstractReferenceNode {
         this.fieldName = fieldName;
     }
 
-    public String getCollectionName() {
-        return collectionName;
-    }
-
     public String getFieldName() {
         return fieldName;
+    }
+
+    @Override
+    public Optional<String> getCollectionName() {
+        return Optional.of(collectionName);
     }
 
     @Override
