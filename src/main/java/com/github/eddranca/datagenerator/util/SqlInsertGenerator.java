@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.exception.SerializationException;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,6 +39,9 @@ public final class SqlInsertGenerator {
         StringJoiner columns = new StringJoiner(", ");
         StringJoiner values = new StringJoiner(", ");
 
+        // Track complex fields found in this item
+        Set<String> complexFields = new HashSet<>();
+
         Iterator<Map.Entry<String, JsonNode>> fields = item.fields();
         while (fields.hasNext()) {
             Map.Entry<String, JsonNode> field = fields.next();
@@ -56,11 +61,8 @@ public final class SqlInsertGenerator {
                 values.add("'" + escaped + "'");
             } else if (val.isObject() || val.isArray()) {
                 // Handle complex objects by converting to JSON string
-                logger.log(Level.WARNING,
-                    "Complex object detected in table ''{0}'', field ''{1}''. " +
-                        "Converting to JSON string representation for SQL insert. " +
-                        "Consider using a database with native JSON support for optimal performance.",
-                    new Object[]{tableName, fieldName});
+                // Track this field for logging
+                complexFields.add(fieldName);
 
                 try {
                     String jsonString = mapper.writeValueAsString(val);
@@ -80,6 +82,17 @@ public final class SqlInsertGenerator {
         }
 
         sql.append(columns).append(") VALUES (").append(values).append(");");
+
+        // Log complex fields once per table with all fields listed
+        if (!complexFields.isEmpty()) {
+            // First time seeing this table - log the warning
+            logger.log(Level.WARNING,
+                "Complex objects detected in table ''{0}'', fields: {1}. " +
+                    "Converting to JSON string representation for SQL insert. " +
+                    "Consider using a database with native JSON support for optimal performance.",
+                new Object[]{tableName, String.join(", ", complexFields)});
+        }
+
         return sql.toString();
     }
 }

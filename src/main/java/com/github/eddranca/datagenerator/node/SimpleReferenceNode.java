@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Reference node for simple collection references like "users" or "collection.field".
@@ -24,8 +25,9 @@ public class SimpleReferenceNode extends AbstractReferenceNode {
         return !fieldName.isEmpty();
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    @Override
+    public Optional<String> getCollectionName() {
+        return Optional.of(collectionName);
     }
 
     public String getFieldName() {

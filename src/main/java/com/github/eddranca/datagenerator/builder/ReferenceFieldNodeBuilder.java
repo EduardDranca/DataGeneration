@@ -13,6 +13,7 @@ import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.github.eddranca.datagenerator.builder.KeyWords.ELLIPSIS;
 import static com.github.eddranca.datagenerator.builder.KeyWords.FIELDS;
@@ -46,17 +47,8 @@ class ReferenceFieldNodeBuilder {
         boolean sequential = fieldDef.path(SEQUENTIAL).asBoolean(false);
 
         List<FilterNode> filters = buildReferenceFilters(fieldName, fieldDef);
-        // filters is never null now, always returns empty list on error
-
-        AbstractReferenceNode referenceNode = parseReference(fieldName, reference, filters, sequential);
-        if (referenceNode != null) {
-            // Return the typed reference node directly
-            return referenceNode;
-        }
-
-        // If parsing fails, create a SimpleReferenceNode as fallback
-        // This handles cases where validation fails but the reference might still work at runtime
-        return new SimpleReferenceNode(reference, null, filters, sequential);
+        return parseReference(fieldName, reference, filters, sequential)
+            .orElseGet(() -> new SimpleReferenceNode(reference, null, filters, sequential));
     }
 
     private DslNode buildReferenceSpreadField(String fieldName, JsonNode fieldDef) {
@@ -66,14 +58,10 @@ class ReferenceFieldNodeBuilder {
         List<String> fields = extractSpreadFields(fieldName, fieldDef);
         List<FilterNode> filters = buildSpreadFieldFilters(fieldName, fieldDef);
 
-        AbstractReferenceNode referenceNode = parseReference(fieldName, reference, filters, sequential);
-        if (referenceNode != null) {
-            return new ReferenceSpreadFieldNode(referenceNode, fields);
-        }
+        AbstractReferenceNode referenceNode = parseReference(fieldName, reference, filters, sequential)
+            .orElseGet(() -> new SimpleReferenceNode(reference, null, filters, sequential));
 
-        // Fallback to SimpleReferenceNode for invalid cases
-        SimpleReferenceNode fallbackNode = new SimpleReferenceNode(reference, null, filters, sequential);
-        return new ReferenceSpreadFieldNode(fallbackNode, fields);
+        return new ReferenceSpreadFieldNode(referenceNode, fields);
     }
 
     private List<FilterNode> buildReferenceFilters(String fieldName, JsonNode fieldDef) {
@@ -87,11 +75,9 @@ class ReferenceFieldNodeBuilder {
                     if (filterExpression != null) {
                         filters.add(new FilterNode(filterExpression));
                     }
-                    // Continue processing other filters even if one fails
                 }
             } else {
                 addReferenceFieldError(fieldName, "filter must be an array");
-                // Return empty list instead of null
             }
         }
 
@@ -104,7 +90,7 @@ class ReferenceFieldNodeBuilder {
             JsonNode fieldsNode = fieldDef.get(FIELDS);
             if (!fieldsNode.isArray()) {
                 addReferenceSpreadFieldError(fieldName, "fields must be an array");
-                return fields; // Return empty list instead of null
+                return fields;
             }
 
             for (JsonNode fieldNode : fieldsNode) {
@@ -116,7 +102,6 @@ class ReferenceFieldNodeBuilder {
 
             if (fields.isEmpty()) {
                 addReferenceSpreadFieldError(fieldName, "must have at least one valid field when fields array is provided");
-                // Return empty list - this will spread all fields from the reference
             }
         }
         return fields;
@@ -132,21 +117,19 @@ class ReferenceFieldNodeBuilder {
                     if (filterExpression != null) {
                         filters.add(new FilterNode(filterExpression));
                     }
-                    // Continue processing other filters even if one fails
                 }
             } else {
                 addReferenceSpreadFieldError(fieldName, "filter must be an array");
-                // Return empty list instead of null
             }
         }
         return filters;
     }
 
-    private AbstractReferenceNode parseReference(String fieldName, String reference,
-                                                 List<FilterNode> filters, boolean sequential) {
+    private Optional<AbstractReferenceNode> parseReference(String fieldName, String reference,
+                                                           List<FilterNode> filters, boolean sequential) {
         if (reference == null || reference.trim().isEmpty()) {
             addReferenceFieldError(fieldName, "has empty reference");
-            return null;
+            return Optional.empty();
         }
 
         reference = reference.trim();
@@ -165,38 +148,38 @@ class ReferenceFieldNodeBuilder {
     }
 
 
-    private SelfReferenceNode parseSelfReference(String fieldName, String reference,
-                                                 List<FilterNode> filters, boolean sequential) {
+    private Optional<AbstractReferenceNode> parseSelfReference(String fieldName, String reference,
+                                                           List<FilterNode> filters, boolean sequential) {
         String localField = reference.substring(THIS_PREFIX.length());
 
         if (localField.isEmpty()) {
             addReferenceFieldError(fieldName, "has invalid self-reference: " + reference);
-            return null;
+            return Optional.empty();
         }
 
-        return new SelfReferenceNode(localField, filters, sequential);
+        return Optional.of(new SelfReferenceNode(localField, filters, sequential));
     }
 
-    private ArrayFieldReferenceNode parseArrayFieldReference(String fieldName, String reference,
-                                                             List<FilterNode> filters, boolean sequential) {
+    private Optional<AbstractReferenceNode> parseArrayFieldReference(String fieldName, String reference,
+                                                                       List<FilterNode> filters, boolean sequential) {
         String collectionName = reference.substring(0, reference.indexOf("[*]."));
         String field = reference.substring(reference.indexOf("[*].") + 4);
 
         if (!context.isCollectionDeclared(collectionName)) {
             addReferenceFieldError(fieldName, "references undeclared collection: " + collectionName);
-            return null;
+            return Optional.empty();
         }
 
         if (field.isEmpty()) {
             addReferenceFieldError(fieldName, "has empty field name in array reference: " + reference);
-            return null;
+            return Optional.empty();
         }
 
-        return new ArrayFieldReferenceNode(collectionName, field, filters, sequential);
+        return Optional.of(new ArrayFieldReferenceNode(collectionName, field, filters, sequential));
     }
 
-    private IndexedReferenceNode parseIndexedReference(String fieldName, String reference,
-                                                       List<FilterNode> filters, boolean sequential) {
+    private Optional<AbstractReferenceNode> parseIndexedReference(String fieldName, String reference,
+                                                                 List<FilterNode> filters, boolean sequential) {
         String collectionName = reference.substring(0, reference.indexOf("["));
         String indexPart = reference.substring(reference.indexOf("[") + 1, reference.indexOf("]"));
         String fieldPart = "";
@@ -207,51 +190,51 @@ class ReferenceFieldNodeBuilder {
 
         if (!context.isCollectionDeclared(collectionName)) {
             addReferenceFieldError(fieldName, "references undeclared collection: " + collectionName);
-            return null;
+            return Optional.empty();
         }
 
         if (!indexPart.equals("*") && !indexPart.matches("\\d+")) {
             addReferenceFieldError(fieldName, "has invalid index format: " + indexPart);
-            return null;
+            return Optional.empty();
         }
 
         try {
-            return new IndexedReferenceNode(collectionName, indexPart, fieldPart, filters, sequential);
+            return Optional.of(new IndexedReferenceNode(collectionName, indexPart, fieldPart, filters, sequential));
         } catch (IllegalArgumentException e) {
             addReferenceFieldError(fieldName, "has invalid numeric index: " + indexPart);
-            return null;
+            return Optional.empty();
         }
     }
 
-    private AbstractReferenceNode parseDotNotationReference(String fieldName, String reference,
-                                                            List<FilterNode> filters, boolean sequential) {
+    private Optional<AbstractReferenceNode> parseDotNotationReference(String fieldName, String reference,
+                                                                      List<FilterNode> filters, boolean sequential) {
         String baseName = reference.substring(0, reference.indexOf("."));
         String field = reference.substring(reference.indexOf(".") + 1);
 
         if (context.isPickDeclared(baseName)) {
-            return new PickReferenceNode(baseName, field, filters, sequential);
+            return Optional.of(new PickReferenceNode(baseName, field, filters, sequential));
         }
 
         if (context.isCollectionDeclared(baseName)) {
-            return new SimpleReferenceNode(baseName, field, filters, sequential);
+            return Optional.of(new SimpleReferenceNode(baseName, field, filters, sequential));
         }
 
         addReferenceFieldError(fieldName, "references field within collection: " + reference + " without index");
-        return null;
+        return Optional.empty();
     }
 
-    private AbstractReferenceNode parseSimpleReference(String fieldName, String reference,
-                                                       List<FilterNode> filters, boolean sequential) {
+    private Optional<AbstractReferenceNode> parseSimpleReference(String fieldName, String reference,
+                                                                 List<FilterNode> filters, boolean sequential) {
         if (context.isPickDeclared(reference)) {
-            return new PickReferenceNode(reference, null, filters, sequential);
+            return Optional.of(new PickReferenceNode(reference, null, filters, sequential));
         }
 
         if (context.isCollectionDeclared(reference)) {
-            return new SimpleReferenceNode(reference, null, filters, sequential);
+            return Optional.of(new SimpleReferenceNode(reference, null, filters, sequential));
         }
 
         addReferenceFieldError(fieldName, "references undeclared collection or pick: " + reference);
-        return null;
+        return Optional.empty();
     }
 
     private void addReferenceFieldError(String fieldName, String message) {
