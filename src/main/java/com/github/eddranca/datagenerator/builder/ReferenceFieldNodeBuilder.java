@@ -136,11 +136,11 @@ class ReferenceFieldNodeBuilder {
         reference = reference.trim();
 
         if (reference.startsWith(THIS_PREFIX)) {
-            return parseSelfReference(fieldName, reference, filters, sequential).map(node -> node);
+            return parseSelfReference(fieldName, reference, filters, sequential);
         } else if (reference.contains("[*].")) {
-            return parseArrayFieldReference(fieldName, reference, filters, sequential).map(node -> node);
+            return parseArrayFieldReference(fieldName, reference, filters, sequential);
         } else if (reference.contains("[")) {
-            return parseIndexedReference(fieldName, reference, filters, sequential).map(node -> node);
+            return parseIndexedReference(fieldName, reference, filters, sequential);
         } else if (reference.contains(".")) {
             return parseDotNotationReference(fieldName, reference, filters, sequential);
         } else {
@@ -149,7 +149,7 @@ class ReferenceFieldNodeBuilder {
     }
 
 
-    private Optional<SelfReferenceNode> parseSelfReference(String fieldName, String reference,
+    private Optional<AbstractReferenceNode> parseSelfReference(String fieldName, String reference,
                                                            List<FilterNode> filters, boolean sequential) {
         String localField = reference.substring(THIS_PREFIX.length());
 
@@ -161,7 +161,7 @@ class ReferenceFieldNodeBuilder {
         return Optional.of(new SelfReferenceNode(localField, filters, sequential));
     }
 
-    private Optional<ArrayFieldReferenceNode> parseArrayFieldReference(String fieldName, String reference,
+    private Optional<AbstractReferenceNode> parseArrayFieldReference(String fieldName, String reference,
                                                                        List<FilterNode> filters, boolean sequential) {
         String collectionName = reference.substring(0, reference.indexOf("[*]."));
         String field = reference.substring(reference.indexOf("[*].") + 4);
@@ -179,7 +179,7 @@ class ReferenceFieldNodeBuilder {
         return Optional.of(new ArrayFieldReferenceNode(collectionName, field, filters, sequential));
     }
 
-    private Optional<IndexedReferenceNode> parseIndexedReference(String fieldName, String reference,
+    private Optional<AbstractReferenceNode> parseIndexedReference(String fieldName, String reference,
                                                                  List<FilterNode> filters, boolean sequential) {
         String collectionName = reference.substring(0, reference.indexOf("["));
         String indexPart = reference.substring(reference.indexOf("[") + 1, reference.indexOf("]"));

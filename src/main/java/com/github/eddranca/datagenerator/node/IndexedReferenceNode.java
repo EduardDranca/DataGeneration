@@ -27,11 +27,11 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
         this.index = index;
         this.fieldName = fieldName != null ? fieldName : "";
         this.isWildcardIndex = "*".equals(index);
-        
+
         // Determine if this is a range syntax using colon separator
         // Range patterns: "0:99", "10:", ":99", "-10:-1", ":"
         boolean looksLikeRange = index.contains(":");
-        
+
         this.isRangeIndex = !isWildcardIndex && looksLikeRange;
 
         if (isWildcardIndex) {
@@ -44,20 +44,20 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
             if (parts.length != 2) {
                 throw new IllegalArgumentException("Invalid range format: " + index);
             }
-            
+
             Integer start = null;
             Integer end = null;
-            
+
             // Parse start (empty string means open start)
             if (!parts[0].isEmpty()) {
                 start = Integer.parseInt(parts[0]);
             }
-            
+
             // Parse end (empty string means open end)
             if (!parts[1].isEmpty()) {
                 end = Integer.parseInt(parts[1]);
             }
-            
+
             this.rangeStartRaw = start;
             this.rangeEndRaw = end;
             this.numericIndex = null;
@@ -152,41 +152,21 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
     }
 
     private JsonNode resolveRangeIndex(AbstractGenerationContext<?> context, List<JsonNode> collection, List<JsonNode> filterValues) {
-        int size = collection.size();
-        if (size == 0) {
+        if (collection.isEmpty()) {
             return context.getMapper().nullNode();
         }
 
-        // Resolve start
-        Integer start;
-        if (rangeStartRaw == null) {
-            start = 0;
-        } else if (rangeStartRaw < 0) {
-            start = size + rangeStartRaw; // negative from end
-        } else {
-            start = rangeStartRaw;
-        }
+        int size = collection.size();
+        int start = normalizeIndex(rangeStartRaw, size, 0);
+        int end = normalizeIndex(rangeEndRaw, size, size - 1);
 
-        // Resolve end (inclusive)
-        Integer end;
-        if (rangeEndRaw == null) {
-            end = size - 1;
-        } else if (rangeEndRaw < 0) {
-            end = size + rangeEndRaw; // negative from end
-        } else {
-            end = rangeEndRaw;
+        // If start > end after normalization, return null (invalid range)
+        if (start > end) {
+            return context.getMapper().nullNode();
         }
-
-        // Clamp and validate
-        if (start < 0) start = 0;
-        if (end < 0) return context.getMapper().nullNode();
-        if (start > size - 1) return context.getMapper().nullNode();
-        if (end > size - 1) end = size - 1;
-        if (start > end) return context.getMapper().nullNode();
 
         List<JsonNode> sub = collection.subList(start, end + 1);
 
-        // Apply filtering within the range
         if (filterValues != null && !filterValues.isEmpty()) {
             sub = context.applyFiltering(sub, hasFieldName() ? fieldName : "", filterValues);
             if (sub.isEmpty()) {
@@ -194,12 +174,20 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
             }
         }
 
-        if (sub.isEmpty()) {
-            return context.getMapper().nullNode();
-        }
-
         JsonNode selected = context.getElementFromCollection(sub, this, sequential);
         return hasFieldName() ? extractNestedField(selected, fieldName) : selected;
+    }
+
+    /**
+     * Normalizes a range index to a valid collection index.
+     * Handles null (open range), negative indices (from end), and clamping to valid bounds.
+     */
+    private int normalizeIndex(Integer rawIndex, int size, int defaultValue) {
+        if (rawIndex == null) {
+            return defaultValue;
+        }
+        int resolved = rawIndex < 0 ? size + rawIndex : rawIndex;
+        return Math.max(0, Math.min(resolved, size - 1));
     }
 
     @Override
