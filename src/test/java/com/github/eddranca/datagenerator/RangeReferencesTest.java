@@ -2,16 +2,15 @@ package com.github.eddranca.datagenerator;
 
 import com.github.eddranca.datagenerator.exception.DslValidationException;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class RangeReferencesTest {
+class RangeReferencesTest extends ParameterizedGenerationTest {
 
-    @Test
+    @BothImplementationsTest
     @DisplayName("Should support fixed inclusive range [0:99]")
-    void shouldSupportFixedRange() throws Exception {
+    void shouldSupportFixedRange(boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                   "users": {
@@ -29,10 +28,7 @@ class RangeReferencesTest {
                 }
                 """;
 
-        Generation generation = DslDataGenerator.create()
-                .withSeed(123L)
-                .fromJsonString(dsl)
-                .generate();
+        Generation generation = generateFromDslWithSeed(dsl, 123L, memoryOptimized);
 
         generation.streamJsonNodes("betaFeatures").forEach(item -> {
             int id = item.get("userId").asInt();
@@ -40,9 +36,9 @@ class RangeReferencesTest {
         });
     }
 
-    @Test
+    @BothImplementationsTest
     @DisplayName("Should support open end range [10:]")
-    void shouldSupportOpenEndRange() throws Exception {
+    void shouldSupportOpenEndRange(boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                   "users": {
@@ -60,10 +56,7 @@ class RangeReferencesTest {
                 }
                 """;
 
-        Generation generation = DslDataGenerator.create()
-                .withSeed(456L)
-                .fromJsonString(dsl)
-                .generate();
+        Generation generation = generateFromDslWithSeed(dsl, 456L, memoryOptimized);
 
         generation.streamJsonNodes("orders").forEach(item -> {
             int id = item.get("userId").asInt();
@@ -71,9 +64,9 @@ class RangeReferencesTest {
         });
     }
 
-    @Test
+    @BothImplementationsTest
     @DisplayName("Should support open start range [:10]")
-    void shouldSupportOpenStartRange() throws Exception {
+    void shouldSupportOpenStartRange(boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                   "users": {
@@ -91,10 +84,7 @@ class RangeReferencesTest {
                 }
                 """;
 
-        Generation generation = DslDataGenerator.create()
-                .withSeed(789L)
-                .fromJsonString(dsl)
-                .generate();
+        Generation generation = generateFromDslWithSeed(dsl, 789L, memoryOptimized);
 
         generation.streamJsonNodes("samples").forEach(item -> {
             int id = item.get("userId").asInt();
@@ -102,9 +92,9 @@ class RangeReferencesTest {
         });
     }
 
-    @Test
+    @BothImplementationsTest
     @DisplayName("Should support negative range [-10:-1] as last 10 items")
-    void shouldSupportNegativeRange() throws Exception {
+    void shouldSupportNegativeRange(boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                   "users": {
@@ -122,10 +112,7 @@ class RangeReferencesTest {
                 }
                 """;
 
-        Generation generation = DslDataGenerator.create()
-                .withSeed(101112L)
-                .fromJsonString(dsl)
-                .generate();
+        Generation generation = generateFromDslWithSeed(dsl, 101112L, memoryOptimized);
 
         generation.streamJsonNodes("audience").forEach(item -> {
             int id = item.get("userId").asInt();
@@ -133,9 +120,9 @@ class RangeReferencesTest {
         });
     }
 
-    @Test
+    @BothImplementationsTest
     @DisplayName("Should reject multiple colons in range")
-    void shouldRejectMultipleColons() {
+    void shouldRejectMultipleColons(boolean memoryOptimized) {
         String dsl = """
                 {
                   "users": {"count": 5, "item": {"id": {"gen": "sequence", "start": 1}}},
@@ -143,18 +130,15 @@ class RangeReferencesTest {
                 }
                 """;
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-                .withSeed(1L)
-                .fromJsonString(dsl)
-                .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(dsl, 1L, memoryOptimized))
                 .isInstanceOf(DslValidationException.class)
                 .hasMessageContaining("invalid range format")
                 .hasMessageContaining("single colon");
     }
 
-    @Test
+    @BothImplementationsTest
     @DisplayName("Should reject non-numeric range start")
-    void shouldRejectNonNumericRangeStart() {
+    void shouldRejectNonNumericRangeStart(boolean memoryOptimized) {
         String dsl = """
                 {
                   "users": {"count": 5, "item": {"id": {"gen": "sequence", "start": 1}}},
@@ -162,18 +146,15 @@ class RangeReferencesTest {
                 }
                 """;
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-                .withSeed(1L)
-                .fromJsonString(dsl)
-                .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(dsl, 1L, memoryOptimized))
                 .isInstanceOf(DslValidationException.class)
                 .hasMessageContaining("invalid range start")
                 .hasMessageContaining("abc");
     }
 
-    @Test
+    @BothImplementationsTest
     @DisplayName("Should reject non-numeric range end")
-    void shouldRejectNonNumericRangeEnd() {
+    void shouldRejectNonNumericRangeEnd(boolean memoryOptimized) {
         String dsl = """
                 {
                   "users": {"count": 5, "item": {"id": {"gen": "sequence", "start": 1}}},
@@ -181,18 +162,15 @@ class RangeReferencesTest {
                 }
                 """;
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-                .withSeed(1L)
-                .fromJsonString(dsl)
-                .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(dsl, 1L, memoryOptimized))
                 .isInstanceOf(DslValidationException.class)
                 .hasMessageContaining("invalid range end")
                 .hasMessageContaining("xyz");
     }
 
-    @Test
+    @BothImplementationsTest
     @DisplayName("Should reject invalid non-numeric index")
-    void shouldRejectInvalidIndex() {
+    void shouldRejectInvalidIndex(boolean memoryOptimized) {
         String dsl = """
                 {
                   "users": {"count": 5, "item": {"id": {"gen": "sequence", "start": 1}}},
@@ -200,18 +178,15 @@ class RangeReferencesTest {
                 }
                 """;
 
-        assertThatThrownBy(() -> DslDataGenerator.create()
-                .withSeed(1L)
-                .fromJsonString(dsl)
-                .generate())
+        assertThatThrownBy(() -> generateFromDslWithSeed(dsl, 1L, memoryOptimized))
                 .isInstanceOf(DslValidationException.class)
                 .hasMessageContaining("invalid index format")
                 .hasMessageContaining("invalid");
     }
 
-    @Test
+    @BothImplementationsTest
     @DisplayName("Should accept full range with just colon")
-    void shouldAcceptFullRange() throws Exception {
+    void shouldAcceptFullRange(boolean memoryOptimized) throws Exception {
         String dsl = """
                 {
                   "users": {
@@ -229,10 +204,7 @@ class RangeReferencesTest {
                 }
                 """;
 
-        Generation generation = DslDataGenerator.create()
-                .withSeed(999L)
-                .fromJsonString(dsl)
-                .generate();
+        Generation generation = generateFromDslWithSeed(dsl, 999L, memoryOptimized);
 
         generation.streamJsonNodes("samples").forEach(item -> {
             int id = item.get("userId").asInt();
