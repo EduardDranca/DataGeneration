@@ -196,10 +196,30 @@ class ExamplesValidationTest {
     }
 
     @Test
-    @DisplayName("08-conditional-references should generate data with conditional filtering")
+    @DisplayName("08-range-references should generate data with range references")
+    void shouldValidateRangeReferencesStructure() throws IOException {
+        // Given
+        Path dslPath = Paths.get(EXAMPLES_DIR, "08-range-references", "dsl.json");
+        File dslFile = dslPath.toFile();
+
+        // When
+        Generation generation = DslDataGenerator.create()
+            .withSeed(12345L)
+            .fromFile(dslFile)
+            .generate();
+
+        // Then
+        assertThat(generation.getCollectionNames()).isNotEmpty();
+        assertThat(generation.getCollectionNames()).contains("employees");
+        assertThat(generation.getCollectionNames()).contains("regionalManagers");
+        assertThat(generation.getCollectionNames()).contains("performanceReviews");
+    }
+
+    @Test
+    @DisplayName("09-conditional-references should generate data with conditional filtering")
     void shouldValidateConditionalReferencesStructure() throws IOException {
         // Given
-        Path dslPath = Paths.get(EXAMPLES_DIR, "08-conditional-references", "dsl.json");
+        Path dslPath = Paths.get(EXAMPLES_DIR, "09-conditional-references", "dsl.json");
         File dslFile = dslPath.toFile();
 
         // When
