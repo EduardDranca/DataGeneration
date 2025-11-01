@@ -14,15 +14,15 @@ import java.util.Optional;
 public class ConditionalReferenceNode extends AbstractReferenceNode {
     private final String collectionName;
     private final String fieldName; // Optional field to extract from the referenced item
-    private final List<Condition> conditions; // Conditions to match
+    private final Condition condition; // Condition to match
 
     public ConditionalReferenceNode(String collectionName, String fieldName,
-                                   List<Condition> conditions,
+                                   Condition condition,
                                    List<FilterNode> filters, boolean sequential) {
         super(filters, sequential);
         this.collectionName = collectionName;
         this.fieldName = fieldName != null ? fieldName : "";
-        this.conditions = new ArrayList<>(conditions);
+        this.condition = condition;
     }
 
     public boolean hasFieldName() {
@@ -42,25 +42,14 @@ public class ConditionalReferenceNode extends AbstractReferenceNode {
         return fieldName;
     }
 
-    public List<Condition> getConditions() {
-        return new ArrayList<>(conditions);
+    public Condition getCondition() {
+        return condition;
     }
 
     @Override
     public String getReferenceString() {
-        StringBuilder sb = new StringBuilder(collectionName);
-        sb.append("[");
-        boolean first = true;
-        for (Condition condition : conditions) {
-            if (!first) sb.append(" AND ");
-            sb.append(condition.toConditionString());
-            first = false;
-        }
-        sb.append("]");
-        if (hasFieldName()) {
-            sb.append(".").append(fieldName);
-        }
-        return sb.toString();
+        String ref = collectionName + "[" + condition.toConditionString() + "]";
+        return hasFieldName() ? ref + "." + fieldName : ref;
     }
 
     @Override
@@ -91,31 +80,19 @@ public class ConditionalReferenceNode extends AbstractReferenceNode {
     }
 
     /**
-     * Filters the collection based on the conditions.
-     * Only items where all conditions match are included.
+     * Filters the collection based on the condition.
+     * Only items that match the condition are included.
      */
     private List<JsonNode> applyConditions(List<JsonNode> collection) {
         List<JsonNode> result = new ArrayList<>();
         
         for (JsonNode item : collection) {
-            if (matchesAllConditions(item)) {
+            if (condition.matches(item)) {
                 result.add(item);
             }
         }
         
         return result;
-    }
-
-    /**
-     * Checks if an item matches all conditions (AND logic).
-     */
-    private boolean matchesAllConditions(JsonNode item) {
-        for (Condition condition : conditions) {
-            if (!condition.matches(item)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     @Override

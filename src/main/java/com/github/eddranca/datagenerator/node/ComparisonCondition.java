@@ -1,6 +1,7 @@
 package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.eddranca.datagenerator.util.JsonNodeUtils;
 
 import java.util.Set;
 
@@ -33,7 +34,7 @@ public class ComparisonCondition implements Condition {
 
     @Override
     public boolean matches(JsonNode item) {
-        JsonNode actualNode = extractNestedField(item, fieldPath);
+        JsonNode actualNode = JsonNodeUtils.extractNestedField(item, fieldPath);
         
         return switch (operator) {
             case EQUALS -> matchesValue(actualNode, expectedValue);
@@ -61,22 +62,6 @@ public class ComparisonCondition implements Condition {
     @Override
     public Set<String> getReferencedPaths() {
         return Set.of(fieldPath);
-    }
-
-    private JsonNode extractNestedField(JsonNode node, String fieldPath) {
-        if (fieldPath == null || fieldPath.isEmpty()) {
-            return node;
-        }
-
-        String[] parts = fieldPath.split("\\.");
-        JsonNode current = node;
-        for (String part : parts) {
-            current = current.path(part);
-            if (current.isMissingNode()) {
-                return current;
-            }
-        }
-        return current;
     }
 
     private boolean matchesValue(JsonNode actualNode, Object expectedValue) {

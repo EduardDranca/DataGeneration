@@ -109,11 +109,9 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
         String collectionName = node.getCollectionNameString();
         String fieldName = node.getFieldName();
 
-        // Add all paths referenced by conditions
-        for (Condition condition : node.getConditions()) {
-            for (String path : condition.getReferencedPaths()) {
-                addReferencedPath(collectionName, path);
-            }
+        // Add all paths referenced by the condition
+        for (String path : node.getCondition().getReferencedPaths()) {
+            addReferencedPath(collectionName, path);
         }
 
         // Add the extracted field if specified

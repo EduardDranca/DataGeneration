@@ -3,8 +3,6 @@ package com.github.eddranca.datagenerator.builder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.node.AbstractReferenceNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
-import com.github.eddranca.datagenerator.node.ComparisonCondition;
-import com.github.eddranca.datagenerator.node.ComparisonOperator;
 import com.github.eddranca.datagenerator.node.Condition;
 import com.github.eddranca.datagenerator.node.ConditionalReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
@@ -378,151 +376,13 @@ class ReferenceFieldNodeBuilder {
             return Optional.empty();
         }
         
-        List<Condition> conditions = parseConditions(fieldName, conditionStr);
-        if (conditions == null || conditions.isEmpty()) {
+        ConditionParser parser = new ConditionParser(msg -> addReferenceFieldError(fieldName, msg));
+        Condition condition = parser.parse(conditionStr);
+        if (condition == null) {
             return Optional.empty();
         }
         
-        return Optional.of(new ConditionalReferenceNode(collectionName, fieldPart, conditions, filters, sequential));
-    }
-
-    private List<Condition> parseConditions(String fieldName, String conditionStr) {
-        // Check for uppercase logical operators (common mistake)
-        if (conditionStr.contains(" AND ") || conditionStr.contains(" OR ")) {
-            addReferenceFieldError(fieldName, "has invalid condition format: " + conditionStr + 
-                    " (logical operators must be lowercase: 'and', 'or')");
-            return null;
-        }
-        
-        // Check for logical operators (and/or)
-        if (conditionStr.contains(" and ")) {
-            return parseLogicalCondition(fieldName, conditionStr, " and ", true);
-        } else if (conditionStr.contains(" or ")) {
-            return parseLogicalCondition(fieldName, conditionStr, " or ", false);
-        }
-        
-        // Single comparison condition
-        Condition condition = parseComparisonCondition(fieldName, conditionStr);
-        if (condition == null) {
-            return null;
-        }
-        
-        List<Condition> conditions = new ArrayList<>();
-        conditions.add(condition);
-        return conditions;
-    }
-    
-    private List<Condition> parseLogicalCondition(String fieldName, String conditionStr, String operator, boolean isAnd) {
-        String[] parts = conditionStr.split(operator);
-        List<Condition> subConditions = new ArrayList<>();
-        
-        for (String part : parts) {
-            Condition condition = parseComparisonCondition(fieldName, part.trim());
-            if (condition == null) {
-                return null;
-            }
-            subConditions.add(condition);
-        }
-        
-        if (subConditions.size() < 2) {
-            addReferenceFieldError(fieldName, "logical operator requires at least 2 conditions");
-            return null;
-        }
-        
-        List<Condition> result = new ArrayList<>();
-        if (isAnd) {
-            result.add(new com.github.eddranca.datagenerator.node.AndCondition(subConditions));
-        } else {
-            result.add(new com.github.eddranca.datagenerator.node.OrCondition(subConditions));
-        }
-        return result;
-    }
-    
-    private Condition parseComparisonCondition(String fieldName, String conditionStr) {
-        ComparisonOperator operator;
-        String[] parts;
-        
-        // Try operators in order of length (longest first to avoid partial matches)
-        if (conditionStr.contains("<=")) {
-            operator = ComparisonOperator.LESS_THAN_OR_EQUAL;
-            parts = conditionStr.split("<=", 2);
-        } else if (conditionStr.contains(">=")) {
-            operator = ComparisonOperator.GREATER_THAN_OR_EQUAL;
-            parts = conditionStr.split(">=", 2);
-        } else if (conditionStr.contains("!=")) {
-            operator = ComparisonOperator.NOT_EQUALS;
-            parts = conditionStr.split("!=", 2);
-        } else if (conditionStr.contains("<")) {
-            operator = ComparisonOperator.LESS_THAN;
-            parts = conditionStr.split("<", 2);
-        } else if (conditionStr.contains(">")) {
-            operator = ComparisonOperator.GREATER_THAN;
-            parts = conditionStr.split(">", 2);
-        } else if (conditionStr.contains("=")) {
-            operator = ComparisonOperator.EQUALS;
-            parts = conditionStr.split("=", 2);
-        } else {
-            addReferenceFieldError(fieldName, "has invalid condition format: " + conditionStr);
-            return null;
-        }
-        
-        if (parts.length != 2) {
-            addReferenceFieldError(fieldName, "has invalid condition format: " + conditionStr);
-            return null;
-        }
-        
-        String field = parts[0].trim();
-        String valueStr = parts[1].trim();
-        
-        if (field.isEmpty()) {
-            addReferenceFieldError(fieldName, "has empty field name in condition");
-            return null;
-        }
-        
-        Object value = parseConditionValue(valueStr);
-        return new ComparisonCondition(field, operator, value);
-    }
-
-    /**
-     * Parses a condition value from string to appropriate type.
-     * Supports: 'string', true, false, null, numbers
-     */
-    private Object parseConditionValue(String valueStr) {
-        if (valueStr.isEmpty()) {
-            return "";
-        }
-        
-        // Check for quoted string (single quotes)
-        if (valueStr.startsWith("'") && valueStr.endsWith("'") && valueStr.length() >= 2) {
-            return valueStr.substring(1, valueStr.length() - 1);
-        }
-        
-        // Check for null
-        if ("null".equalsIgnoreCase(valueStr)) {
-            return null;
-        }
-        
-        // Check for boolean
-        if ("true".equalsIgnoreCase(valueStr)) {
-            return true;
-        }
-        if ("false".equalsIgnoreCase(valueStr)) {
-            return false;
-        }
-        
-        // Check for number
-        try {
-            if (valueStr.contains(".")) {
-                return Double.parseDouble(valueStr);
-            } else {
-                return Integer.parseInt(valueStr);
-            }
-        } catch (NumberFormatException e) {
-            // Not a number, treat as unquoted string (for backward compatibility)
-        }
-        
-        // Default: unquoted string value (for backward compatibility)
-        return valueStr;
+        return Optional.of(new ConditionalReferenceNode(collectionName, fieldPart, condition, filters, sequential));
     }
 
     private void addReferenceFieldError(String fieldName, String message) {
