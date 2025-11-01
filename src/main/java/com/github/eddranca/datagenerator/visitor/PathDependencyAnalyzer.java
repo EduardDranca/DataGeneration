@@ -4,6 +4,7 @@ import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
+import com.github.eddranca.datagenerator.node.ConditionalReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
 import com.github.eddranca.datagenerator.node.FilterNode;
@@ -75,7 +76,7 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitArrayFieldReference(ArrayFieldReferenceNode node) {
-        node.getCollectionName().ifPresent(collectionName -> 
+        node.getCollectionName().ifPresent(collectionName ->
             addReferencedPath(collectionName, node.getFieldName())
         );
         return null;
@@ -99,6 +100,26 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
     @Override
     public Void visitPickReference(PickReferenceNode node) {
         // Pick references don't reference collection fields directly
+        return null;
+    }
+
+    @Override
+    public Void visitConditionalReference(ConditionalReferenceNode node) {
+        String collectionName = node.getCollectionNameString();
+        String fieldName = node.getFieldName();
+
+        // Add all paths referenced by the condition
+        for (String path : node.getCondition().getReferencedPaths()) {
+            addReferencedPath(collectionName, path);
+        }
+
+        // Add the extracted field if specified
+        if (fieldName != null && !fieldName.isEmpty()) {
+            addReferencedPath(collectionName, fieldName);
+        } else {
+            // Entire object referenced
+            addReferencedPath(collectionName, "*");
+        }
         return null;
     }
 

@@ -3,6 +3,8 @@ package com.github.eddranca.datagenerator.builder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.node.AbstractReferenceNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
+import com.github.eddranca.datagenerator.node.Condition;
+import com.github.eddranca.datagenerator.node.ConditionalReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
@@ -139,6 +141,8 @@ class ReferenceFieldNodeBuilder {
             return parseSelfReference(fieldName, reference, filters, sequential);
         } else if (reference.contains("[*].")) {
             return parseArrayFieldReference(fieldName, reference, filters, sequential);
+        } else if (reference.contains("[") && containsConditionalOperator(reference)) {
+            return parseConditionalReference(fieldName, reference, filters, sequential);
         } else if (reference.contains("[")) {
             return parseIndexedReference(fieldName, reference, filters, sequential);
         } else if (reference.contains(".")) {
@@ -146,6 +150,26 @@ class ReferenceFieldNodeBuilder {
         } else {
             return parseSimpleReference(fieldName, reference, filters, sequential);
         }
+    }
+    
+    private boolean containsConditionalOperator(String reference) {
+        int bracketStart = reference.indexOf("[");
+        int bracketEnd = reference.indexOf("]");
+        if (bracketStart == -1) {
+            return false;
+        }
+        // If there's a bracket but no closing bracket, treat as conditional to get better error message
+        if (bracketEnd == -1) {
+            return true;
+        }
+        if (bracketEnd < bracketStart) {
+            return false;
+        }
+        String bracketContent = reference.substring(bracketStart + 1, bracketEnd);
+        // Check for comparison operators (not just numeric index or *)
+        return bracketContent.contains("=") || bracketContent.contains("<") || 
+               bracketContent.contains(">") || bracketContent.contains(" and ") || 
+               bracketContent.contains(" or ");
     }
 
 
@@ -317,6 +341,48 @@ class ReferenceFieldNodeBuilder {
         } catch (NumberFormatException e) {
             return Optional.of("has invalid index format '" + indexPart + "' - use a number (e.g., '0', '-1'), '*' for wildcard, or 'start:end' for range (e.g., '0:99')");
         }
+    }
+
+    private Optional<AbstractReferenceNode> parseConditionalReference(String fieldName, String reference,
+                                                               List<FilterNode> filters, boolean sequential) {
+        int bracketStart = reference.indexOf("[");
+        int bracketEnd = reference.indexOf("]");
+        
+        if (bracketEnd == -1) {
+            addReferenceFieldError(fieldName, "has unclosed bracket in conditional reference: " + reference);
+            return Optional.empty();
+        }
+        
+        if (bracketEnd < bracketStart) {
+            addReferenceFieldError(fieldName, "has invalid bracket order in conditional reference: " + reference);
+            return Optional.empty();
+        }
+        
+        String collectionName = reference.substring(0, bracketStart);
+        String conditionStr = reference.substring(bracketStart + 1, bracketEnd);
+        String fieldPart = "";
+        
+        if (conditionStr.trim().isEmpty()) {
+            addReferenceFieldError(fieldName, "has empty condition in brackets: " + reference);
+            return Optional.empty();
+        }
+        
+        if (reference.length() > bracketEnd + 1 && reference.charAt(bracketEnd + 1) == '.') {
+            fieldPart = reference.substring(bracketEnd + 2);
+        }
+        
+        if (!context.isCollectionDeclared(collectionName)) {
+            addReferenceFieldError(fieldName, "references undeclared collection: " + collectionName);
+            return Optional.empty();
+        }
+        
+        ConditionParser parser = new ConditionParser(msg -> addReferenceFieldError(fieldName, msg));
+        Condition condition = parser.parse(conditionStr);
+        if (condition == null) {
+            return Optional.empty();
+        }
+        
+        return Optional.of(new ConditionalReferenceNode(collectionName, fieldPart, condition, filters, sequential));
     }
 
     private void addReferenceFieldError(String fieldName, String message) {

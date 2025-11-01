@@ -5,6 +5,7 @@ import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
+import com.github.eddranca.datagenerator.node.ConditionalReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
 import com.github.eddranca.datagenerator.node.FilterNode;
@@ -130,6 +131,16 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
     @Override
     public Void visitPickReference(PickReferenceNode node) {
         // Pick references don't need additional validation beyond what was done during parsing
+        // Visit filters if present
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitConditionalReference(ConditionalReferenceNode node) {
+        // Conditional references don't need additional validation beyond what was done during parsing
         // Visit filters if present
         for (FilterNode filter : node.getFilters()) {
             filter.accept(this);

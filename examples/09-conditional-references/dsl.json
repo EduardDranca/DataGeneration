@@ -1,0 +1,84 @@
+{
+  "users": {
+    "count": 20,
+    "item": {
+      "id": {"gen": "sequence", "start": 1},
+      "firstName": {"gen": "name.firstName"},
+      "lastName": {"gen": "name.lastName"},
+      "email": {"gen": "internet.emailAddress"},
+      "age": {"gen": "number", "min": 18, "max": 70},
+      "status": {"gen": "choice", "options": ["active", "inactive", "banned"], "weights": [70, 20, 10]},
+      "accountBalance": {"gen": "float", "min": 0, "max": 10000, "decimals": 2},
+      "isPremium": {"gen": "boolean", "probability": 0.3}
+    }
+  },
+  "products": {
+    "count": 30,
+    "item": {
+      "id": {"gen": "sequence", "start": 100},
+      "name": {"gen": "lorem.words", "words": 3},
+      "category": {"gen": "choice", "options": ["electronics", "books", "clothing", "home", "sports"]},
+      "price": {"gen": "float", "min": 9.99, "max": 999.99, "decimals": 2},
+      "stock": {"gen": "number", "min": 0, "max": 100},
+      "featured": {"gen": "boolean", "probability": 0.2},
+      "rating": {"gen": "float", "min": 1.0, "max": 5.0, "decimals": 1}
+    }
+  },
+  "orders": {
+    "count": 50,
+    "item": {
+      "orderId": {"gen": "sequence", "start": 1000},
+      "userId": {"ref": "users[status='active'].id"},
+      "productId": {"ref": "products[stock>0].id"},
+      "quantity": {"gen": "number", "min": 1, "max": 5},
+      "orderDate": {"gen": "date", "from": "2024-01-01", "to": "2024-12-31"}
+    }
+  },
+  "premiumOrders": {
+    "count": 15,
+    "item": {
+      "orderId": {"gen": "sequence", "start": 2000},
+      "userId": {"ref": "users[isPremium=true and status='active'].id"},
+      "productId": {"ref": "products[price>100 and stock>5].id"},
+      "quantity": {"gen": "number", "min": 1, "max": 3},
+      "orderDate": {"gen": "date", "from": "2024-01-01", "to": "2024-12-31"}
+    }
+  },
+  "promotions": {
+    "count": 10,
+    "item": {
+      "promoId": {"gen": "sequence", "start": 5000},
+      "productId": {"ref": "products[featured=true or rating>=4.5].id"},
+      "discountPercent": {"gen": "number", "min": 10, "max": 50},
+      "startDate": {"gen": "date", "from": "2024-01-01", "to": "2024-06-30"},
+      "endDate": {"gen": "date", "from": "2024-07-01", "to": "2024-12-31"}
+    }
+  },
+  "lowStockAlerts": {
+    "count": 8,
+    "item": {
+      "alertId": {"gen": "sequence", "start": 3000},
+      "productId": {"ref": "products[stock<=10].id"},
+      "alertDate": {"gen": "date", "from": "2024-01-01", "to": "2024-12-31"},
+      "severity": {"gen": "choice", "options": ["low", "medium", "high"]}
+    }
+  },
+  "eligibleForRefund": {
+    "count": 5,
+    "item": {
+      "refundId": {"gen": "sequence", "start": 4000},
+      "userId": {"ref": "users[accountBalance>100 and status='active'].id"},
+      "orderId": {"ref": "orders[*].orderId"},
+      "amount": {"gen": "float", "min": 10, "max": 500, "decimals": 2}
+    }
+  },
+  "ageRestrictedOrders": {
+    "count": 10,
+    "item": {
+      "orderId": {"gen": "sequence", "start": 6000},
+      "userId": {"ref": "users[age>=21 and status='active'].id"},
+      "productId": {"ref": "products[category='electronics' and price>200].id"},
+      "verificationDate": {"gen": "date", "from": "2024-01-01", "to": "2024-12-31"}
+    }
+  }
+}

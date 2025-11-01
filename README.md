@@ -140,6 +140,38 @@ Filter generated values based on other data:
 }
 ```
 
+### **Conditional References**
+Filter collections based on field conditions before referencing:
+
+```json
+{
+    "users": {
+        "count": 10,
+        "item": {
+            "id": {"gen": "sequence", "start": 1},
+            "age": {"gen": "number", "min": 18, "max": 70},
+            "status": {"gen": "choice", "options": ["active", "inactive", "banned"]}
+        }
+    },
+    "orders": {
+        "count": 20,
+        "item": {
+            "userId": {"ref": "users[status='active' and age>=21].id"}
+        }
+    }
+}
+```
+
+**Supported operators:**
+- Comparison: `=`, `!=`, `<`, `<=`, `>`, `>=`
+- Logical: `and`, `or`
+
+**Example use cases:**
+- Only reference active users: `users[status='active'].id`
+- Premium products: `products[price>100].id`
+- Eligible employees: `employees[salary>80000 and yearsOfService>=5].id`
+- Featured or discounted: `products[featured=true or discount>0].id`
+
 ### **Arrays & Collections**
 Generate arrays with size constraints:
 
