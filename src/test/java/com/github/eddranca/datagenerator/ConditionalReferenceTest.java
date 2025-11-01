@@ -286,7 +286,7 @@ class ConditionalReferenceTest extends ParameterizedGenerationTest {
 
         // Verify all eligible users match criteria
         List<Integer> selectedIds = new ArrayList<>();
-        result.get("eligibleUsers").forEach(record -> selectedIds.add(record.get("userId").asInt()));
+        result.get("eligibleUsers").forEach(user -> selectedIds.add(user.get("userId").asInt()));
 
         assertThat(selectedIds).allMatch(eligibleIds::contains);
     }
@@ -368,9 +368,10 @@ class ConditionalReferenceTest extends ParameterizedGenerationTest {
             }
         });
 
+        // TODO: don't use for each if possible, use assertj
         // Verify all bonus records reference eligible employees
         List<Integer> bonusEmployeeIds = new ArrayList<>();
-        result.get("bonusEligible").forEach(record -> bonusEmployeeIds.add(record.get("employeeId").asInt()));
+        result.get("bonusEligible").forEach(user -> bonusEmployeeIds.add(user.get("employeeId").asInt()));
 
         assertThat(bonusEmployeeIds).allMatch(eligibleIds::contains);
     }

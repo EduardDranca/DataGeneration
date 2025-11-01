@@ -21,15 +21,6 @@ public enum ComparisonOperator {
         return symbol;
     }
 
-    public static ComparisonOperator fromSymbol(String symbol) {
-        for (ComparisonOperator op : values()) {
-            if (op.symbol.equals(symbol)) {
-                return op;
-            }
-        }
-        throw new IllegalArgumentException("Unknown comparison operator: " + symbol);
-    }
-
     @Override
     public String toString() {
         return symbol;
