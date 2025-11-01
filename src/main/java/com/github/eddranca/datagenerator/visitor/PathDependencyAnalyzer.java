@@ -4,7 +4,6 @@ import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
-import com.github.eddranca.datagenerator.node.Condition;
 import com.github.eddranca.datagenerator.node.ConditionalReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
@@ -77,7 +76,7 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitArrayFieldReference(ArrayFieldReferenceNode node) {
-        node.getCollectionName().ifPresent(collectionName -> 
+        node.getCollectionName().ifPresent(collectionName ->
             addReferencedPath(collectionName, node.getFieldName())
         );
         return null;
