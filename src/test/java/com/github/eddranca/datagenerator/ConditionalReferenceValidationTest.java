@@ -69,7 +69,7 @@ class ConditionalReferenceValidationTest {
                 .fromJsonString(dsl)
                 .generate())
                 .isInstanceOf(DslValidationException.class)
-                .hasMessageContaining("invalid");
+                .hasMessageContaining("empty index");
     }
 
     @Test
