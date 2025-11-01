@@ -37,7 +37,6 @@ import java.util.Set;
  * at any depth in the object hierarchy.
  */
 public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
-    // Clean implementation using proper node getters - no regex parsing needed!
     private final Map<String, Set<String>> referencedPaths = new HashMap<>();
 
     @Override
@@ -64,35 +63,37 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitSimpleReference(SimpleReferenceNode node) {
-        String collectionName = node.getCollectionName();
-        String fieldName = node.getFieldName();
-
-        if (fieldName != null && !fieldName.isEmpty()) {
-            addReferencedPath(collectionName, fieldName);
-        } else {
-            // Entire object referenced
-            addReferencedPath(collectionName, "*");
-        }
+        node.getCollectionName().ifPresent(collectionName -> {
+            String fieldName = node.getFieldName();
+            if (fieldName != null && !fieldName.isEmpty()) {
+                addReferencedPath(collectionName, fieldName);
+            } else {
+                // Entire object referenced
+                addReferencedPath(collectionName, "*");
+            }
+        });
         return null;
     }
 
     @Override
     public Void visitArrayFieldReference(ArrayFieldReferenceNode node) {
-        addReferencedPath(node.getCollectionName(), node.getFieldName());
+        node.getCollectionName().ifPresent(collectionName -> 
+            addReferencedPath(collectionName, node.getFieldName())
+        );
         return null;
     }
 
     @Override
     public Void visitIndexedReference(IndexedReferenceNode node) {
-        String collectionName = node.getCollectionName();
-        String fieldName = node.getFieldName();
-
-        if (fieldName != null && !fieldName.isEmpty()) {
-            addReferencedPath(collectionName, fieldName);
-        } else {
-            // Entire object referenced
-            addReferencedPath(collectionName, "*");
-        }
+        node.getCollectionName().ifPresent(collectionName -> {
+            String fieldName = node.getFieldName();
+            if (fieldName != null && !fieldName.isEmpty()) {
+                addReferencedPath(collectionName, fieldName);
+            } else {
+                // Entire object referenced
+                addReferencedPath(collectionName, "*");
+            }
+        });
         return null;
     }
 
@@ -105,7 +106,7 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitConditionalReference(ConditionalReferenceNode node) {
-        String collectionName = node.getCollectionName();
+        String collectionName = node.getCollectionNameString();
         String fieldName = node.getFieldName();
 
         // Add all paths referenced by conditions
@@ -141,17 +142,14 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitReferenceSpreadField(ReferenceSpreadFieldNode node) {
-        // Get collection name from the reference node using proper getters
-        String collectionName = getCollectionNameFromReferenceNode(node.getReferenceNode());
-
-        if (collectionName != null) {
+        node.getReferenceNode().getCollectionName().ifPresent(collectionName -> {
             // For spread fields, we need specific fields
             for (String field : node.getFields()) {
                 // Handle field mappings like "name:firstName" -> we want "firstName"
                 String actualField = field.contains(":") ? field.split(":", 2)[1] : field;
                 addReferencedPath(collectionName, actualField);
             }
-        }
+        });
         return null;
     }
 
@@ -190,21 +188,6 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
     @Override
     public Void visitFilter(FilterNode node) {
         node.getFilterExpression().accept(this);
-        return null;
-    }
-
-    /**
-     * Helper method to get collection name from any reference node type.
-     * Now uses proper getters instead of string parsing - no more regex needed!
-     */
-    private String getCollectionNameFromReferenceNode(Object referenceNode) {
-        if (referenceNode instanceof SimpleReferenceNode simpleReferenceNode) {
-            return simpleReferenceNode.getCollectionName();
-        } else if (referenceNode instanceof ArrayFieldReferenceNode arrayFieldReferenceNode) {
-            return arrayFieldReferenceNode.getCollectionName();
-        } else if (referenceNode instanceof IndexedReferenceNode indexedReferenceNode) {
-            return indexedReferenceNode.getCollectionName();
-        }
         return null;
     }
 

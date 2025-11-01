@@ -5,6 +5,7 @@ import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Reference node that filters collection items based on conditions.
@@ -28,7 +29,12 @@ public class ConditionalReferenceNode extends AbstractReferenceNode {
         return !fieldName.isEmpty();
     }
 
-    public String getCollectionName() {
+    @Override
+    public Optional<String> getCollectionName() {
+        return Optional.of(collectionName);
+    }
+
+    public String getCollectionNameString() {
         return collectionName;
     }
 
@@ -60,7 +66,7 @@ public class ConditionalReferenceNode extends AbstractReferenceNode {
     @Override
     public JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues) {
         // Get the collection
-        List<JsonNode> collection = context.getCollection(collectionName);
+        List<JsonNode> collection = context.getCollection(getCollectionNameString());
 
         // Apply conditional filtering
         List<JsonNode> filteredCollection = applyConditions(collection);

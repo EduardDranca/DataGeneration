@@ -312,6 +312,30 @@ DslDataGenerator.create()
 }
 ```
 
+### Range References
+Reference a subset of items by index range:
+```json
+{
+    "employees": {
+        "count": 20,
+        "item": {"id": {"gen": "sequence", "start": 1001}}
+    },
+    "regionalManagers": {
+        "count": 4,
+        "item": {
+            "managedEmployeeId": {"ref": "employees[0:4].id"}
+        }
+    }
+}
+```
+
+**Range syntax:**
+- `[0:9]` - Indices 0-9 (10 items)
+- `[10:]` - From index 10 to end
+- `[:10]` - From start to index 10
+- `[:]` - All items (equivalent to `[*]`)
+- `[-10:-1]` - Last 10 items
+
 ## Examples
 
 ### E-commerce Dataset

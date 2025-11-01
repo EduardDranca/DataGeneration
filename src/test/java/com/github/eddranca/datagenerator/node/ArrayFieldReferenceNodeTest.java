@@ -31,7 +31,7 @@ class ArrayFieldReferenceNodeTest {
     void testArrayFieldReferenceBasicConstructor() {
         ArrayFieldReferenceNode node = new ArrayFieldReferenceNode("users", "name", true);
 
-        assertThat(node.getCollectionName()).isEqualTo("users");
+        assertThat(node.getCollectionName()).contains("users");
         assertThat(node.getFieldName()).isEqualTo("name");
         assertThat(node.isSequential()).isTrue();
         assertThat(node.getReferenceString()).isEqualTo("users[*].name");
@@ -45,7 +45,7 @@ class ArrayFieldReferenceNodeTest {
 
         ArrayFieldReferenceNode node = new ArrayFieldReferenceNode("products", "price", filters, false);
 
-        assertThat(node.getCollectionName()).isEqualTo("products");
+        assertThat(node.getCollectionName()).contains("products");
         assertThat(node.getFieldName()).isEqualTo("price");
         assertThat(node.isSequential()).isFalse();
         assertThat(node.getReferenceString()).isEqualTo("products[*].price");
