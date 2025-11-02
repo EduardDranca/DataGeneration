@@ -73,8 +73,8 @@ class ConditionalReferenceValidationTest {
     }
 
     @Test
-    @DisplayName("Should reject conditional reference with invalid operator")
-    void shouldRejectInvalidOperator() {
+    @DisplayName("Should reject conditional reference with non-existent field in condition")
+    void shouldRejectNonExistentFieldInCondition() {
         String dsl = """
                 {
                   "users": {
@@ -87,7 +87,7 @@ class ConditionalReferenceValidationTest {
                   "orders": {
                     "count": 10,
                     "item": {
-                      "userId": {"ref": "users[status~'active'].id"}
+                      "userId": {"ref": "users[nonExistentField='value'].id"}
                     }
                   }
                 }
@@ -98,7 +98,100 @@ class ConditionalReferenceValidationTest {
                 .fromJsonString(dsl)
                 .generate())
                 .isInstanceOf(DslValidationException.class)
-                .hasMessageContaining("invalid index format");
+                .hasMessageContaining("non-existent field")
+                .hasMessageContaining("nonExistentField");
+    }
+
+    @Test
+    @DisplayName("Should reject conditional reference with non-existent nested field in condition")
+    void shouldRejectNonExistentNestedFieldInCondition() {
+        String dsl = """
+                {
+                  "users": {
+                    "count": 5,
+                    "item": {
+                      "id": {"gen": "sequence", "start": 1},
+                      "profile": {
+                        "name": {"gen": "name.fullName"}
+                      }
+                    }
+                  },
+                  "orders": {
+                    "count": 10,
+                    "item": {
+                      "userId": {"ref": "users[profile.age>18].id"}
+                    }
+                  }
+                }
+                """;
+
+        assertThatThrownBy(() -> DslDataGenerator.create()
+                .withSeed(123L)
+                .fromJsonString(dsl)
+                .generate())
+                .isInstanceOf(DslValidationException.class)
+                .hasMessageContaining("non-existent field")
+                .hasMessageContaining("profile.age");
+    }
+
+    @Test
+    @DisplayName("Should reject conditional reference extracting non-existent field")
+    void shouldRejectNonExistentExtractedField() {
+        String dsl = """
+                {
+                  "users": {
+                    "count": 5,
+                    "item": {
+                      "id": {"gen": "sequence", "start": 1},
+                      "status": {"gen": "choice", "options": ["active", "inactive"]}
+                    }
+                  },
+                  "orders": {
+                    "count": 10,
+                    "item": {
+                      "userName": {"ref": "users[status='active'].name"}
+                    }
+                  }
+                }
+                """;
+
+        assertThatThrownBy(() -> DslDataGenerator.create()
+                .withSeed(123L)
+                .fromJsonString(dsl)
+                .generate())
+                .isInstanceOf(DslValidationException.class)
+                .hasMessageContaining("non-existent field")
+                .hasMessageContaining("name");
+    }
+
+    @Test
+    @DisplayName("Should accept conditional reference with valid nested field in condition")
+    void shouldAcceptValidNestedFieldInCondition() throws Exception {
+        String dsl = """
+                {
+                  "users": {
+                    "count": 5,
+                    "item": {
+                      "id": {"gen": "sequence", "start": 1},
+                      "profile": {
+                        "age": {"gen": "number", "min": 18, "max": 65}
+                      }
+                    }
+                  },
+                  "orders": {
+                    "count": 10,
+                    "item": {
+                      "userId": {"ref": "users[profile.age>21].id"}
+                    }
+                  }
+                }
+                """;
+
+        // Should not throw
+        assertThat(DslDataGenerator.create()
+                .withSeed(123L)
+                .fromJsonString(dsl)
+                .generate()).isNotNull();
     }
 
     @Test
