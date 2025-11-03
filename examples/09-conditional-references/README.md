@@ -180,5 +180,4 @@ See [dsl.json](dsl.json) for the complete DSL definition with all conditional re
 ## Documentation
 
 For complete documentation on conditional references, see:
-- [DSL Reference Guide](../../.kiro/steering/dsl-reference.md#conditional-references)
 - [Main README](../../README.md#conditional-references)
