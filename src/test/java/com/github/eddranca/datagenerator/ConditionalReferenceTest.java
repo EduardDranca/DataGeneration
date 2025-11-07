@@ -3,8 +3,8 @@ package com.github.eddranca.datagenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,18 +44,15 @@ class ConditionalReferenceTest extends ParameterizedGenerationTest {
         assertThat(result.get("reviews")).hasSize(10);
 
         // Collect Electronics product IDs
-        List<Integer> electronicsIds = new ArrayList<>();
-        result.get("products").forEach(product -> {
-            if ("Electronics".equals(product.get("category").asText())) {
-                electronicsIds.add(product.get("id").asInt());
-            }
-        });
+        List<Integer> electronicsIds = StreamSupport.stream(result.get("products").spliterator(), false)
+                .filter(product -> "Electronics".equals(product.get("category").asText()))
+                .map(product -> product.get("id").asInt())
+                .toList();
 
         // Verify all reviews reference Electronics products only
-        List<Integer> reviewProductIds = new ArrayList<>();
-        result.get("reviews").forEach(review -> reviewProductIds.add(review.get("productId").asInt()));
-
-        assertThat(reviewProductIds).allMatch(electronicsIds::contains);
+        assertThat(result.get("reviews"))
+                .extracting(review -> review.get("productId").asInt())
+                .allMatch(electronicsIds::contains);
     }
 
     @BothImplementationsTest
@@ -83,18 +80,15 @@ class ConditionalReferenceTest extends ParameterizedGenerationTest {
         JsonNode result = createLegacyJsonNode(generation);
 
         // Collect admin names
-        List<String> adminNames = new ArrayList<>();
-        result.get("users").forEach(user -> {
-            if ("admin".equals(user.get("role").asText())) {
-                adminNames.add(user.get("name").asText());
-            }
-        });
+        List<String> adminNames = StreamSupport.stream(result.get("users").spliterator(), false)
+                .filter(user -> "admin".equals(user.get("role").asText()))
+                .map(user -> user.get("name").asText())
+                .toList();
 
         // Verify all audit logs reference admin names only
-        List<String> logAdminNames = new ArrayList<>();
-        result.get("auditLogs").forEach(log -> logAdminNames.add(log.get("adminName").asText()));
-
-        assertThat(logAdminNames).allMatch(adminNames::contains);
+        assertThat(result.get("auditLogs"))
+                .extracting(log -> log.get("adminName").asText())
+                .allMatch(adminNames::contains);
     }
 
     @BothImplementationsTest
@@ -122,19 +116,15 @@ class ConditionalReferenceTest extends ParameterizedGenerationTest {
         JsonNode result = createLegacyJsonNode(generation);
 
         // Collect active user IDs
-        List<Integer> activeUserIds = new ArrayList<>();
-        result.get("users").forEach(user -> {
-            if (user.get("isActive").asBoolean()) {
-                activeUserIds.add(user.get("id").asInt());
-            }
-        });
+        List<Integer> activeUserIds = StreamSupport.stream(result.get("users").spliterator(), false)
+                .filter(user -> user.get("isActive").asBoolean())
+                .map(user -> user.get("id").asInt())
+                .toList();
 
         // Verify all notifications reference active users only
-        List<Integer> notificationUserIds = new ArrayList<>();
-        result.get("notifications")
-                .forEach(notification -> notificationUserIds.add(notification.get("userId").asInt()));
-
-        assertThat(notificationUserIds).allMatch(activeUserIds::contains);
+        assertThat(result.get("notifications"))
+                .extracting(notification -> notification.get("userId").asInt())
+                .allMatch(activeUserIds::contains);
     }
 
     @BothImplementationsTest
@@ -162,18 +152,15 @@ class ConditionalReferenceTest extends ParameterizedGenerationTest {
         JsonNode result = createLegacyJsonNode(generation);
 
         // Collect all non-guest user IDs
-        List<Integer> nonGuestIds = new ArrayList<>();
-        result.get("users").forEach(user -> {
-            if (!"guest".equals(user.get("role").asText())) {
-                nonGuestIds.add(user.get("id").asInt());
-            }
-        });
+        List<Integer> nonGuestIds = StreamSupport.stream(result.get("users").spliterator(), false)
+                .filter(user -> !"guest".equals(user.get("role").asText()))
+                .map(user -> user.get("id").asInt())
+                .toList();
 
         // Verify all tasks are assigned to non-guest users
-        List<Integer> taskUserIds = new ArrayList<>();
-        result.get("tasks").forEach(task -> taskUserIds.add(task.get("assignedTo").asInt()));
-
-        assertThat(taskUserIds).allMatch(nonGuestIds::contains);
+        assertThat(result.get("tasks"))
+                .extracting(task -> task.get("assignedTo").asInt())
+                .allMatch(nonGuestIds::contains);
     }
 
     @BothImplementationsTest
@@ -200,18 +187,15 @@ class ConditionalReferenceTest extends ParameterizedGenerationTest {
         JsonNode result = createLegacyJsonNode(generation);
 
         // Collect product IDs with price > 50
-        List<Integer> expensiveProductIds = new ArrayList<>();
-        result.get("products").forEach(product -> {
-            if (product.get("price").asInt() > 50) {
-                expensiveProductIds.add(product.get("id").asInt());
-            }
-        });
+        List<Integer> expensiveProductIds = StreamSupport.stream(result.get("products").spliterator(), false)
+                .filter(product -> product.get("price").asInt() > 50)
+                .map(product -> product.get("id").asInt())
+                .toList();
 
         // Verify all premium orders reference expensive products
-        List<Integer> orderProductIds = new ArrayList<>();
-        result.get("premiumOrders").forEach(order -> orderProductIds.add(order.get("productId").asInt()));
-
-        assertThat(orderProductIds).allMatch(expensiveProductIds::contains);
+        assertThat(result.get("premiumOrders"))
+                .extracting(order -> order.get("productId").asInt())
+                .allMatch(expensiveProductIds::contains);
     }
 
     @BothImplementationsTest
@@ -238,18 +222,15 @@ class ConditionalReferenceTest extends ParameterizedGenerationTest {
         JsonNode result = createLegacyJsonNode(generation);
 
         // Collect item IDs with quantity <= 5
-        List<Integer> lowStockIds = new ArrayList<>();
-        result.get("items").forEach(item -> {
-            if (item.get("quantity").asInt() <= 5) {
-                lowStockIds.add(item.get("id").asInt());
-            }
-        });
+        List<Integer> lowStockIds = StreamSupport.stream(result.get("items").spliterator(), false)
+                .filter(item -> item.get("quantity").asInt() <= 5)
+                .map(item -> item.get("id").asInt())
+                .toList();
 
         // Verify all alerts reference low stock items
-        List<Integer> alertItemIds = new ArrayList<>();
-        result.get("lowStockAlerts").forEach(alert -> alertItemIds.add(alert.get("itemId").asInt()));
-
-        assertThat(alertItemIds).allMatch(lowStockIds::contains);
+        assertThat(result.get("lowStockAlerts"))
+                .extracting(alert -> alert.get("itemId").asInt())
+                .allMatch(lowStockIds::contains);
     }
 
     @BothImplementationsTest
@@ -277,18 +258,15 @@ class ConditionalReferenceTest extends ParameterizedGenerationTest {
         JsonNode result = createLegacyJsonNode(generation);
 
         // Collect eligible user IDs (age >= 21 AND status = active)
-        List<Integer> eligibleIds = new ArrayList<>();
-        result.get("users").forEach(user -> {
-            if (user.get("age").asInt() >= 21 && "active".equals(user.get("status").asText())) {
-                eligibleIds.add(user.get("id").asInt());
-            }
-        });
+        List<Integer> eligibleIds = StreamSupport.stream(result.get("users").spliterator(), false)
+                .filter(user -> user.get("age").asInt() >= 21 && "active".equals(user.get("status").asText()))
+                .map(user -> user.get("id").asInt())
+                .toList();
 
         // Verify all eligible users match criteria
-        List<Integer> selectedIds = new ArrayList<>();
-        result.get("eligibleUsers").forEach(user -> selectedIds.add(user.get("userId").asInt()));
-
-        assertThat(selectedIds).allMatch(eligibleIds::contains);
+        assertThat(result.get("eligibleUsers"))
+                .extracting(user -> user.get("userId").asInt())
+                .allMatch(eligibleIds::contains);
     }
 
     @BothImplementationsTest
@@ -316,20 +294,19 @@ class ConditionalReferenceTest extends ParameterizedGenerationTest {
         JsonNode result = createLegacyJsonNode(generation);
 
         // Collect product IDs that match criteria (electronics OR featured)
-        List<Integer> matchingIds = new ArrayList<>();
-        result.get("products").forEach(product -> {
-            boolean isElectronics = "electronics".equals(product.get("category").asText());
-            boolean isFeatured = product.get("featured").asBoolean();
-            if (isElectronics || isFeatured) {
-                matchingIds.add(product.get("id").asInt());
-            }
-        });
+        List<Integer> matchingIds = StreamSupport.stream(result.get("products").spliterator(), false)
+                .filter(product -> {
+                    boolean isElectronics = "electronics".equals(product.get("category").asText());
+                    boolean isFeatured = product.get("featured").asBoolean();
+                    return isElectronics || isFeatured;
+                })
+                .map(product -> product.get("id").asInt())
+                .toList();
 
         // Verify all promotions reference matching products
-        List<Integer> promoProductIds = new ArrayList<>();
-        result.get("promotions").forEach(promo -> promoProductIds.add(promo.get("productId").asInt()));
-
-        assertThat(promoProductIds).allMatch(matchingIds::contains);
+        assertThat(result.get("promotions"))
+                .extracting(promo -> promo.get("productId").asInt())
+                .allMatch(matchingIds::contains);
     }
 
     @BothImplementationsTest
@@ -358,21 +335,19 @@ class ConditionalReferenceTest extends ParameterizedGenerationTest {
         JsonNode result = createLegacyJsonNode(generation);
 
         // Collect eligible employee IDs
-        List<Integer> eligibleIds = new ArrayList<>();
-        result.get("employees").forEach(employee -> {
-            int salary = employee.get("salary").asInt();
-            int years = employee.get("yearsOfService").asInt();
-            String dept = employee.get("department").asText();
-            if (salary > 80000 && years >= 5 && "engineering".equals(dept)) {
-                eligibleIds.add(employee.get("id").asInt());
-            }
-        });
+        List<Integer> eligibleIds = StreamSupport.stream(result.get("employees").spliterator(), false)
+                .filter(employee -> {
+                    int salary = employee.get("salary").asInt();
+                    int years = employee.get("yearsOfService").asInt();
+                    String dept = employee.get("department").asText();
+                    return salary > 80000 && years >= 5 && "engineering".equals(dept);
+                })
+                .map(employee -> employee.get("id").asInt())
+                .toList();
 
-        // TODO: don't use for each if possible, use assertj
         // Verify all bonus records reference eligible employees
-        List<Integer> bonusEmployeeIds = new ArrayList<>();
-        result.get("bonusEligible").forEach(user -> bonusEmployeeIds.add(user.get("employeeId").asInt()));
-
-        assertThat(bonusEmployeeIds).allMatch(eligibleIds::contains);
+        assertThat(result.get("bonusEligible"))
+                .extracting(user -> user.get("employeeId").asInt())
+                .allMatch(eligibleIds::contains);
     }
 }
