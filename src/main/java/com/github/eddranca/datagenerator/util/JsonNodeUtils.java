@@ -26,10 +26,10 @@ public class JsonNodeUtils {
         String[] parts = fieldPath.split("\\.");
         JsonNode current = node;
         for (String part : parts) {
-            current = current.path(part);
-            if (current.isMissingNode()) {
+            if (current.isMissingNode() || current.isNull()) {
                 return current;
             }
+            current = current.path(part);
         }
         return current;
     }

@@ -100,4 +100,15 @@ class JsonNodeUtilsTest {
         
         assertThat(result.asText()).isEqualTo("Item1");
     }
+
+    @Test
+    @DisplayName("Should handle null node in path")
+    void shouldHandleNullNodeInPath() throws Exception {
+        String json = "{\"user\": {\"profile\": null}}";
+        JsonNode node = mapper.readTree(json);
+        
+        JsonNode result = JsonNodeUtils.extractNestedField(node, "user.profile.name");
+        
+        assertThat(result.isNull()).isTrue();
+    }
 }

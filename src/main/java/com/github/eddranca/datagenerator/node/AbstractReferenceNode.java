@@ -1,6 +1,7 @@
 package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.eddranca.datagenerator.util.JsonNodeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,21 +44,6 @@ public abstract class AbstractReferenceNode implements DslNode, Sequential, Refe
     public abstract Optional<String> getCollectionName();
 
     protected JsonNode extractNestedField(JsonNode node, String fieldPath) {
-        if (fieldPath == null || fieldPath.isEmpty()) {
-            return node;
-        }
-        
-        // Handle nested paths like "profile.contact.email"
-        String[] pathParts = fieldPath.split("\\.");
-        JsonNode current = node;
-        
-        for (String part : pathParts) {
-            if (current.isMissingNode() || current.isNull()) {
-                return current;
-            }
-            current = current.path(part);
-        }
-        
-        return current;
+        return JsonNodeUtils.extractNestedField(node, fieldPath);
     }
 }
