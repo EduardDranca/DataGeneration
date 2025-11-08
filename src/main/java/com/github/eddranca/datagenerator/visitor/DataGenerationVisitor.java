@@ -43,6 +43,14 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
         this.context = context;
     }
 
+    public ObjectNode getCurrentItem() {
+        return currentItem;
+    }
+
+    public void setCurrentItem(ObjectNode currentItem) {
+        this.currentItem = currentItem;
+    }
+
     @Override
     public JsonNode visitRoot(RootNode node) {
         ObjectNode result = context.getMapper().createObjectNode();
@@ -101,18 +109,57 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
             throw new IllegalArgumentException("Unknown generator: " + node.getGeneratorName());
         }
 
+        // Resolve runtime options if present
+        JsonNode resolvedOptions = resolveGeneratorOptions(node.getOptions());
+
         if (node.hasFilters()) {
             List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
-            return context.generateWithFilter(generator, node.getOptions(), node.getPath(), filterValues);
+            return context.generateWithFilter(generator, resolvedOptions, node.getPath(), filterValues);
         }
 
         if (node.hasPath()) {
-            GeneratorContext generatorContext = context.getGeneratorRegistry().createContext(node.getOptions(), context.getMapper());
+            GeneratorContext generatorContext = context.getGeneratorRegistry().createContext(resolvedOptions, context.getMapper());
             return generator.generateAtPath(generatorContext, node.getPath());
         } else {
-            GeneratorContext generatorContext = context.getGeneratorRegistry().createContext(node.getOptions(), context.getMapper());
+            GeneratorContext generatorContext = context.getGeneratorRegistry().createContext(resolvedOptions, context.getMapper());
             return generator.generate(generatorContext);
         }
+    }
+
+    /**
+     * Resolves generator options, replacing runtime references with actual values.
+     */
+    private JsonNode resolveGeneratorOptions(com.github.eddranca.datagenerator.node.GeneratorOptions options) {
+        if (!options.hasRuntimeOptions()) {
+            return options.getStaticOptions();
+        }
+
+        ObjectNode resolved = options.getStaticOptions().deepCopy();
+
+        for (Map.Entry<String, com.github.eddranca.datagenerator.node.OptionReferenceNode> entry : options.getRuntimeOptions().entrySet()) {
+            String optionKey = entry.getKey();
+            com.github.eddranca.datagenerator.node.OptionReferenceNode optionRef = entry.getValue();
+
+            // Resolve the reference
+            JsonNode referencedValue = optionRef.getReference().resolve(context, currentItem, null);
+
+            // Apply mapping if present
+            if (optionRef.hasMapping()) {
+                String key = referencedValue.asText();
+                JsonNode mappedValue = optionRef.getValueMap().get(key);
+                if (mappedValue != null) {
+                    resolved.set(optionKey, mappedValue);
+                } else {
+                    throw new IllegalArgumentException(
+                        "No mapping found for value '" + key + "' in option '" + optionKey + "'"
+                    );
+                }
+            } else {
+                resolved.set(optionKey, referencedValue);
+            }
+        }
+
+        return resolved;
     }
 
 
@@ -228,6 +275,13 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
             } else {
                 newObject.set(fieldName, value);
             }
+            
+            // Update currentItem after each field is added so that subsequent fields
+            // can reference earlier fields via this.fieldName
+            if (newObject == currentItem) {
+                // We're building the current item, so it's already up to date
+                // No need to do anything
+            }
         }
 
         return newObject;
@@ -323,15 +377,6 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
                 target.set(targetField, value);
             }
         }
-    }
-
-    // Methods for managing current item context in lazy proxies
-    public ObjectNode getCurrentItem() {
-        return currentItem;
-    }
-
-    public void setCurrentItem(ObjectNode currentItem) {
-        this.currentItem = currentItem;
     }
 
 }

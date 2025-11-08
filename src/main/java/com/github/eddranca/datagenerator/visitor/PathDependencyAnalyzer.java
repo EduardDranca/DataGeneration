@@ -13,6 +13,7 @@ import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
 import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
+import com.github.eddranca.datagenerator.node.OptionReferenceNode;
 import com.github.eddranca.datagenerator.node.PickReferenceNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
@@ -152,7 +153,19 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitGeneratedField(GeneratedFieldNode node) {
-        // Generated fields don't reference collections
+        // Check for runtime-computed options that reference other fields
+        if (node.getOptions().hasRuntimeOptions()) {
+            for (com.github.eddranca.datagenerator.node.OptionReferenceNode optionRef : node.getOptions().getRuntimeOptions().values()) {
+                // Visit the reference node to track dependencies
+                optionRef.getReference().accept(this);
+            }
+        }
+        
+        // Also check filters
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
+        
         return null;
     }
 

@@ -37,6 +37,14 @@ class ReferenceFieldNodeBuilder {
         this.fieldBuilder = fieldBuilder;
     }
 
+    /**
+     * Builds a reference node from a reference string.
+     * Used by OptionReferenceParser to build runtime option references.
+     */
+    public AbstractReferenceNode buildReferenceNode(String fieldName, String reference) {
+        return parseReference(fieldName, reference, new ArrayList<>(), false).orElse(null);
+    }
+
     public DslNode buildReferenceBasedField(String fieldName, JsonNode fieldDef) {
         if (fieldName.startsWith(ELLIPSIS)) {
             return buildReferenceSpreadField(fieldName, fieldDef);

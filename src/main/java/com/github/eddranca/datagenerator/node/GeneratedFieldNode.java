@@ -12,11 +12,11 @@ import java.util.List;
  */
 public class GeneratedFieldNode implements DslNode {
     private final String generatorName;
-    private final JsonNode options;
+    private final GeneratorOptions options;
     private final String path; // for dot notation like "name.firstName"
     private final List<FilterNode> filters;
 
-    public GeneratedFieldNode(String generatorName, JsonNode options, String path, List<FilterNode> filters) {
+    public GeneratedFieldNode(String generatorName, GeneratorOptions options, String path, List<FilterNode> filters) {
         this.generatorName = generatorName;
         this.options = options;
         this.path = path;
@@ -27,7 +27,7 @@ public class GeneratedFieldNode implements DslNode {
         return generatorName;
     }
 
-    public JsonNode getOptions() {
+    public GeneratorOptions getOptions() {
         return options;
     }
 

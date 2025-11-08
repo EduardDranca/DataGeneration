@@ -1,0 +1,34 @@
+{
+  "employees": {
+    "count": 5,
+    "item": {
+      "id": {"gen": "uuid"},
+      "name": {"gen": "name.fullName"},
+      "startAge": {"gen": "number", "min": 22, "max": 35},
+      "retirementAge": {
+        "gen": "number",
+        "min": {"ref": "this.startAge"},
+        "max": 65
+      },
+      "yearsToRetirement": {
+        "gen": "number",
+        "min": 0,
+        "max": {"ref": "this.retirementAge"}
+      }
+    }
+  },
+  "products": {
+    "count": 10,
+    "item": {
+      "id": {"gen": "uuid"},
+      "name": {"gen": "lorem.word"},
+      "category": {"gen": "choice", "options": ["budget", "premium", "luxury"]},
+      "price": {
+        "gen": "float",
+        "min": {"ref": "this.category", "map": {"budget": 10, "premium": 100, "luxury": 1000}},
+        "max": {"ref": "this.category", "map": {"budget": 50, "premium": 500, "luxury": 5000}},
+        "decimals": 2
+      }
+    }
+  }
+}

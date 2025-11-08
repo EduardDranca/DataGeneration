@@ -22,10 +22,12 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.OPTIONS;
 class GeneratedFieldNodeBuilder {
     private final NodeBuilderContext context;
     private final FieldBuilder fieldBuilder;
+    private final ReferenceFieldNodeBuilder referenceBuilder;
 
     public GeneratedFieldNodeBuilder(NodeBuilderContext context, FieldBuilder fieldBuilder) {
         this.context = context;
         this.fieldBuilder = fieldBuilder;
+        this.referenceBuilder = new ReferenceFieldNodeBuilder(context, fieldBuilder);
     }
 
     public DslNode buildGeneratorBasedField(String fieldName, JsonNode fieldDef) {
@@ -53,7 +55,11 @@ class GeneratedFieldNodeBuilder {
         // Build filters if present
         List<FilterNode> filters = buildGeneratedFieldFilters(fieldName, fieldDef);
 
-        return new GeneratedFieldNode(generatorInfo.name, fieldDef, generatorInfo.path, filters);
+        // Parse options (may contain runtime references)
+        OptionReferenceParser optionParser = new OptionReferenceParser(context, referenceBuilder);
+        com.github.eddranca.datagenerator.node.GeneratorOptions options = optionParser.parseOptions(fieldName, fieldDef);
+
+        return new GeneratedFieldNode(generatorInfo.name, options, generatorInfo.path, filters);
     }
 
     private GeneratorInfo parseGeneratorSpec(String generatorSpec) {
