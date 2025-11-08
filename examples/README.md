@@ -14,6 +14,7 @@ This directory contains practical examples demonstrating various use cases of th
 | **[06-educational-system](06-educational-system/)**         | School management | Academic data, regex patterns, grading    |
 | **[07-custom-generator](07-custom-generator/)**             | Custom business logic | Custom generators, domain-specific rules  |
 | **[08-range-references](08-range-references/)**             | Range-based references | Subset selection, regional management     |
+| **[09-conditional-references](09-conditional-references/)** | Filtered references | Conditional filtering, AND/OR operators   |
 
 ## Quick Start
 
@@ -51,6 +52,7 @@ Each example directory contains:
 | Feature | Examples Using It |
 |---------|-------------------|
 | **Entity Relationships** | All examples (using `ref` for cross-collection references) |
+| **Conditional References** | Conditional References (filtered collections with AND/OR logic) |
 | **Range References** | Range References (subset selection by index range) |
 | **Arrays & Collections** | Company (skills), Social Media (hashtags), Education (enrollments) |
 | **Weighted Choices** | Company (manager probability), Social Media (verification rates) |
@@ -70,6 +72,7 @@ Each example directory contains:
 | Financial | 73 records | 4 | Banking simulation |
 | Educational | 97 records | 4 | School system testing |
 | Custom Generator | 19 records | 3 | Custom business logic |
+| Conditional References | 148 records | 8 | Business rule enforcement |
 | Range References | 34 records | 3 | Regional/tiered structures |
 
 ## Integration Patterns
