@@ -28,10 +28,10 @@ class ConditionParser {
      */
     public Condition parse(String conditionStr) {
         // Check for uppercase logical operators (common mistake)
-        if (containsLogicalOperatorOutsideQuotes(conditionStr, " AND ") || 
+        if (containsLogicalOperatorOutsideQuotes(conditionStr, " AND ") ||
             containsLogicalOperatorOutsideQuotes(conditionStr, " OR ")) {
             errorHandler.accept("has invalid condition format: " + conditionStr +
-                    " (logical operators must be lowercase: 'and', 'or')");
+                " (logical operators must be lowercase: 'and', 'or')");
             return null;
         }
 
@@ -53,19 +53,17 @@ class ConditionParser {
     private boolean containsLogicalOperatorOutsideQuotes(String str, String operator) {
         boolean inQuotes = false;
         int operatorLength = operator.length();
-        
+
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
-            
+
             if (c == '\'') {
                 inQuotes = !inQuotes;
-            } else if (!inQuotes && i + operatorLength <= str.length()) {
-                if (str.substring(i, i + operatorLength).equals(operator)) {
-                    return true;
-                }
+            } else if (!inQuotes && i + operatorLength <= str.length() && str.substring(i, i + operatorLength).equals(operator)) {
+                return true;
             }
         }
-        
+
         return false;
     }
 
@@ -97,15 +95,15 @@ class ConditionParser {
         StringBuilder current = new StringBuilder();
         boolean inQuotes = false;
         int delimiterLength = delimiter.length();
-        
+
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
-            
+
             if (c == '\'') {
                 inQuotes = !inQuotes;
                 current.append(c);
-            } else if (!inQuotes && i + delimiterLength <= str.length() && 
-                       str.substring(i, i + delimiterLength).equals(delimiter)) {
+            } else if (!inQuotes && i + delimiterLength <= str.length() &&
+                str.substring(i, i + delimiterLength).equals(delimiter)) {
                 parts.add(current.toString());
                 current = new StringBuilder();
                 i += delimiterLength - 1; // Skip the delimiter
@@ -113,7 +111,7 @@ class ConditionParser {
                 current.append(c);
             }
         }
-        
+
         parts.add(current.toString());
         return parts;
     }
@@ -133,7 +131,7 @@ class ConditionParser {
         for (int i = 0; i < operatorStrings.length; i++) {
             String opStr = operatorStrings[i];
             int opIndex = findOperatorOutsideQuotes(conditionStr, opStr);
-            
+
             if (opIndex != -1) {
                 String field = conditionStr.substring(0, opIndex).trim();
                 String valueStr = conditionStr.substring(opIndex + opStr.length()).trim();
@@ -159,17 +157,17 @@ class ConditionParser {
     private int findOperatorOutsideQuotes(String str, String operator) {
         boolean inQuotes = false;
         int operatorLength = operator.length();
-        
+
         for (int i = 0; i <= str.length() - operatorLength; i++) {
             char c = str.charAt(i);
-            
+
             if (c == '\'') {
                 inQuotes = !inQuotes;
             } else if (!inQuotes && str.substring(i, i + operatorLength).equals(operator)) {
                 return i;
             }
         }
-        
+
         return -1;
     }
 
