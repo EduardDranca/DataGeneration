@@ -15,6 +15,19 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.REF;
 
 /**
  * Parses generator options that may contain runtime-computed references.
+ * <p>
+ * This parser examines generator options and separates them into:
+ * <ul>
+ *   <li>Static options: Values known at parse time (numbers, strings, etc.)</li>
+ *   <li>Runtime options: References to other fields that must be resolved during generation</li>
+ * </ul>
+ * <p>
+ * The parser recognizes runtime references by the presence of a "ref" key in the option value.
+ * It delegates reference parsing to {@link ReferenceFieldNodeBuilder} to ensure consistent
+ * reference handling across the system.
+ *
+ * @see GeneratorOptions
+ * @see OptionReferenceNode
  */
 class OptionReferenceParser {
     private final NodeBuilderContext context;

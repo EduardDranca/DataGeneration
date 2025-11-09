@@ -41,32 +41,45 @@ public class LazyItemProxy extends AbstractLazyProxy {
 
     /**
      * Materializes fields that are referenced by runtime-computed options.
+     * <p>
      * This ensures that when a field uses runtime options like {"ref": "this.otherField"},
-     * the referenced field is already materialized and available.
+     * the referenced field is already materialized and available in the delegate.
+     * <p>
+     * This is critical for lazy generation to work correctly with runtime-computed options,
+     * as it establishes the correct field generation order based on dependencies.
      */
     private void materializeRuntimeOptionDependencies() {
         for (Map.Entry<String, DslNode> entry : fieldNodes.entrySet()) {
             DslNode fieldNode = entry.getValue();
-            if (fieldNode instanceof com.github.eddranca.datagenerator.node.GeneratedFieldNode genField) {
+            
+            if (fieldNode instanceof GeneratedFieldNode genField) {
                 if (genField.getOptions().hasRuntimeOptions()) {
                     // This field has runtime options - materialize any self-referenced fields first
-                    for (com.github.eddranca.datagenerator.node.OptionReferenceNode optionRef : 
-                            genField.getOptions().getRuntimeOptions().values()) {
-                        if (optionRef.getReference() instanceof com.github.eddranca.datagenerator.node.SelfReferenceNode selfRef) {
-                            // Extract the field name from the self-reference
-                            String referencedFieldName = selfRef.getFieldName();
-                            // Handle nested paths like "data.baseValue" - just get the first part
-                            if (referencedFieldName.contains(".")) {
-                                referencedFieldName = referencedFieldName.split("\\.")[0];
-                            }
-                            // Materialize this field if it exists and hasn't been materialized yet
-                            if (fieldNodes.containsKey(referencedFieldName)) {
-                                materializeField(referencedFieldName);
-                            }
+                    for (OptionReferenceNode optionRef : genField.getOptions().getRuntimeOptions().values()) {
+                        if (optionRef.getReference() instanceof SelfReferenceNode selfRef) {
+                            materializeSelfReferencedField(selfRef.getFieldName());
                         }
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Materializes a field referenced by a self-reference.
+     * Handles nested paths by extracting the top-level field name.
+     *
+     * @param fieldPath the field path (e.g., "baseValue" or "data.baseValue")
+     */
+    private void materializeSelfReferencedField(String fieldPath) {
+        // Handle nested paths like "data.baseValue" - just get the first part
+        String topLevelField = fieldPath.contains(".") ? 
+            fieldPath.substring(0, fieldPath.indexOf(".")) : 
+            fieldPath;
+
+        // Materialize this field if it exists and hasn't been materialized yet
+        if (fieldNodes.containsKey(topLevelField)) {
+            materializeField(topLevelField);
         }
     }
 

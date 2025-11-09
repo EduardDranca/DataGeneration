@@ -8,7 +8,24 @@ import java.util.Map;
 
 /**
  * Represents generator options that may contain both static values and runtime-computed references.
- * This allows generator options to depend on other field values in the same item.
+ * <p>
+ * This class enables dynamic, context-dependent data generation by allowing generator options
+ * to reference other field values in the same item. For example:
+ * <pre>
+ * {
+ *   "startAge": {"gen": "number", "min": 22, "max": 35},
+ *   "retirementAge": {
+ *     "gen": "number",
+ *     "min": {"ref": "this.startAge"},  // Runtime reference
+ *     "max": 65                          // Static value
+ *   }
+ * }
+ * </pre>
+ * <p>
+ * The class separates static options (known at parse time) from runtime options
+ * (resolved during generation), allowing efficient handling of both types.
+ *
+ * @see OptionReferenceNode
  */
 public class GeneratorOptions {
     private final JsonNode staticOptions;

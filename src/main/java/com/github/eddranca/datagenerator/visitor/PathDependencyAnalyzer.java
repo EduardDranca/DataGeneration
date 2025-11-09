@@ -153,15 +153,16 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitGeneratedField(GeneratedFieldNode node) {
-        // Check for runtime-computed options that reference other fields
+        // Analyze runtime-computed options for cross-collection dependencies
         if (node.getOptions().hasRuntimeOptions()) {
-            for (com.github.eddranca.datagenerator.node.OptionReferenceNode optionRef : node.getOptions().getRuntimeOptions().values()) {
-                // Visit the reference node to track dependencies
+            for (OptionReferenceNode optionRef : node.getOptions().getRuntimeOptions().values()) {
+                // Visit the reference node to track any cross-collection dependencies
+                // (self-references are handled separately in LazyItemProxy)
                 optionRef.getReference().accept(this);
             }
         }
         
-        // Also check filters
+        // Analyze filters for dependencies
         for (FilterNode filter : node.getFilters()) {
             filter.accept(this);
         }

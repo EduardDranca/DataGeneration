@@ -6,13 +6,26 @@ import java.util.Map;
 
 /**
  * Represents a runtime-computed option value that references another field.
- * Supports simple references and conditional mapping based on referenced values.
+ * <p>
+ * Supports two types of references:
+ * <ul>
+ *   <li><b>Simple references</b>: Directly use the referenced value as the option value</li>
+ *   <li><b>Mapped references</b>: Map the referenced value to a different value using a lookup table</li>
+ * </ul>
  * <p>
  * Examples:
  * <pre>
- * {"ref": "this.startAge"}                                    // Simple reference
- * {"ref": "this.category", "map": {"budget": 10, "premium": 100}}  // Mapped reference
+ * // Simple reference - use startAge directly as min value
+ * {"ref": "this.startAge"}
+ *
+ * // Mapped reference - map category to different price ranges
+ * {"ref": "this.category", "map": {"budget": 10, "premium": 100, "luxury": 1000}}
  * </pre>
+ * <p>
+ * This enables dynamic option values that adapt based on other field values,
+ * allowing for more realistic and contextually appropriate data generation.
+ *
+ * @see GeneratorOptions
  */
 public class OptionReferenceNode {
     private final AbstractReferenceNode reference;

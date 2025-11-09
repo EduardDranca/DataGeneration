@@ -15,10 +15,12 @@ import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
+import com.github.eddranca.datagenerator.node.GeneratorOptions;
 import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
 import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
+import com.github.eddranca.datagenerator.node.OptionReferenceNode;
 import com.github.eddranca.datagenerator.node.PickReferenceNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
@@ -128,30 +130,37 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
 
     /**
      * Resolves generator options, replacing runtime references with actual values.
+     * <p>
+     * This method handles both simple references ({"ref": "this.field"}) and
+     * mapped references ({"ref": "this.field", "map": {...}}).
+     *
+     * @param options the generator options that may contain runtime references
+     * @return resolved options with all references replaced by actual values
+     * @throws IllegalArgumentException if a mapped value is not found
      */
-    private JsonNode resolveGeneratorOptions(com.github.eddranca.datagenerator.node.GeneratorOptions options) {
+    private JsonNode resolveGeneratorOptions(GeneratorOptions options) {
         if (!options.hasRuntimeOptions()) {
             return options.getStaticOptions();
         }
 
         ObjectNode resolved = options.getStaticOptions().deepCopy();
 
-        for (Map.Entry<String, com.github.eddranca.datagenerator.node.OptionReferenceNode> entry : options.getRuntimeOptions().entrySet()) {
+        for (Map.Entry<String, OptionReferenceNode> entry : options.getRuntimeOptions().entrySet()) {
             String optionKey = entry.getKey();
-            com.github.eddranca.datagenerator.node.OptionReferenceNode optionRef = entry.getValue();
+            OptionReferenceNode optionRef = entry.getValue();
 
-            // Resolve the reference
+            // Resolve the reference to get the actual value
             JsonNode referencedValue = optionRef.getReference().resolve(context, currentItem, null);
 
-            // Apply mapping if present
+            // Apply value mapping if configured
             if (optionRef.hasMapping()) {
-                String key = referencedValue.asText();
-                JsonNode mappedValue = optionRef.getValueMap().get(key);
+                JsonNode mappedValue = optionRef.getValueMap().get(referencedValue.asText());
                 if (mappedValue != null) {
                     resolved.set(optionKey, mappedValue);
                 } else {
                     throw new IllegalArgumentException(
-                        "No mapping found for value '" + key + "' in option '" + optionKey + "'"
+                        "No mapping found for value '" + referencedValue.asText() + 
+                        "' in option '" + optionKey + "'"
                     );
                 }
             } else {
@@ -274,13 +283,6 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
                 }
             } else {
                 newObject.set(fieldName, value);
-            }
-            
-            // Update currentItem after each field is added so that subsequent fields
-            // can reference earlier fields via this.fieldName
-            if (newObject == currentItem) {
-                // We're building the current item, so it's already up to date
-                // No need to do anything
             }
         }
 
