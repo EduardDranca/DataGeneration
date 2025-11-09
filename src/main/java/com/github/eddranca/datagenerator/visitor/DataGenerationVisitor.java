@@ -15,16 +15,20 @@ import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
+import com.github.eddranca.datagenerator.node.GeneratorOptionNode;
+import com.github.eddranca.datagenerator.node.GeneratorOptions;
 import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
 import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
+import com.github.eddranca.datagenerator.node.OptionReferenceNode;
 import com.github.eddranca.datagenerator.node.PickReferenceNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
 import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
+import com.github.eddranca.datagenerator.util.FieldApplicationUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +45,14 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
 
     public DataGenerationVisitor(AbstractGenerationContext<T> context) {
         this.context = context;
+    }
+
+    public ObjectNode getCurrentItem() {
+        return currentItem;
+    }
+
+    public void setCurrentItem(ObjectNode currentItem) {
+        this.currentItem = currentItem;
     }
 
     @Override
@@ -101,18 +113,93 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
             throw new IllegalArgumentException("Unknown generator: " + node.getGeneratorName());
         }
 
+        // Resolve runtime options if present
+        JsonNode resolvedOptions = resolveGeneratorOptions(node.getOptions());
+
         if (node.hasFilters()) {
             List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
-            return context.generateWithFilter(generator, node.getOptions(), node.getPath(), filterValues);
+            return context.generateWithFilter(generator, resolvedOptions, node.getPath(), filterValues);
         }
 
         if (node.hasPath()) {
-            GeneratorContext generatorContext = context.getGeneratorRegistry().createContext(node.getOptions(), context.getMapper());
+            GeneratorContext generatorContext = context.getGeneratorRegistry().createContext(resolvedOptions, context.getMapper());
             return generator.generateAtPath(generatorContext, node.getPath());
         } else {
-            GeneratorContext generatorContext = context.getGeneratorRegistry().createContext(node.getOptions(), context.getMapper());
+            GeneratorContext generatorContext = context.getGeneratorRegistry().createContext(resolvedOptions, context.getMapper());
             return generator.generate(generatorContext);
         }
+    }
+
+    @Override
+    public JsonNode visitGeneratorOption(GeneratorOptionNode node) {
+        // Generate the value using the embedded generator or choice field
+        if (node.isChoiceField()) {
+            return node.getChoiceField().accept(this);
+        } else {
+            return node.getGeneratorField().accept(this);
+        }
+    }
+
+    /**
+     * Resolves generator options, replacing runtime references with actual values.
+     * <p>
+     * This method handles both simple references ({"ref": "this.field"}) and
+     * mapped references ({"ref": "this.field", "map": {...}}).
+     *
+     * @param options the generator options that may contain runtime references
+     * @return resolved options with all references replaced by actual values
+     * @throws IllegalArgumentException if a mapped value is not found
+     */
+    private JsonNode resolveGeneratorOptions(GeneratorOptions options) {
+        if (!options.hasRuntimeOptions()) {
+            return options.getStaticOptions();
+        }
+
+        ObjectNode resolved = options.getStaticOptions().deepCopy();
+
+        // Handle reference-based runtime options
+        for (Map.Entry<String, OptionReferenceNode> entry : options.getRuntimeOptions().entrySet()) {
+            String optionKey = entry.getKey();
+            OptionReferenceNode optionRef = entry.getValue();
+
+            // Resolve the reference to get the actual value
+            JsonNode referencedValue = optionRef.getReference().resolve(context, currentItem, null);
+            
+            // Add null safety check
+            if (referencedValue == null || referencedValue.isNull()) {
+                // Skip this option if the referenced value is null
+                continue;
+            }
+
+            // Apply value mapping if configured
+            if (optionRef.hasMapping()) {
+                JsonNode mappedValue = optionRef.getValueMap().get(referencedValue.asText());
+                if (mappedValue != null) {
+                    resolved.set(optionKey, mappedValue);
+                } else {
+                    throw new IllegalArgumentException(
+                        "No mapping found for value '" + referencedValue.asText() +
+                        "' in option '" + optionKey + "'"
+                    );
+                }
+            } else {
+                resolved.set(optionKey, referencedValue);
+            }
+        }
+
+        // Handle generator-based runtime options
+        for (Map.Entry<String, GeneratorOptionNode> entry : options.getGeneratorOptions().entrySet()) {
+            String optionKey = entry.getKey();
+            GeneratorOptionNode generatorOption = entry.getValue();
+            
+            // Generate the value using the generator
+            JsonNode generatedValue = generatorOption.accept(this);
+            if (generatedValue != null && !generatedValue.isNull()) {
+                resolved.set(optionKey, generatedValue);
+            }
+        }
+
+        return resolved;
     }
 
 
@@ -217,17 +304,7 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
             DslNode fieldNode = entry.getValue();
 
             JsonNode value = fieldNode.accept(this);
-
-            if (fieldNode instanceof SpreadFieldNode || fieldNode instanceof ReferenceSpreadFieldNode) {
-                // Spread fields return an object to merge
-                if (value != null && value.isObject()) {
-                    ObjectNode spreadObj = (ObjectNode) value;
-                    spreadObj.fieldNames().forEachRemaining(
-                        fn -> newObject.set(fn, spreadObj.get(fn)));
-                }
-            } else {
-                newObject.set(fieldName, value);
-            }
+            FieldApplicationUtil.applyFieldToObject(newObject, fieldName, fieldNode, value);
         }
 
         return newObject;
@@ -323,15 +400,6 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
                 target.set(targetField, value);
             }
         }
-    }
-
-    // Methods for managing current item context in lazy proxies
-    public ObjectNode getCurrentItem() {
-        return currentItem;
-    }
-
-    public void setCurrentItem(ObjectNode currentItem) {
-        this.currentItem = currentItem;
     }
 
 }

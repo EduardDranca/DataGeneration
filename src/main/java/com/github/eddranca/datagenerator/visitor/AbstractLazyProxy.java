@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.node.DslNode;
-import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
-import com.github.eddranca.datagenerator.node.SpreadFieldNode;
+import com.github.eddranca.datagenerator.util.FieldApplicationUtil;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,18 +56,7 @@ abstract class AbstractLazyProxy {
             DslNode fieldNode = fieldNodes.get(fieldName);
             if (fieldNode != null) {
                 JsonNode value = generateFieldValue(fieldName, fieldNode);
-
-                // Handle spread fields - spread the returned object into the parent
-                if (fieldNode instanceof SpreadFieldNode ||
-                    fieldNode instanceof ReferenceSpreadFieldNode) {
-                    if (value != null && value.isObject()) {
-                        ObjectNode spreadObj = (ObjectNode) value;
-                        spreadObj.fieldNames().forEachRemaining(
-                            fn -> delegate.set(fn, spreadObj.get(fn)));
-                    }
-                } else {
-                    delegate.set(fieldName, value);
-                }
+                FieldApplicationUtil.applyFieldToObject(delegate, fieldName, fieldNode, value);
                 materializedFieldNames.add(fieldName);
             }
         }

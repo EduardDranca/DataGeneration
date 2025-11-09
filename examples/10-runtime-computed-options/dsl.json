@@ -1,0 +1,57 @@
+{
+  "employees": {
+    "count": 5,
+    "item": {
+      "id": {"gen": "uuid"},
+      "name": {"gen": "name.fullName"},
+      "startAge": {"gen": "number", "min": 22, "max": 35},
+      "retirementAge": {
+        "gen": "number",
+        "min": {"ref": "this.startAge"},
+        "max": 65
+      },
+      "yearsToRetirement": {
+        "gen": "number",
+        "min": 0,
+        "max": {"ref": "this.retirementAge"}
+      }
+    }
+  },
+  "products": {
+    "count": 10,
+    "item": {
+      "id": {"gen": "uuid"},
+      "name": {"gen": "lorem.word"},
+      "category": {"gen": "choice", "options": ["budget", "premium", "luxury"]},
+      "price": {
+        "gen": "float",
+        "min": {"ref": "this.category", "map": {"budget": 10, "premium": 100, "luxury": 1000}},
+        "max": {"ref": "this.category", "map": {"budget": 50, "premium": 500, "luxury": 5000}},
+        "decimals": 2
+      }
+    }
+  },
+  "dynamicStrings": {
+    "count": 8,
+    "item": {
+      "id": {"gen": "sequence", "start": 1},
+      "baseLength": {"gen": "number", "min": 5, "max": 15},
+      "dynamicLength": {
+        "gen": "choice",
+        "options": [3, 5, 7, 10]
+      },
+      "generatedString": {
+        "gen": "string",
+        "length": {"gen": "choice", "options": [5, 10, 15, 20]}
+      },
+      "referenceBasedString": {
+        "gen": "string",
+        "length": {"ref": "this.baseLength"}
+      },
+      "dynamicBasedString": {
+        "gen": "string",
+        "length": {"ref": "this.dynamicLength"}
+      }
+    }
+  }
+}
