@@ -29,7 +29,7 @@ import java.util.Map;
 public class GeneratorOptions {
     private final JsonNode staticOptions;
     private final Map<String, OptionReferenceNode> runtimeOptions;
-    private final Map<String, GeneratorOptionNode> generatorOptions;
+    private final Map<String, GeneratorOptionNode> generatorOptionNodes;
 
     public GeneratorOptions(JsonNode staticOptions) {
         this(staticOptions, new HashMap<>(), new HashMap<>());
@@ -42,7 +42,7 @@ public class GeneratorOptions {
     public GeneratorOptions(JsonNode staticOptions, Map<String, OptionReferenceNode> runtimeOptions, Map<String, GeneratorOptionNode> generatorOptions) {
         this.staticOptions = staticOptions;
         this.runtimeOptions = runtimeOptions;
-        this.generatorOptions = generatorOptions;
+        this.generatorOptionNodes = generatorOptions;
     }
 
     public JsonNode getStaticOptions() {
@@ -54,15 +54,15 @@ public class GeneratorOptions {
     }
 
     public Map<String, GeneratorOptionNode> getGeneratorOptions() {
-        return generatorOptions;
+        return generatorOptionNodes;
     }
 
     public boolean hasRuntimeOptions() {
-        return !runtimeOptions.isEmpty() || !generatorOptions.isEmpty();
+        return !runtimeOptions.isEmpty() || !generatorOptionNodes.isEmpty();
     }
 
     public boolean hasGeneratorOptions() {
-        return !generatorOptions.isEmpty();
+        return !generatorOptionNodes.isEmpty();
     }
 
     /**
@@ -83,6 +83,6 @@ public class GeneratorOptions {
      * Gets the generator option for a specific key.
      */
     public GeneratorOptionNode getGeneratorOption(String key) {
-        return generatorOptions.get(key);
+        return generatorOptionNodes.get(key);
     }
 }

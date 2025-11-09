@@ -29,6 +29,9 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.THIS_PREFIX;
  * Handles all reference types and patterns.
  */
 class ReferenceFieldNodeBuilder {
+    private static final String ERROR_UNDECLARED_COLLECTION = "references undeclared collection: ";
+    private static final String ERROR_INVALID_RANGE_FORMAT = "has invalid range format '";
+    
     private final NodeBuilderContext context;
     private final FieldBuilder fieldBuilder;
 
@@ -199,7 +202,7 @@ class ReferenceFieldNodeBuilder {
         String field = reference.substring(reference.indexOf("[*].") + 4);
 
         if (!context.isCollectionDeclared(collectionName)) {
-            addReferenceFieldError(fieldName, "references undeclared collection: " + collectionName);
+            addReferenceFieldError(fieldName, ERROR_UNDECLARED_COLLECTION + collectionName);
             return Optional.empty();
         }
 
@@ -222,7 +225,7 @@ class ReferenceFieldNodeBuilder {
         }
 
         if (!context.isCollectionDeclared(collectionName)) {
-            addReferenceFieldError(fieldName, "references undeclared collection: " + collectionName);
+            addReferenceFieldError(fieldName, ERROR_UNDECLARED_COLLECTION + collectionName);
             return Optional.empty();
         }
 
@@ -235,7 +238,7 @@ class ReferenceFieldNodeBuilder {
         try {
             return Optional.of(new IndexedReferenceNode(collectionName, indexPart, fieldPart, filters, sequential));
         } catch (IllegalArgumentException e) {
-            addReferenceFieldError(fieldName, "has invalid range format '" + indexPart + "': " + e.getMessage());
+            addReferenceFieldError(fieldName, ERROR_INVALID_RANGE_FORMAT + indexPart + "': " + e.getMessage());
             return Optional.empty();
         }
     }
@@ -295,7 +298,7 @@ class ReferenceFieldNodeBuilder {
 
         // Check for multiple colons (invalid)
         if (indexPart.chars().filter(ch -> ch == ':').count() > 1) {
-            return Optional.of("has invalid range format '" + indexPart + "' - use 'start:end' with single colon (e.g., '0:99', '10:', ':99')");
+            return Optional.of(ERROR_INVALID_RANGE_FORMAT + indexPart + "' - use 'start:end' with single colon (e.g., '0:99', '10:', ':99')");
         }
 
         // If it contains a colon, it's a range
@@ -310,7 +313,7 @@ class ReferenceFieldNodeBuilder {
     private Optional<String> validateRangeFormat(String indexPart) {
         String[] parts = indexPart.split(":", -1);
         if (parts.length != 2) {
-            return Optional.of("has invalid range format '" + indexPart + "' - use 'start:end' format (e.g., '0:99', '10:', ':99')");
+            return Optional.of(ERROR_INVALID_RANGE_FORMAT + indexPart + "' - use 'start:end' format (e.g., '0:99', '10:', ':99')");
         }
 
         String start = parts[0];
@@ -380,7 +383,7 @@ class ReferenceFieldNodeBuilder {
         }
         
         if (!context.isCollectionDeclared(collectionName)) {
-            addReferenceFieldError(fieldName, "references undeclared collection: " + collectionName);
+            addReferenceFieldError(fieldName, ERROR_UNDECLARED_COLLECTION + collectionName);
             return Optional.empty();
         }
         

@@ -83,6 +83,7 @@ class RuntimeComputedOptionsTest extends ParameterizedGenerationTest {
                 case "budget" -> assertThat(price).isBetween(10.0, 50.0);
                 case "premium" -> assertThat(price).isBetween(100.0, 500.0);
                 case "luxury" -> assertThat(price).isBetween(1000.0, 5000.0);
+                default -> throw new AssertionError("Unexpected category: " + category);
             }
         });
     }

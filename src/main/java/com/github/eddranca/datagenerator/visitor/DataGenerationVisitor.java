@@ -156,50 +156,52 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
         }
 
         ObjectNode resolved = options.getStaticOptions().deepCopy();
+        resolveReferenceBasedOptions(options, resolved);
+        resolveGeneratorBasedOptions(options, resolved);
+        return resolved;
+    }
 
-        // Handle reference-based runtime options
+    private void resolveReferenceBasedOptions(GeneratorOptions options, ObjectNode resolved) {
         for (Map.Entry<String, OptionReferenceNode> entry : options.getRuntimeOptions().entrySet()) {
             String optionKey = entry.getKey();
             OptionReferenceNode optionRef = entry.getValue();
 
-            // Resolve the reference to get the actual value
             JsonNode referencedValue = optionRef.getReference().resolve(context, currentItem, null);
             
-            // Add null safety check
             if (referencedValue == null || referencedValue.isNull()) {
-                // Skip this option if the referenced value is null
                 continue;
             }
 
-            // Apply value mapping if configured
             if (optionRef.hasMapping()) {
-                JsonNode mappedValue = optionRef.getValueMap().get(referencedValue.asText());
-                if (mappedValue != null) {
-                    resolved.set(optionKey, mappedValue);
-                } else {
-                    throw new IllegalArgumentException(
-                        "No mapping found for value '" + referencedValue.asText() +
-                        "' in option '" + optionKey + "'"
-                    );
-                }
+                applyValueMapping(optionKey, optionRef, referencedValue, resolved);
             } else {
                 resolved.set(optionKey, referencedValue);
             }
         }
+    }
 
-        // Handle generator-based runtime options
+    private void applyValueMapping(String optionKey, OptionReferenceNode optionRef, JsonNode referencedValue, ObjectNode resolved) {
+        JsonNode mappedValue = optionRef.getValueMap().get(referencedValue.asText());
+        if (mappedValue != null) {
+            resolved.set(optionKey, mappedValue);
+        } else {
+            throw new IllegalArgumentException(
+                "No mapping found for value '" + referencedValue.asText() +
+                "' in option '" + optionKey + "'"
+            );
+        }
+    }
+
+    private void resolveGeneratorBasedOptions(GeneratorOptions options, ObjectNode resolved) {
         for (Map.Entry<String, GeneratorOptionNode> entry : options.getGeneratorOptions().entrySet()) {
             String optionKey = entry.getKey();
             GeneratorOptionNode generatorOption = entry.getValue();
             
-            // Generate the value using the generator
             JsonNode generatedValue = generatorOption.accept(this);
             if (generatedValue != null && !generatedValue.isNull()) {
                 resolved.set(optionKey, generatedValue);
             }
         }
-
-        return resolved;
     }
 
 

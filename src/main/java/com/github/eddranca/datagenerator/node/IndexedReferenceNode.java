@@ -11,6 +11,8 @@ import java.util.Optional;
  * Handles both specific numeric indices and wildcard indices.
  */
 public class IndexedReferenceNode extends AbstractReferenceNode {
+    private static final String ERROR_PREFIX = "Indexed reference '";
+    
     private final String collectionName;
     private final String index; // Either a number, a range, or "*"
     private final String fieldName; // Optional field to extract from the referenced item
@@ -121,7 +123,7 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
         if (filterValues != null && !filterValues.isEmpty()) {
             collection = context.applyFiltering(collection, hasFieldName() ? fieldName : "", filterValues);
             if (collection.isEmpty()) {
-                return context.handleFilteringFailure("Indexed reference '" + getReferenceString() + "' has no valid values after filtering");
+                return context.handleFilteringFailure(ERROR_PREFIX + getReferenceString() + "' has no valid values after filtering");
             }
         }
 
@@ -145,7 +147,7 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
 
         // Check filtering for numeric index
         if (filterValues != null && !filterValues.isEmpty() && filterValues.contains(value)) {
-            return context.handleFilteringFailure("Indexed reference '" + getReferenceString() + "' value matches filter");
+            return context.handleFilteringFailure(ERROR_PREFIX + getReferenceString() + "' value matches filter");
         }
 
         return value;
@@ -170,7 +172,7 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
         if (filterValues != null && !filterValues.isEmpty()) {
             sub = context.applyFiltering(sub, hasFieldName() ? fieldName : "", filterValues);
             if (sub.isEmpty()) {
-                return context.handleFilteringFailure("Indexed reference '" + getReferenceString() + "' has no valid values after filtering");
+                return context.handleFilteringFailure(ERROR_PREFIX + getReferenceString() + "' has no valid values after filtering");
             }
         }
 
