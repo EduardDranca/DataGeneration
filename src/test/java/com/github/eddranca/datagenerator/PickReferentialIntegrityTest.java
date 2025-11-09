@@ -51,7 +51,11 @@ class PickReferentialIntegrityTest extends ParameterizedGenerationTest {
 
         // Verify all orders reference the same admin email
         JsonNode orders = result.get("orders");
+<<<<<<< HEAD
         assertThat(orders).allSatisfy(order -> {
+=======
+        assertThat(orders).isNotEmpty().allSatisfy(order -> {
+>>>>>>> c370dff (refactor: use assertj allSatisfy instead of for loops in tests)
             String orderAdminEmail = order.get("adminEmail").asText();
             assertThat(orderAdminEmail)
                 .as("Order %s should reference admin's email", order.get("orderId"))
@@ -60,7 +64,11 @@ class PickReferentialIntegrityTest extends ParameterizedGenerationTest {
 
         // Verify all audit logs reference the same admin email
         JsonNode auditLogs = result.get("auditLogs");
+<<<<<<< HEAD
         assertThat(auditLogs).allSatisfy(log -> {
+=======
+        assertThat(auditLogs).isNotEmpty().allSatisfy(log -> {
+>>>>>>> c370dff (refactor: use assertj allSatisfy instead of for loops in tests)
             String logAdminEmail = log.get("adminEmail").asText();
             assertThat(logAdminEmail)
                 .as("Audit log %s should reference admin's email", log.get("logId"))
@@ -114,7 +122,11 @@ class PickReferentialIntegrityTest extends ParameterizedGenerationTest {
 
         // Verify all notifications reference the same email
         JsonNode notifications = result.get("notifications");
+<<<<<<< HEAD
         assertThat(notifications).allSatisfy(notification -> {
+=======
+        assertThat(notifications).isNotEmpty().allSatisfy(notification -> {
+>>>>>>> c370dff (refactor: use assertj allSatisfy instead of for loops in tests)
             String notificationEmail = notification.get("userEmail").asText();
             assertThat(notificationEmail)
                 .as("Notification %s should reference primary user's email",
@@ -124,7 +136,11 @@ class PickReferentialIntegrityTest extends ParameterizedGenerationTest {
 
         // Verify all messages reference the same email
         JsonNode messages = result.get("messages");
+<<<<<<< HEAD
         assertThat(messages).allSatisfy(message -> {
+=======
+        assertThat(messages).isNotEmpty().allSatisfy(message -> {
+>>>>>>> c370dff (refactor: use assertj allSatisfy instead of for loops in tests)
             String messageEmail = message.get("recipientEmail").asText();
             assertThat(messageEmail)
                 .as("Message %s should reference primary user's email",
@@ -177,7 +193,11 @@ class PickReferentialIntegrityTest extends ParameterizedGenerationTest {
 
         // Verify all admin actions reference the same IDs
         JsonNode adminActions = result.get("adminActions");
+<<<<<<< HEAD
         assertThat(adminActions).allSatisfy(action -> {
+=======
+        assertThat(adminActions).isNotEmpty().allSatisfy(action -> {
+>>>>>>> c370dff (refactor: use assertj allSatisfy instead of for loops in tests)
             assertThat(action.get("adminId").asInt())
                 .as("Admin action should reference admin ID")
                 .isEqualTo(adminId);
@@ -188,7 +208,11 @@ class PickReferentialIntegrityTest extends ParameterizedGenerationTest {
 
         // Verify all user actions reference the same IDs
         JsonNode userActions = result.get("userActions");
+<<<<<<< HEAD
         assertThat(userActions).allSatisfy(action -> {
+=======
+        assertThat(userActions).isNotEmpty().allSatisfy(action -> {
+>>>>>>> c370dff (refactor: use assertj allSatisfy instead of for loops in tests)
             assertThat(action.get("adminId").asInt())
                 .as("User action should reference admin ID")
                 .isEqualTo(adminId);

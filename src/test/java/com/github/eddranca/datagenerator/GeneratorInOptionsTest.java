@@ -32,11 +32,9 @@ class GeneratorInOptionsTest extends ParameterizedGenerationTest {
         JsonNode result = createLegacyJsonNode(generation);
 
         JsonNode items = result.get("items");
-        assertThat(items).isNotNull();
-        assertThat(items.isArray()).isTrue();
-        assertThat(items.size()).isEqualTo(5);
-
-        assertThat(items).allSatisfy(item -> {
+        assertThat(items).isNotNull()
+            .hasSize(5)
+            .allSatisfy(item -> {
             String value = item.get("value").asText();
             int length = item.get("length").asInt();
 
@@ -68,11 +66,9 @@ class GeneratorInOptionsTest extends ParameterizedGenerationTest {
         JsonNode result = createLegacyJsonNode(generation);
 
         JsonNode items = result.get("items");
-        assertThat(items).isNotNull();
-        assertThat(items.isArray()).isTrue();
-        assertThat(items.size()).isEqualTo(5);
-
-        assertThat(items).allSatisfy(item -> {
+        assertThat(items).isNotNull()
+            .hasSize(5)
+            .allSatisfy(item -> {
             String value = item.get("value").asText();
             int baseLength = item.get("baseLength").asInt();
 
@@ -108,11 +104,9 @@ class GeneratorInOptionsTest extends ParameterizedGenerationTest {
         JsonNode result = createLegacyJsonNode(generation);
 
         JsonNode products = result.get("products");
-        assertThat(products).isNotNull();
-        assertThat(products.isArray()).isTrue();
-        assertThat(products.size()).isEqualTo(10);
-
-        assertThat(products).allSatisfy(product -> {
+        assertThat(products).isNotNull()
+            .hasSize(10)
+            .allSatisfy(product -> {
             String name = product.get("name").asText();
             String category = product.get("category").asText();
 
