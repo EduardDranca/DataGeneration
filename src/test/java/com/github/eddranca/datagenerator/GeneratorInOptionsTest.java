@@ -36,14 +36,14 @@ class GeneratorInOptionsTest extends ParameterizedGenerationTest {
         assertThat(items.isArray()).isTrue();
         assertThat(items.size()).isEqualTo(5);
 
-        for (JsonNode item : items) {
+        assertThat(items).allSatisfy(item -> {
             String value = item.get("value").asText();
             int length = item.get("length").asInt();
 
             // The string length should be one of the choice options: 5, 10, or 15
             assertThat(value.length()).isIn(5, 10, 15);
             assertThat(length).isIn(10, 23, 1, 29);
-        }
+        });
     }
 
     @BothImplementationsTest
@@ -72,14 +72,14 @@ class GeneratorInOptionsTest extends ParameterizedGenerationTest {
         assertThat(items.isArray()).isTrue();
         assertThat(items.size()).isEqualTo(5);
 
-        for (JsonNode item : items) {
+        assertThat(items).allSatisfy(item -> {
             String value = item.get("value").asText();
             int baseLength = item.get("baseLength").asInt();
 
             // The string length should match the baseLength
-            assertThat(value.length()).isEqualTo(baseLength);
+            assertThat(value).hasSize(baseLength);
             assertThat(baseLength).isBetween(5, 10);
-        }
+        });
     }
 
     @BothImplementationsTest
@@ -112,13 +112,13 @@ class GeneratorInOptionsTest extends ParameterizedGenerationTest {
         assertThat(products.isArray()).isTrue();
         assertThat(products.size()).isEqualTo(10);
 
-        for (JsonNode product : products) {
+        assertThat(products).allSatisfy(product -> {
             String name = product.get("name").asText();
             String category = product.get("category").asText();
 
             // The name length should be one of the choice options
             assertThat(name.length()).isIn(5, 10, 15);
             assertThat(category).isIn("short", "medium", "long");
-        }
+        });
     }
 }

@@ -140,12 +140,12 @@ class OptionReferenceParser {
             FieldNodeBuilder fieldBuilder = new FieldNodeBuilder(context);
             GeneratedFieldNodeBuilder generatedBuilder = new GeneratedFieldNodeBuilder(context, fieldBuilder);
             DslNode generatorField = generatedBuilder.buildGeneratorBasedField(fieldName + "." + optionKey, generatorNode);
-            
-            if (generatorField instanceof GeneratedFieldNode) {
-                return new GeneratorOptionNode((GeneratedFieldNode) generatorField);
-            } else if (generatorField instanceof ChoiceFieldNode) {
+
+            if (generatorField instanceof GeneratedFieldNode generatedFieldNode) {
+                return new GeneratorOptionNode(generatedFieldNode);
+            } else if (generatorField instanceof ChoiceFieldNode choiceFieldNode) {
                 // Handle choice fields which are also valid generator options
-                return new GeneratorOptionNode((ChoiceFieldNode) generatorField);
+                return new GeneratorOptionNode(choiceFieldNode);
             } else {
                 context.addError("Failed to create generator option '" + optionKey + "' in field '" + fieldName + "' - unexpected node type: " + (generatorField != null ? generatorField.getClass().getSimpleName() : "null"));
                 return null;

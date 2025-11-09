@@ -36,13 +36,13 @@ class RuntimeComputedOptionsTest extends ParameterizedGenerationTest {
         assertThat(employees.isArray()).isTrue();
         assertThat(employees.size()).isEqualTo(5);
 
-        for (JsonNode employee : employees) {
+        assertThat(employees).allSatisfy(employee -> {
             int startAge = employee.get("startAge").asInt();
             int retirementAge = employee.get("retirementAge").asInt();
 
             assertThat(startAge).isBetween(22, 35);
             assertThat(retirementAge).isBetween(startAge, 65);
-        }
+        });
     }
 
     @BothImplementationsTest
@@ -73,17 +73,18 @@ class RuntimeComputedOptionsTest extends ParameterizedGenerationTest {
         assertThat(products.isArray()).isTrue();
         assertThat(products.size()).isEqualTo(10);
 
-        for (JsonNode product : products) {
+        assertThat(products).allSatisfy(product -> {
             String category = product.get("category").asText();
             double price = product.get("price").asDouble();
-
+            
+            assertThat(category).isIn("budget", "premium", "luxury");
+            
             switch (category) {
                 case "budget" -> assertThat(price).isBetween(10.0, 50.0);
                 case "premium" -> assertThat(price).isBetween(100.0, 500.0);
                 case "luxury" -> assertThat(price).isBetween(1000.0, 5000.0);
-                default -> throw new AssertionError("Unexpected category: " + category);
             }
-        }
+        });
     }
 
     @BothImplementationsTest
@@ -113,7 +114,7 @@ class RuntimeComputedOptionsTest extends ParameterizedGenerationTest {
         assertThat(ranges).isNotNull();
         assertThat(ranges.size()).isEqualTo(5);
 
-        for (JsonNode range : ranges) {
+        assertThat(ranges).allSatisfy(range -> {
             int min = range.get("min").asInt();
             int max = range.get("max").asInt();
             int value = range.get("value").asInt();
@@ -121,7 +122,7 @@ class RuntimeComputedOptionsTest extends ParameterizedGenerationTest {
             assertThat(min).isBetween(1, 50);
             assertThat(max).isBetween(51, 100);
             assertThat(value).isBetween(min, max);
-        }
+        });
     }
 
     @BothImplementationsTest
@@ -150,13 +151,13 @@ class RuntimeComputedOptionsTest extends ParameterizedGenerationTest {
         assertThat(items).isNotNull();
         assertThat(items.size()).isEqualTo(3);
 
-        for (JsonNode item : items) {
+        assertThat(items).allSatisfy(item -> {
             int baseValue = item.get("baseValue").asInt();
             int derivedValue = item.get("derivedValue").asInt();
 
             assertThat(baseValue).isBetween(10, 20);
             assertThat(derivedValue).isBetween(baseValue, 100);
-        }
+        });
     }
 
     @BothImplementationsTest
@@ -187,13 +188,13 @@ class RuntimeComputedOptionsTest extends ParameterizedGenerationTest {
         assertThat(items).isNotNull();
         assertThat(items.size()).isEqualTo(5);
 
-        for (JsonNode item : items) {
+        assertThat(items).allSatisfy(item -> {
             int baseValue = item.get("baseValue").asInt();
             int multipliedValue = item.get("data").get("multipliedValue").asInt();
 
             assertThat(baseValue).isBetween(10, 20);
             assertThat(multipliedValue).isBetween(baseValue, 100);
-        }
+        });
     }
 
     @BothImplementationsTest
@@ -250,7 +251,7 @@ class RuntimeComputedOptionsTest extends ParameterizedGenerationTest {
         assertThat(items).isNotNull();
         assertThat(items.size()).isEqualTo(5);
 
-        for (JsonNode item : items) {
+        assertThat(items).allSatisfy(item -> {
             int minValue = item.get("minValue").asInt();
             int maxValue = item.get("maxValue").asInt();
             int value = item.get("value").asInt();
@@ -258,6 +259,6 @@ class RuntimeComputedOptionsTest extends ParameterizedGenerationTest {
             assertThat(minValue).isBetween(1, 10);
             assertThat(maxValue).isBetween(50, 100);
             assertThat(value).isBetween(minValue, maxValue);
-        }
+        });
     }
 }

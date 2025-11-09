@@ -28,6 +28,7 @@ import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
 import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
+import com.github.eddranca.datagenerator.util.FieldApplicationUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -303,17 +304,7 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
             DslNode fieldNode = entry.getValue();
 
             JsonNode value = fieldNode.accept(this);
-
-            if (fieldNode instanceof SpreadFieldNode || fieldNode instanceof ReferenceSpreadFieldNode) {
-                // Spread fields return an object to merge
-                if (value != null && value.isObject()) {
-                    ObjectNode spreadObj = (ObjectNode) value;
-                    spreadObj.fieldNames().forEachRemaining(
-                        fn -> newObject.set(fn, spreadObj.get(fn)));
-                }
-            } else {
-                newObject.set(fieldName, value);
-            }
+            FieldApplicationUtil.applyFieldToObject(newObject, fieldName, fieldNode, value);
         }
 
         return newObject;

@@ -55,15 +55,15 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
         assertThat(products.size()).isEqualTo(2);
 
         // Verify structure of individual items
-        for (JsonNode user : users) {
+        assertThat(users).allSatisfy(user -> {
             assertThat(user.has("id")).isTrue();
             assertThat(user.has("name")).isTrue();
-        }
+        });
 
-        for (JsonNode product : products) {
+        assertThat(products).allSatisfy(product -> {
             assertThat(product.has("name")).isTrue();
             assertThat(product.has("price")).isTrue();
-        }
+        });
     }
 
     @BothImplementationsTest
@@ -151,9 +151,9 @@ class UtilityMethodsExampleTest extends ParameterizedGenerationTest {
         List<JsonNode> orders = collections.get("orders");
         assertThat(orders).hasSize(2);
 
-        for (JsonNode order : orders) {
+        assertThat(orders).allSatisfy(order -> {
             assertThat(order.has("id")).isTrue();
             assertThat(order.get("status").asText()).isEqualTo("pending");
-        }
+        });
     }
 }

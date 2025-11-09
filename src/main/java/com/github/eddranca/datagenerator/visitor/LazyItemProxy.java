@@ -51,14 +51,12 @@ public class LazyItemProxy extends AbstractLazyProxy {
     private void materializeRuntimeOptionDependencies() {
         for (Map.Entry<String, DslNode> entry : fieldNodes.entrySet()) {
             DslNode fieldNode = entry.getValue();
-            
-            if (fieldNode instanceof GeneratedFieldNode genField) {
-                if (genField.getOptions().hasRuntimeOptions()) {
-                    // This field has runtime options - materialize any self-referenced fields first
-                    for (OptionReferenceNode optionRef : genField.getOptions().getRuntimeOptions().values()) {
-                        if (optionRef.getReference() instanceof SelfReferenceNode selfRef) {
-                            materializeSelfReferencedField(selfRef.getFieldName());
-                        }
+
+            if (fieldNode instanceof GeneratedFieldNode genField && genField.getOptions().hasRuntimeOptions()) {
+                // This field has runtime options - materialize any self-referenced fields first
+                for (OptionReferenceNode optionRef : genField.getOptions().getRuntimeOptions().values()) {
+                    if (optionRef.getReference() instanceof SelfReferenceNode selfRef) {
+                        materializeSelfReferencedField(selfRef.getFieldName());
                     }
                 }
             }
@@ -73,8 +71,8 @@ public class LazyItemProxy extends AbstractLazyProxy {
      */
     private void materializeSelfReferencedField(String fieldPath) {
         // Handle nested paths like "data.baseValue" - just get the first part
-        String topLevelField = fieldPath.contains(".") ? 
-            fieldPath.substring(0, fieldPath.indexOf(".")) : 
+        String topLevelField = fieldPath.contains(".") ?
+            fieldPath.substring(0, fieldPath.indexOf(".")) :
             fieldPath;
 
         // Materialize this field if it exists and hasn't been materialized yet
