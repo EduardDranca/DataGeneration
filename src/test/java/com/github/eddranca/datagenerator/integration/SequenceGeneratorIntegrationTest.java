@@ -71,7 +71,7 @@ class SequenceGeneratorIntegrationTest extends ParameterizedGenerationTest {
         List<JsonNode> items = collections.get("items");
 
         // Verify even numbers sequence: 0, 2, 4
-        assertThat(items.get(0).get("evenNumbers").intValue()).isEqualTo(0);
+        assertThat(items.get(0).get("evenNumbers").intValue()).isZero();
         assertThat(items.get(1).get("evenNumbers").intValue()).isEqualTo(2);
         assertThat(items.get(2).get("evenNumbers").intValue()).isEqualTo(4);
 

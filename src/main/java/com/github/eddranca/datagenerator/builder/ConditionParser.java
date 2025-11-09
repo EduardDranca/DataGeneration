@@ -95,20 +95,24 @@ class ConditionParser {
         StringBuilder current = new StringBuilder();
         boolean inQuotes = false;
         int delimiterLength = delimiter.length();
+        int length = str.length();
 
-        for (int i = 0; i < str.length(); i++) {
+        int i = 0;
+        while (i < length) {
             char c = str.charAt(i);
 
             if (c == '\'') {
                 inQuotes = !inQuotes;
                 current.append(c);
-            } else if (!inQuotes && i + delimiterLength <= str.length() &&
+                i++;
+            } else if (!inQuotes && i + delimiterLength <= length &&
                 str.substring(i, i + delimiterLength).equals(delimiter)) {
                 parts.add(current.toString());
                 current = new StringBuilder();
-                i += delimiterLength - 1; // Skip the delimiter
+                i += delimiterLength; // Skip the delimiter
             } else {
                 current.append(c);
+                i++;
             }
         }
 

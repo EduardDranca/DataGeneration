@@ -83,6 +83,7 @@ class RuntimeComputedOptionsTest extends ParameterizedGenerationTest {
                 case "budget" -> assertThat(price).isBetween(10.0, 50.0);
                 case "premium" -> assertThat(price).isBetween(100.0, 500.0);
                 case "luxury" -> assertThat(price).isBetween(1000.0, 5000.0);
+                default -> throw new AssertionError("Unexpected category: " + category);
             }
         });
     }
@@ -216,10 +217,7 @@ class RuntimeComputedOptionsTest extends ParameterizedGenerationTest {
 
         // In eager mode, exception is thrown during generation
         // In lazy mode, exception is thrown during materialization
-        assertThatThrownBy(() -> {
-            Generation generation = generateFromDsl(dsl, memoryOptimized);
-            createLegacyJsonNode(generation);
-        })
+        assertThatThrownBy(() -> generateAndMaterialize(dsl, memoryOptimized))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("No mapping found for value 'unknown'");
     }
@@ -260,5 +258,10 @@ class RuntimeComputedOptionsTest extends ParameterizedGenerationTest {
             assertThat(maxValue).isBetween(50, 100);
             assertThat(value).isBetween(minValue, maxValue);
         });
+    }
+
+    private JsonNode generateAndMaterialize(String dsl, boolean memoryOptimized) throws IOException {
+        Generation generation = generateFromDsl(dsl, memoryOptimized);
+        return createLegacyJsonNode(generation);
     }
 }

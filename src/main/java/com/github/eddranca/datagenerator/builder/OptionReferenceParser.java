@@ -35,6 +35,8 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.REF;
  * @see OptionReferenceNode
  */
 class OptionReferenceParser {
+    private static final String ERROR_IN_FIELD = "' in field '";
+    
     private final NodeBuilderContext context;
     private final ReferenceFieldNodeBuilder referenceBuilder;
 
@@ -107,7 +109,7 @@ class OptionReferenceParser {
             if (refNode.has(MAP)) {
                 JsonNode mapNode = refNode.get(MAP);
                 if (!mapNode.isObject()) {
-                    context.addError("Option '" + optionKey + "' in field '" + fieldName +
+                    context.addError("Option '" + optionKey + ERROR_IN_FIELD + fieldName +
                         "' has invalid map - must be an object");
                     return null;
                 }
@@ -118,7 +120,7 @@ class OptionReferenceParser {
 
             return new OptionReferenceNode(reference);
         } catch (Exception e) {
-            context.addError("Failed to parse runtime option '" + optionKey + "' in field '" + fieldName + "': " + e.getMessage());
+            context.addError("Failed to parse runtime option '" + optionKey + ERROR_IN_FIELD + fieldName + "': " + e.getMessage());
             return null;
         }
     }
@@ -147,11 +149,11 @@ class OptionReferenceParser {
                 // Handle choice fields which are also valid generator options
                 return new GeneratorOptionNode(choiceFieldNode);
             } else {
-                context.addError("Failed to create generator option '" + optionKey + "' in field '" + fieldName + "' - unexpected node type: " + (generatorField != null ? generatorField.getClass().getSimpleName() : "null"));
+                context.addError("Failed to create generator option '" + optionKey + ERROR_IN_FIELD + fieldName + "' - unexpected node type: " + (generatorField != null ? generatorField.getClass().getSimpleName() : "null"));
                 return null;
             }
         } catch (Exception e) {
-            context.addError("Failed to parse generator option '" + optionKey + "' in field '" + fieldName + "': " + e.getMessage());
+            context.addError("Failed to parse generator option '" + optionKey + ERROR_IN_FIELD + fieldName + "': " + e.getMessage());
             return null;
         }
     }
