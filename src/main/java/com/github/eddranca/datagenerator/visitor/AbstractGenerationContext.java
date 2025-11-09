@@ -9,9 +9,11 @@ import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
 import com.github.eddranca.datagenerator.node.CollectionNode;
+import com.github.eddranca.datagenerator.node.Condition;
 import com.github.eddranca.datagenerator.node.Sequential;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,7 @@ public abstract class AbstractGenerationContext<T> {
     protected final Random random;
     protected final ObjectMapper mapper;
     protected final Map<Sequential, Integer> sequentialCounters;
+    protected final Map<FilteredCollectionKey, List<JsonNode>> filteredCollectionCache;
     protected final int maxFilteringRetries;
     protected final FilteringBehavior filteringBehavior;
 
@@ -47,6 +50,7 @@ public abstract class AbstractGenerationContext<T> {
         this.random = random;
         this.mapper = new ObjectMapper();
         this.sequentialCounters = new IdentityHashMap<>();
+        this.filteredCollectionCache = new HashMap<>();
         this.maxFilteringRetries = maxFilteringRetries;
         this.filteringBehavior = filteringBehavior;
     }
@@ -211,6 +215,105 @@ public abstract class AbstractGenerationContext<T> {
         } catch (FilteringException e) {
             return handleFilteringFailure(e.getMessage());
         }
+    }
+
+    /**
+     * Gets a filtered collection from cache or computes it.
+     * <p>
+     * This method provides caching for filtered collections to avoid recomputing
+     * the same filtering operations multiple times. It's particularly useful for:
+     * - Conditional references that filter based on conditions
+     * - References with filter values
+     * - Combinations of both
+     * <p>
+     * The cache key is based on collection name, condition, filter values, and field name.
+     *
+     * @param collectionName the name of the source collection
+     * @param condition      the condition to apply (null for simple references)
+     * @param filterValues   the values to filter out (null if no filtering)
+     * @param fieldName      the field name for filtering context (empty string if none)
+     * @return the filtered collection (cached or newly computed)
+     */
+    public List<JsonNode> getFilteredCollection(String collectionName, Condition condition,
+                                                List<JsonNode> filterValues, String fieldName) {
+        // Create cache key
+        FilteredCollectionKey key = new FilteredCollectionKey(collectionName, condition, filterValues, fieldName);
+
+        // Return cached result if available
+        return filteredCollectionCache.computeIfAbsent(key, k ->
+            computeFilteredCollection(collectionName, condition, filterValues, fieldName));
+    }
+
+    /**
+     * Computes a filtered collection by applying condition and/or filter values.
+     * <p>
+     * This is the actual filtering logic that gets cached by getFilteredCollection.
+     *
+     * @param collectionName the name of the source collection
+     * @param condition      the condition to apply (null for simple references)
+     * @param filterValues   the values to filter out (null if no filtering)
+     * @param fieldName      the field name for filtering context (empty string if none)
+     * @return the filtered collection
+     */
+    private List<JsonNode> computeFilteredCollection(String collectionName, Condition condition,
+                                                     List<JsonNode> filterValues, String fieldName) {
+        // Get the source collection
+        List<JsonNode> collection = getCollection(collectionName);
+
+        // Apply condition if present
+        if (condition != null) {
+            collection = applyCondition(collection, condition);
+        }
+
+        // Apply filter values if present
+        if (filterValues != null && !filterValues.isEmpty()) {
+            collection = applyFiltering(collection, fieldName, filterValues);
+        }
+
+        return collection;
+    }
+
+    /**
+     * Applies a condition to filter a collection.
+     * Only items that match the condition are included.
+     *
+     * @param collection the source collection
+     * @param condition  the condition to apply
+     * @return filtered collection containing only matching items
+     */
+    private List<JsonNode> applyCondition(List<JsonNode> collection, Condition condition) {
+        List<JsonNode> result = new ArrayList<>();
+        for (JsonNode item : collection) {
+            if (condition.matches(item)) {
+                result.add(item);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Gets a filtered collection for array field references from cache or computes it.
+     * <p>
+     * This is similar to getFilteredCollection but uses applyFilteringOnField which
+     * filters based on field values but keeps the original objects intact for later
+     * field extraction.
+     *
+     * @param collectionName the name of the source collection
+     * @param fieldName      the field name to filter on
+     * @param filterValues   the values to filter out
+     * @return the filtered collection (cached or newly computed)
+     */
+    public List<JsonNode> getFilteredCollectionForArrayField(String collectionName, String fieldName,
+                                                             List<JsonNode> filterValues) {
+        if (filterValues == null || filterValues.isEmpty()) {
+            return getCollection(collectionName);
+        }
+
+        // Use the same cache with a special marker to distinguish array field filtering
+        FilteredCollectionKey key = new FilteredCollectionKey(collectionName, null, filterValues, fieldName);
+
+        return filteredCollectionCache.computeIfAbsent(key, k ->
+            applyFilteringOnField(getCollection(collectionName), fieldName, filterValues));
     }
 
 

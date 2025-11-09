@@ -117,9 +117,9 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
     }
 
     private JsonNode resolveWildcardIndex(AbstractGenerationContext<?> context, List<JsonNode> collection, List<JsonNode> filterValues) {
-        // Apply filtering for wildcard index
+        // Use cached filtered collection for wildcard index
         if (filterValues != null && !filterValues.isEmpty()) {
-            collection = context.applyFiltering(collection, hasFieldName() ? fieldName : "", filterValues);
+            collection = context.getFilteredCollection(collectionName, null, filterValues, hasFieldName() ? fieldName : "");
             if (collection.isEmpty()) {
                 return context.handleFilteringFailure("Indexed reference '" + getReferenceString() + "' has no valid values after filtering");
             }
@@ -165,6 +165,8 @@ public class IndexedReferenceNode extends AbstractReferenceNode {
             return context.getMapper().nullNode();
         }
 
+        // For range references, we can't use the global cache since the range is specific to this reference
+        // However, we can still apply filtering efficiently
         List<JsonNode> sub = collection.subList(start, end + 1);
 
         if (filterValues != null && !filterValues.isEmpty()) {

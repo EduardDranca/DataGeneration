@@ -3,7 +3,6 @@ package com.github.eddranca.datagenerator.node;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,22 +53,20 @@ public class ConditionalReferenceNode extends AbstractReferenceNode {
 
     @Override
     public JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues) {
-        // Get the collection
-        List<JsonNode> collection = context.getCollection(getCollectionNameString());
-
-        // Apply conditional filtering
-        List<JsonNode> filteredCollection = applyConditions(collection);
-
-        // Apply additional filters if needed
-        if (filterValues != null && !filterValues.isEmpty()) {
-            filteredCollection = context.applyFiltering(filteredCollection, hasFieldName() ? fieldName : "", filterValues);
-            if (filteredCollection.isEmpty()) {
-                return context.handleFilteringFailure("Conditional reference '" + getReferenceString() + "' has no valid values after filtering");
-            }
-        }
+        // Use cached filtered collection (handles both condition and filter values)
+        List<JsonNode> filteredCollection = context.getFilteredCollection(
+            getCollectionNameString(),
+            condition,
+            filterValues,
+            hasFieldName() ? fieldName : ""
+        );
 
         if (filteredCollection.isEmpty()) {
-            return context.handleFilteringFailure("Conditional reference '" + getReferenceString() + "' matched no items");
+            if (filterValues != null && !filterValues.isEmpty()) {
+                return context.handleFilteringFailure("Conditional reference '" + getReferenceString() + "' has no valid values after filtering");
+            } else {
+                return context.handleFilteringFailure("Conditional reference '" + getReferenceString() + "' matched no items");
+            }
         }
 
         // Select an element
@@ -77,22 +74,6 @@ public class ConditionalReferenceNode extends AbstractReferenceNode {
 
         // Extract field if specified (supporting nested paths)
         return hasFieldName() ? extractNestedField(selected, fieldName) : selected;
-    }
-
-    /**
-     * Filters the collection based on the condition.
-     * Only items that match the condition are included.
-     */
-    private List<JsonNode> applyConditions(List<JsonNode> collection) {
-        List<JsonNode> result = new ArrayList<>();
-        
-        for (JsonNode item : collection) {
-            if (condition.matches(item)) {
-                result.add(item);
-            }
-        }
-        
-        return result;
     }
 
     @Override
