@@ -14,7 +14,7 @@ import java.util.Map;
 import static com.github.eddranca.datagenerator.builder.KeyWords.ARRAY;
 import static com.github.eddranca.datagenerator.builder.KeyWords.COUNT;
 import static com.github.eddranca.datagenerator.builder.KeyWords.GENERATOR;
-import static com.github.eddranca.datagenerator.builder.KeyWords.REFERENCE;
+import static com.github.eddranca.datagenerator.builder.KeyWords.REF;
 
 /**
  * Main field builder that coordinates with specialized builders.
@@ -39,7 +39,7 @@ class FieldNodeBuilder implements FieldBuilder {
             return generatedBuilder.buildGeneratorBasedField(fieldName, fieldDef);
         }
 
-        if (fieldDef.has(REFERENCE)) {
+        if (fieldDef.has(REF)) {
             ReferenceFieldNodeBuilder referenceBuilder = new ReferenceFieldNodeBuilder(context, this);
             return referenceBuilder.buildReferenceBasedField(fieldName, fieldDef);
         }

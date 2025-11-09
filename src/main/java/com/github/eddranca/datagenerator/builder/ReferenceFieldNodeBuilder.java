@@ -20,7 +20,7 @@ import java.util.Optional;
 import static com.github.eddranca.datagenerator.builder.KeyWords.ELLIPSIS;
 import static com.github.eddranca.datagenerator.builder.KeyWords.FIELDS;
 import static com.github.eddranca.datagenerator.builder.KeyWords.FILTER;
-import static com.github.eddranca.datagenerator.builder.KeyWords.REFERENCE;
+import static com.github.eddranca.datagenerator.builder.KeyWords.REF;
 import static com.github.eddranca.datagenerator.builder.KeyWords.SEQUENTIAL;
 import static com.github.eddranca.datagenerator.builder.KeyWords.THIS_PREFIX;
 
@@ -53,7 +53,7 @@ class ReferenceFieldNodeBuilder {
     }
 
     private DslNode buildReferenceField(String fieldName, JsonNode fieldDef) {
-        String reference = fieldDef.get(REFERENCE).asText();
+        String reference = fieldDef.get(REF).asText();
         boolean sequential = fieldDef.path(SEQUENTIAL).asBoolean(false);
 
         List<FilterNode> filters = buildReferenceFilters(fieldName, fieldDef);
@@ -63,7 +63,7 @@ class ReferenceFieldNodeBuilder {
     }
 
     private DslNode buildReferenceSpreadField(String fieldName, JsonNode fieldDef) {
-        String reference = fieldDef.get(REFERENCE).asText();
+        String reference = fieldDef.get(REF).asText();
         boolean sequential = fieldDef.path(SEQUENTIAL).asBoolean(false);
 
         List<String> fields = extractSpreadFields(fieldName, fieldDef);

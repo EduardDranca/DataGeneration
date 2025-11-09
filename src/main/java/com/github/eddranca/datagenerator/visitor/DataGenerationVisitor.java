@@ -151,6 +151,12 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
 
             // Resolve the reference to get the actual value
             JsonNode referencedValue = optionRef.getReference().resolve(context, currentItem, null);
+            
+            // Add null safety check
+            if (referencedValue == null || referencedValue.isNull()) {
+                // Skip this option if the referenced value is null
+                continue;
+            }
 
             // Apply value mapping if configured
             if (optionRef.hasMapping()) {
@@ -159,7 +165,7 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
                     resolved.set(optionKey, mappedValue);
                 } else {
                     throw new IllegalArgumentException(
-                        "No mapping found for value '" + referencedValue.asText() + 
+                        "No mapping found for value '" + referencedValue.asText() +
                         "' in option '" + optionKey + "'"
                     );
                 }

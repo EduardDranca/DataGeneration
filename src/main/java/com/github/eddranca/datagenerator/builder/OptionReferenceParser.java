@@ -74,32 +74,38 @@ class OptionReferenceParser {
     }
 
     private OptionReferenceNode parseOptionReference(String fieldName, String optionKey, JsonNode refNode) {
-        String refString = refNode.get(REF).asText();
-        
-        // Build the reference node
-        AbstractReferenceNode reference = referenceBuilder.buildReferenceNode(
-            fieldName + "." + optionKey, 
-            refString
-        );
+        try {
+            String refString = refNode.get(REF).asText();
 
-        if (reference == null) {
-            return null;
-        }
+            // Build the reference node
+            AbstractReferenceNode reference = referenceBuilder.buildReferenceNode(
+                fieldName + "." + optionKey,
+                refString
+            );
 
-        // Check for mapping
-        if (refNode.has(MAP)) {
-            JsonNode mapNode = refNode.get(MAP);
-            if (!mapNode.isObject()) {
-                context.addError("Option '" + optionKey + "' in field '" + fieldName + 
-                    "' has invalid map - must be an object");
+            if (reference == null) {
+                context.addError("Invalid reference '" + refString + "' in option '" + optionKey + "' of field '" + fieldName + "'");
                 return null;
             }
 
-            Map<String, JsonNode> valueMap = parseValueMap(mapNode);
-            return new OptionReferenceNode(reference, valueMap);
-        }
+            // Check for mapping
+            if (refNode.has(MAP)) {
+                JsonNode mapNode = refNode.get(MAP);
+                if (!mapNode.isObject()) {
+                    context.addError("Option '" + optionKey + "' in field '" + fieldName +
+                        "' has invalid map - must be an object");
+                    return null;
+                }
 
-        return new OptionReferenceNode(reference);
+                Map<String, JsonNode> valueMap = parseValueMap(mapNode);
+                return new OptionReferenceNode(reference, valueMap);
+            }
+
+            return new OptionReferenceNode(reference);
+        } catch (Exception e) {
+            context.addError("Failed to parse runtime option '" + optionKey + "' in field '" + fieldName + "': " + e.getMessage());
+            return null;
+        }
     }
 
     private Map<String, JsonNode> parseValueMap(JsonNode mapNode) {

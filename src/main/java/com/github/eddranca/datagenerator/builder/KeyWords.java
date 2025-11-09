@@ -1,7 +1,6 @@
 package com.github.eddranca.datagenerator.builder;
 
 public class KeyWords {
-    public static final String REFERENCE = "ref";
     public static final String REF = "ref";
     public static final String GENERATOR = "gen";
     public static final String ELLIPSIS = "...";
