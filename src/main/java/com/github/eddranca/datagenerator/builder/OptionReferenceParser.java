@@ -3,6 +3,10 @@ package com.github.eddranca.datagenerator.builder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.node.AbstractReferenceNode;
+import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
+import com.github.eddranca.datagenerator.node.DslNode;
+import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
+import com.github.eddranca.datagenerator.node.GeneratorOptionNode;
 import com.github.eddranca.datagenerator.node.GeneratorOptions;
 import com.github.eddranca.datagenerator.node.OptionReferenceNode;
 
@@ -10,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import static com.github.eddranca.datagenerator.builder.KeyWords.GENERATOR;
 import static com.github.eddranca.datagenerator.builder.KeyWords.MAP;
 import static com.github.eddranca.datagenerator.builder.KeyWords.REF;
 
@@ -49,6 +54,7 @@ class OptionReferenceParser {
 
         ObjectNode staticOptions = ((ObjectNode) optionsNode).objectNode();
         Map<String, OptionReferenceNode> runtimeOptions = new HashMap<>();
+        Map<String, GeneratorOptionNode> generatorOptions = new HashMap<>();
 
         Iterator<Map.Entry<String, JsonNode>> fields = optionsNode.fields();
         while (fields.hasNext()) {
@@ -61,16 +67,25 @@ class OptionReferenceParser {
                 if (optionRef != null) {
                     runtimeOptions.put(optionKey, optionRef);
                 }
+            } else if (isRuntimeGenerator(optionValue)) {
+                GeneratorOptionNode generatorOption = parseGeneratorOption(fieldName, optionKey, optionValue);
+                if (generatorOption != null) {
+                    generatorOptions.put(optionKey, generatorOption);
+                }
             } else {
                 staticOptions.set(optionKey, optionValue);
             }
         }
 
-        return new GeneratorOptions(staticOptions, runtimeOptions);
+        return new GeneratorOptions(staticOptions, runtimeOptions, generatorOptions);
     }
 
     private boolean isRuntimeReference(JsonNode value) {
         return value.isObject() && value.has(REF);
+    }
+
+    private boolean isRuntimeGenerator(JsonNode value) {
+        return value.isObject() && value.has(GENERATOR);
     }
 
     private OptionReferenceNode parseOptionReference(String fieldName, String optionKey, JsonNode refNode) {
@@ -116,5 +131,28 @@ class OptionReferenceParser {
             valueMap.put(entry.getKey(), entry.getValue());
         }
         return valueMap;
+    }
+
+    private GeneratorOptionNode parseGeneratorOption(String fieldName, String optionKey, JsonNode generatorNode) {
+        try {
+            // Create a GeneratedFieldNode from the generator definition
+            // The generatorNode should be a complete field definition (e.g., {"gen": "choice", "options": [1,2,3]})
+            FieldNodeBuilder fieldBuilder = new FieldNodeBuilder(context);
+            GeneratedFieldNodeBuilder generatedBuilder = new GeneratedFieldNodeBuilder(context, fieldBuilder);
+            DslNode generatorField = generatedBuilder.buildGeneratorBasedField(fieldName + "." + optionKey, generatorNode);
+            
+            if (generatorField instanceof GeneratedFieldNode) {
+                return new GeneratorOptionNode((GeneratedFieldNode) generatorField);
+            } else if (generatorField instanceof ChoiceFieldNode) {
+                // Handle choice fields which are also valid generator options
+                return new GeneratorOptionNode((ChoiceFieldNode) generatorField);
+            } else {
+                context.addError("Failed to create generator option '" + optionKey + "' in field '" + fieldName + "' - unexpected node type: " + (generatorField != null ? generatorField.getClass().getSimpleName() : "null"));
+                return null;
+            }
+        } catch (Exception e) {
+            context.addError("Failed to parse generator option '" + optionKey + "' in field '" + fieldName + "': " + e.getMessage());
+            return null;
+        }
     }
 }

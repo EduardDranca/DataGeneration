@@ -1,7 +1,6 @@
 package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,14 +29,20 @@ import java.util.Map;
 public class GeneratorOptions {
     private final JsonNode staticOptions;
     private final Map<String, OptionReferenceNode> runtimeOptions;
+    private final Map<String, GeneratorOptionNode> generatorOptions;
 
     public GeneratorOptions(JsonNode staticOptions) {
-        this(staticOptions, new HashMap<>());
+        this(staticOptions, new HashMap<>(), new HashMap<>());
     }
 
     public GeneratorOptions(JsonNode staticOptions, Map<String, OptionReferenceNode> runtimeOptions) {
+        this(staticOptions, runtimeOptions, new HashMap<>());
+    }
+
+    public GeneratorOptions(JsonNode staticOptions, Map<String, OptionReferenceNode> runtimeOptions, Map<String, GeneratorOptionNode> generatorOptions) {
         this.staticOptions = staticOptions;
         this.runtimeOptions = runtimeOptions;
+        this.generatorOptions = generatorOptions;
     }
 
     public JsonNode getStaticOptions() {
@@ -48,8 +53,16 @@ public class GeneratorOptions {
         return runtimeOptions;
     }
 
+    public Map<String, GeneratorOptionNode> getGeneratorOptions() {
+        return generatorOptions;
+    }
+
     public boolean hasRuntimeOptions() {
-        return !runtimeOptions.isEmpty();
+        return !runtimeOptions.isEmpty() || !generatorOptions.isEmpty();
+    }
+
+    public boolean hasGeneratorOptions() {
+        return !generatorOptions.isEmpty();
     }
 
     /**
@@ -64,5 +77,12 @@ public class GeneratorOptions {
      */
     public OptionReferenceNode getRuntimeOption(String key) {
         return runtimeOptions.get(key);
+    }
+
+    /**
+     * Gets the generator option for a specific key.
+     */
+    public GeneratorOptionNode getGeneratorOption(String key) {
+        return generatorOptions.get(key);
     }
 }

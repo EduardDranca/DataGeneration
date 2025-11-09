@@ -30,5 +30,28 @@
         "decimals": 2
       }
     }
+  },
+  "dynamicStrings": {
+    "count": 8,
+    "item": {
+      "id": {"gen": "sequence", "start": 1},
+      "baseLength": {"gen": "number", "min": 5, "max": 15},
+      "dynamicLength": {
+        "gen": "choice",
+        "options": [3, 5, 7, 10]
+      },
+      "generatedString": {
+        "gen": "string",
+        "length": {"gen": "choice", "options": [5, 10, 15, 20]}
+      },
+      "referenceBasedString": {
+        "gen": "string",
+        "length": {"ref": "this.baseLength"}
+      },
+      "dynamicBasedString": {
+        "gen": "string",
+        "length": {"ref": "this.dynamicLength"}
+      }
+    }
   }
 }

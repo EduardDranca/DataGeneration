@@ -5,6 +5,7 @@ import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
+import com.github.eddranca.datagenerator.node.GeneratorOptions;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
 
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ class GeneratedFieldNodeBuilder {
 
         // Parse options (may contain runtime references)
         OptionReferenceParser optionParser = new OptionReferenceParser(context, referenceBuilder);
-        com.github.eddranca.datagenerator.node.GeneratorOptions options = optionParser.parseOptions(fieldName, fieldDef);
+        GeneratorOptions options = optionParser.parseOptions(fieldName, fieldDef);
 
         return new GeneratedFieldNode(generatorInfo.name, options, generatorInfo.path, filters);
     }

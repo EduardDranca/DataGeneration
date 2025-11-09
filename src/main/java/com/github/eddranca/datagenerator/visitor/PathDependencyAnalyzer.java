@@ -9,6 +9,7 @@ import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
+import com.github.eddranca.datagenerator.node.GeneratorOptionNode;
 import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
 import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
@@ -167,6 +168,12 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
             filter.accept(this);
         }
         
+        return null;
+    }
+
+    @Override
+    public Void visitGeneratorOption(GeneratorOptionNode node) {
+        // Generator options don't reference other collections
         return null;
     }
 

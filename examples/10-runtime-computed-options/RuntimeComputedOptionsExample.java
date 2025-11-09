@@ -49,10 +49,32 @@ public class RuntimeComputedOptionsExample {
             );
         });
 
+        System.out.println("\nDynamic strings with generator-based options:");
+        generation.asJsonNodes().get("dynamicStrings").limit(3).forEach(item -> {
+            System.out.printf("  Item %d: baseLength=%d, dynamicLength=%d%n",
+                item.get("id").asInt(),
+                item.get("baseLength").asInt(),
+                item.get("dynamicLength").asInt()
+            );
+            System.out.printf("    generatedString='%s' (length=%d)%n",
+                item.get("generatedString").asText(),
+                item.get("generatedString").asText().length()
+            );
+            System.out.printf("    referenceBasedString='%s' (length=%d)%n",
+                item.get("referenceBasedString").asText(),
+                item.get("referenceBasedString").asText().length()
+            );
+            System.out.printf("    dynamicBasedString='%s' (length=%d)%n",
+                item.get("dynamicBasedString").asText(),
+                item.get("dynamicBasedString").asText().length()
+            );
+        });
+
         System.out.println("\n=== Key Features ===");
         System.out.println("1. Simple references: {\"ref\": \"this.fieldName\"}");
         System.out.println("2. Mapped references: {\"ref\": \"this.category\", \"map\": {...}}");
-        System.out.println("3. Works with all generators that accept min/max options");
-        System.out.println("4. Supports both eager and memory-optimized modes");
+        System.out.println("3. Generator-based options: {\"gen\": \"choice\", \"options\": [10, 23, 1, 29]}");
+        System.out.println("4. Works with all generators that accept min/max options");
+        System.out.println("5. Supports both eager and memory-optimized modes");
     }
 }
