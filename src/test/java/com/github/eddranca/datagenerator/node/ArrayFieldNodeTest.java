@@ -16,8 +16,8 @@ class ArrayFieldNodeTest {
 
         assertThat(node.hasFixedSize()).isTrue();
         assertThat(node.getSize()).isEqualTo(5);
-        assertThat(node.getMinSize()).isEqualTo(0);
-        assertThat(node.getMaxSize()).isEqualTo(0);
+        assertThat(node.getMinSize()).isZero();
+        assertThat(node.getMaxSize()).isZero();
         assertThat(node.getItemNode()).isEqualTo(mockItemNode);
     }
 
@@ -26,7 +26,7 @@ class ArrayFieldNodeTest {
         ArrayFieldNode node = new ArrayFieldNode(2, 10, mockItemNode);
 
         assertThat(node.hasFixedSize()).isFalse();
-        assertThat(node.getSize()).isEqualTo(0);
+        assertThat(node.getSize()).isZero();
         assertThat(node.getMinSize()).isEqualTo(2);
         assertThat(node.getMaxSize()).isEqualTo(10);
         assertThat(node.getItemNode()).isEqualTo(mockItemNode);
