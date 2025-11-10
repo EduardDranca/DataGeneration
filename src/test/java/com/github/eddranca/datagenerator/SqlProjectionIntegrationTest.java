@@ -10,7 +10,6 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,7 +49,7 @@ class SqlProjectionIntegrationTest extends ParameterizedGenerationTest {
             .generate();
 
         List<String> inserts = generation.streamSqlInsertsWithProjection("users", projection)
-            .collect(Collectors.toList());
+            .toList();
 
         assertThat(inserts)
             .hasSize(2)
@@ -60,7 +59,7 @@ class SqlProjectionIntegrationTest extends ParameterizedGenerationTest {
 
                 List<String> columns = insert.getColumns().stream()
                     .map(Column::getColumnName)
-                    .collect(Collectors.toList());
+                    .toList();
 
                 assertThat(columns)
                     .containsExactlyInAnyOrder("id", "name", "email")
@@ -108,7 +107,7 @@ class SqlProjectionIntegrationTest extends ParameterizedGenerationTest {
             .generate();
 
         List<String> inserts = generation.streamSqlInsertsWithProjection("orders", projection)
-            .collect(Collectors.toList());
+            .toList();
 
         assertThat(inserts)
             .hasSize(2)
@@ -118,7 +117,7 @@ class SqlProjectionIntegrationTest extends ParameterizedGenerationTest {
 
                 List<String> columns = insert.getColumns().stream()
                     .map(Column::getColumnName)
-                    .collect(Collectors.toList());
+                    .toList();
                 assertThat(columns).contains("id", "total", "active", "created_at");
 
                 var values = insert.getValues().getExpressions();
@@ -168,7 +167,7 @@ class SqlProjectionIntegrationTest extends ParameterizedGenerationTest {
         List<String> inserts = createGenerator(memoryOptimized)
             .fromJsonString(dsl)
             .streamSqlInsertsFromSchema("products", createTableSql)
-            .collect(Collectors.toList());
+            .toList();
 
         assertThat(inserts)
             .hasSize(3)
@@ -178,7 +177,7 @@ class SqlProjectionIntegrationTest extends ParameterizedGenerationTest {
 
                 List<String> columns = insert.getColumns().stream()
                     .map(Column::getColumnName)
-                    .collect(Collectors.toList());
+                    .toList();
                 assertThat(columns).containsExactlyInAnyOrder(
                     "id", "name", "price", "in_stock", "created_at"
                 );
@@ -236,8 +235,8 @@ class SqlProjectionIntegrationTest extends ParameterizedGenerationTest {
 
         assertThat(sqlStreams).containsKeys("users", "orders");
 
-        List<String> userInserts = sqlStreams.get("users").collect(Collectors.toList());
-        List<String> orderInserts = sqlStreams.get("orders").collect(Collectors.toList());
+        List<String> userInserts = sqlStreams.get("users").toList();
+        List<String> orderInserts = sqlStreams.get("orders").toList();
 
         assertThat(userInserts)
             .hasSize(2)
@@ -247,7 +246,7 @@ class SqlProjectionIntegrationTest extends ParameterizedGenerationTest {
 
                 List<String> columns = insert.getColumns().stream()
                     .map(Column::getColumnName)
-                    .collect(Collectors.toList());
+                    .toList();
                 assertThat(columns).contains("id", "name", "active");
 
                 var values = insert.getValues().getExpressions();
@@ -272,7 +271,7 @@ class SqlProjectionIntegrationTest extends ParameterizedGenerationTest {
 
                 List<String> columns = insert.getColumns().stream()
                     .map(Column::getColumnName)
-                    .collect(Collectors.toList());
+                    .toList();
                 assertThat(columns).contains("id", "user_id", "total");
 
                 var values = insert.getValues().getExpressions();
@@ -329,7 +328,7 @@ class SqlProjectionIntegrationTest extends ParameterizedGenerationTest {
 
         Map<String, Stream<String>> sqlStreams = generation.asSqlInsertsWithProjections(projections);
 
-        List<String> productInserts = sqlStreams.get("products").collect(Collectors.toList());
+        List<String> productInserts = sqlStreams.get("products").toList();
 
         assertThat(productInserts)
             .hasSize(5)
@@ -339,7 +338,7 @@ class SqlProjectionIntegrationTest extends ParameterizedGenerationTest {
 
                 List<String> columns = insert.getColumns().stream()
                     .map(Column::getColumnName)
-                    .collect(Collectors.toList());
+                    .toList();
 
                 assertThat(columns)
                     .containsExactlyInAnyOrder("id", "name", "category_id", "price")

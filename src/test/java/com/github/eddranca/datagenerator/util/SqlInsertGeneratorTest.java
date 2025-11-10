@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -45,7 +44,7 @@ class SqlInsertGeneratorTest {
 
         List<String> columns = insert.getColumns().stream()
             .map(Column::getColumnName)
-            .collect(Collectors.toList());
+            .toList();
         assertThat(columns).containsExactlyInAnyOrder("id", "name", "active");
 
         var values = insert.getValues().getExpressions();
@@ -58,7 +57,7 @@ class SqlInsertGeneratorTest {
         assertThat(values.get(nameIndex)).isInstanceOf(StringValue.class);
         assertThat(((StringValue) values.get(nameIndex)).getValue()).isEqualTo("John Doe");
         // Boolean without type specification is rendered as "true"/"false" which JSqlParser treats as column reference
-        assertThat(values.get(activeIndex).toString()).isEqualTo("true");
+        assertThat(values.get(activeIndex)).hasToString("true");
     }
 
     @Test
@@ -77,7 +76,7 @@ class SqlInsertGeneratorTest {
         Insert insert = parseInsert(sql);
         List<String> columns = insert.getColumns().stream()
             .map(Column::getColumnName)
-            .collect(Collectors.toList());
+            .toList();
 
         var values = insert.getValues().getExpressions();
         int middleNameIndex = columns.indexOf("middle_name");
@@ -103,7 +102,7 @@ class SqlInsertGeneratorTest {
         Insert insert = parseInsert(sql);
         List<String> columns = insert.getColumns().stream()
             .map(Column::getColumnName)
-            .collect(Collectors.toList());
+            .toList();
 
         var values = insert.getValues().getExpressions();
         int nameIndex = columns.indexOf("name");
@@ -137,7 +136,7 @@ class SqlInsertGeneratorTest {
         Insert insert = parseInsert(sql);
         List<String> columns = insert.getColumns().stream()
             .map(Column::getColumnName)
-            .collect(Collectors.toList());
+            .toList();
 
         assertThat(columns)
             .containsExactlyInAnyOrder("id", "name", "email")
@@ -165,7 +164,7 @@ class SqlInsertGeneratorTest {
         Insert insert = parseInsert(sql);
         List<String> columns = insert.getColumns().stream()
             .map(Column::getColumnName)
-            .collect(Collectors.toList());
+            .toList();
 
         var values = insert.getValues().getExpressions();
         int activeIndex = columns.indexOf("active");
@@ -175,7 +174,7 @@ class SqlInsertGeneratorTest {
         assertThat(values.get(activeIndex)).isInstanceOf(LongValue.class);
         assertThat(((LongValue) values.get(activeIndex)).getValue()).isEqualTo(1L);
         assertThat(values.get(deletedIndex)).isInstanceOf(LongValue.class);
-        assertThat(((LongValue) values.get(deletedIndex)).getValue()).isEqualTo(0L);
+        assertThat(((LongValue) values.get(deletedIndex)).getValue()).isZero();
     }
 
     @Test
@@ -198,7 +197,7 @@ class SqlInsertGeneratorTest {
         Insert insert = parseInsert(sql);
         List<String> columns = insert.getColumns().stream()
             .map(Column::getColumnName)
-            .collect(Collectors.toList());
+            .toList();
 
         assertThat(columns).contains("metadata");
 
@@ -225,7 +224,7 @@ class SqlInsertGeneratorTest {
         Insert insert = parseInsert(sql);
         List<String> columns = insert.getColumns().stream()
             .map(Column::getColumnName)
-            .collect(Collectors.toList());
+            .toList();
 
         assertThat(columns).contains("tags");
 
@@ -262,7 +261,7 @@ class SqlInsertGeneratorTest {
         Insert insert = parseInsert(sql);
         List<String> columns = insert.getColumns().stream()
             .map(Column::getColumnName)
-            .collect(Collectors.toList());
+            .toList();
 
         assertThat(columns)
             .containsExactlyInAnyOrder("id", "name", "created_at", "active")

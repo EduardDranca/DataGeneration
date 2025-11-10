@@ -57,7 +57,6 @@ public class SqlSchemaParser {
                 .build();
 
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Failed to parse CREATE TABLE statement", e);
             throw new SerializationException("Failed to parse CREATE TABLE statement: " + e.getMessage(), e);
         }
     }
