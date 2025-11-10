@@ -24,6 +24,24 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * Main entry point for generating test data from a JSON DSL specification.
+ * <p>
+ * This class provides a fluent builder API for configuring and executing data generation.
+ * It supports both eager (all data in memory) and lazy (streaming) generation modes.
+ * <p>
+ * <b>Thread Safety:</b> This class is NOT thread-safe. Each instance should be used by a single thread.
+ * The internal Random instance and generator registry maintain mutable state that is not synchronized.
+ * If concurrent data generation is needed, create separate DslDataGenerator instances per thread.
+ * <p>
+ * Example usage:
+ * <pre>{@code
+ * Generation result = DslDataGenerator.builder()
+ *     .withSeed(12345L)
+ *     .withMemoryOptimization()
+ *     .generateFromFile("dsl.json");
+ * }</pre>
+ */
 public class DslDataGenerator {
     private final ObjectMapper mapper;
     private final GeneratorRegistry generatorRegistry;

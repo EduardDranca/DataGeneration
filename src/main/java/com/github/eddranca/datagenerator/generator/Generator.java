@@ -4,6 +4,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.List;
 
+/**
+ * Interface for data generators that produce values based on a generation context.
+ * <p>
+ * Generators are the core building blocks for creating test data. Each generator
+ * is responsible for producing values of a specific type (e.g., names, dates, numbers).
+ * <p>
+ * <b>Thread Safety:</b> Generator implementations should be stateless and thread-safe,
+ * as they may be reused across multiple generation operations. Any state needed for
+ * generation should be passed through the GeneratorContext or stored in the context's
+ * Faker instance. Generators that maintain internal state (like SequenceGenerator or
+ * CsvGenerator) use IdentityHashMap with the options JsonNode as the key to maintain
+ * per-field state.
+ */
 public interface Generator {
     /**
      * Helper method to extract a value from a JsonNode using dot notation.
