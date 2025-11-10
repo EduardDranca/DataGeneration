@@ -3,7 +3,6 @@ package com.github.eddranca.datagenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.builder.DslTreeBuilder;
-import com.github.eddranca.datagenerator.exception.DataGenerationException;
 import com.github.eddranca.datagenerator.exception.DslValidationException;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
