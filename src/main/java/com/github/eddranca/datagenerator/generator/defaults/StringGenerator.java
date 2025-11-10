@@ -21,13 +21,21 @@ public class StringGenerator implements Generator {
         int maxLength = context.getIntOption("maxLength", 20);
         int minLength = context.getIntOption("minLength", 1);
 
-        // Handle length (overrides min/max if specified)
+        if (minLength < 0) {
+            throw new IllegalArgumentException("minLength cannot be negative");
+        }
+        if (maxLength > 10000) {
+            throw new IllegalArgumentException("maxLength cannot exceed 10000");
+        }
+
         int length;
         JsonNode options = context.options();
         if (options != null && options.has("length")) {
             length = context.getIntOption("length", 10);
+            if (length < 0 || length > 10000) {
+                throw new IllegalArgumentException("length must be between 0 and 10000");
+            }
         } else {
-            // Ensure minLength doesn't exceed maxLength
             minLength = Math.min(minLength, maxLength);
             length = faker.number().numberBetween(minLength, maxLength + 1);
         }

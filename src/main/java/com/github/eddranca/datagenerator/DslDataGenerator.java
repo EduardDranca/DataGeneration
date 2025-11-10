@@ -18,8 +18,6 @@ import net.datafaker.Faker;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -129,15 +127,13 @@ public class DslDataGenerator {
         return getGeneration(context);
     }
 
-    private <T> Generation getGeneration(AbstractGenerationContext<T> context) {
-        try {
-            Constructor<? extends Generation> constructor = memoryOptimizationEnabled
-                ? LazyGeneration.class.getDeclaredConstructor(Map.class)
-                : EagerGeneration.class.getDeclaredConstructor(Map.class);
-            return constructor.newInstance(context.getNamedCollections());
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                 NoSuchMethodException e) {
-            throw new DataGenerationException("Could not create Generation instance.", e);
+    private Generation getGeneration(AbstractGenerationContext<?> context) {
+        if (memoryOptimizationEnabled) {
+            LazyGenerationContext lazyContext = (LazyGenerationContext) context;
+            return new LazyGeneration(lazyContext.getNamedCollections());
+        } else {
+            EagerGenerationContext eagerContext = (EagerGenerationContext) context;
+            return new EagerGeneration(eagerContext.getNamedCollections());
         }
     }
 

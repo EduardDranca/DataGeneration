@@ -72,16 +72,20 @@ public class DslTreeBuilder {
     }
 
     private void declareCollectionAndTags(String dslKeyName, JsonNode collectionDef) {
-        // Declare both the DSL key name and the final collection name
         String finalCollectionName = collectionDef.has(NAME) ?
             collectionDef.get(NAME).asText() : dslKeyName;
 
+        if (context.hasCollection(dslKeyName)) {
+            errors.add(new ValidationError("root", "Duplicate collection key: " + dslKeyName));
+        }
         context.declareCollection(dslKeyName);
+        
         if (!dslKeyName.equals(finalCollectionName)) {
+            if (context.hasCollection(finalCollectionName)) {
+                errors.add(new ValidationError("root", "Duplicate collection name: " + finalCollectionName));
+            }
             context.declareCollection(finalCollectionName);
         }
-
-
     }
 
 

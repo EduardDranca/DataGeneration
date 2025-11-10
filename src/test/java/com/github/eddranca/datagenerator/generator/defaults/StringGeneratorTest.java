@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class StringGeneratorTest {
 
@@ -53,11 +54,10 @@ class StringGeneratorTest {
     @Test
     void testGenerateNegativeLength() throws Exception {
         JsonNode options = mapper.readTree("{\"length\": -5}");
-        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
-
-        assertThat(result).isNotNull();
-        assertThat(result.isTextual()).isTrue();
-        assertThat(result.asText()).matches("[a-zA-Z0-9]*");
+        
+        assertThatThrownBy(() -> generator.generate(new GeneratorContext(faker, options, mapper)))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("length must be between 0 and 10000");
     }
 
     @Test

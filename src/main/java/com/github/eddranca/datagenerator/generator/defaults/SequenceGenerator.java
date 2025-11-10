@@ -17,18 +17,14 @@ public class SequenceGenerator implements Generator {
         int start = context.getIntOption("start", 0);
         int increment = context.getIntOption("increment", 1);
 
-        // Get the current counter value for this specific options node
-        // Each field using a sequence generator will have its own options node,
-        // so this ensures each field has its own sequence
+        if (increment == 0) {
+            throw new IllegalArgumentException("Sequence increment cannot be zero");
+        }
+
         int current = counters.getOrDefault(options, start);
-
-        // Calculate the next value in the sequence
         int next = current + increment;
-
-        // Update the counter for this options node
         counters.put(options, next);
 
-        // Return the current value (before incrementing)
         return new IntNode(current);
     }
 }
