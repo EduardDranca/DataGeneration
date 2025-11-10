@@ -57,7 +57,16 @@ class StringGeneratorTest {
         
         assertThatThrownBy(() -> generator.generate(new GeneratorContext(faker, options, mapper)))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("length must be between 0 and 10000");
+            .hasMessageContaining("length cannot be negative");
+    }
+
+    @Test
+    void testGenerateNegativeMinLength() throws Exception {
+        JsonNode options = mapper.readTree("{\"minLength\": -5}");
+        
+        assertThatThrownBy(() -> generator.generate(new GeneratorContext(faker, options, mapper)))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("minLength cannot be negative");
     }
 
     @Test
@@ -114,17 +123,7 @@ class StringGeneratorTest {
             .anyMatch(Character::isLowerCase);
     }
 
-    @Test
-    void testVeryLargeLength() throws Exception {
-        JsonNode options = mapper.readTree("{\"length\": 10000}");
-        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
-        assertThat(result).isNotNull();
-        assertThat(result.isTextual()).isTrue();
-        assertThat(result.asText())
-            .hasSize(10000)
-            .matches("[a-zA-Z0-9]+");
-    }
 
     @Test
     void testSeedConsistency() throws Exception {

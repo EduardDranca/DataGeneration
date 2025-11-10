@@ -24,16 +24,13 @@ public class StringGenerator implements Generator {
         if (minLength < 0) {
             throw new IllegalArgumentException("minLength cannot be negative");
         }
-        if (maxLength > 10000) {
-            throw new IllegalArgumentException("maxLength cannot exceed 10000");
-        }
 
         int length;
         JsonNode options = context.options();
         if (options != null && options.has("length")) {
             length = context.getIntOption("length", 10);
-            if (length < 0 || length > 10000) {
-                throw new IllegalArgumentException("length must be between 0 and 10000");
+            if (length < 0) {
+                throw new IllegalArgumentException("length cannot be negative");
             }
         } else {
             minLength = Math.min(minLength, maxLength);
