@@ -127,6 +127,28 @@ public interface Generation {
     Stream<String> streamSqlInserts(String collectionName);
 
     /**
+     * Returns streams of SQL INSERT statements with projection support.
+     *
+     * <p>
+     * Projections allow filtering fields and specifying SQL data types.
+     * Useful for excluding temporary helper fields or ensuring proper type formatting.
+     *
+     * @param projections map of collection names to their SQL projections
+     * @return Map where keys are table names and values are streams of SQL INSERT statements
+     */
+    Map<String, Stream<String>> asSqlInsertsWithProjections(Map<String, com.github.eddranca.datagenerator.util.SqlProjection> projections);
+
+    /**
+     * Generates SQL INSERT statements with projection support for a single collection.
+     *
+     * @param collectionName name of the collection to stream
+     * @param projection     SQL projection for field filtering and type mapping
+     * @return Stream of SQL INSERT statements
+     * @throws IllegalArgumentException if the collection doesn't exist
+     */
+    Stream<String> streamSqlInsertsWithProjection(String collectionName, com.github.eddranca.datagenerator.util.SqlProjection projection);
+
+    /**
      * Convenience method to check if a collection exists.
      *
      * @param collectionName name of the collection to check

@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 
 /**
  * Utility class for generating SQL INSERT statements from JsonNode data.
+ * Supports field projections and data type-aware formatting.
  */
 public final class SqlInsertGenerator {
     private static final Logger logger = Logger.getLogger(SqlInsertGenerator.class.getName());
@@ -33,6 +34,19 @@ public final class SqlInsertGenerator {
      * @throws SerializationException if JSON serialization fails for complex objects
      */
     public static String generateSqlInsert(String tableName, JsonNode item) {
+        return generateSqlInsert(tableName, item, null);
+    }
+
+    /**
+     * Generates a single SQL INSERT statement for an item with projection support.
+     *
+     * @param tableName  the name of the table
+     * @param item       the JsonNode representing the item data
+     * @param projection optional projection for field filtering and type mapping
+     * @return SQL INSERT statement
+     * @throws SerializationException if JSON serialization fails for complex objects
+     */
+    public static String generateSqlInsert(String tableName, JsonNode item, SqlProjection projection) {
         StringBuilder sql = new StringBuilder("INSERT INTO ");
         sql.append(tableName).append(" (");
 
@@ -48,26 +62,31 @@ public final class SqlInsertGenerator {
             String fieldName = field.getKey();
             JsonNode val = field.getValue();
 
+            // Skip fields not in projection
+            if (projection != null && !projection.shouldIncludeField(fieldName)) {
+                continue;
+            }
+
             columns.add(fieldName);
+
+            // Get SQL type for this field if specified
+            String sqlType = projection != null ? projection.getFieldType(fieldName) : null;
 
             if (val.isNull()) {
                 values.add("NULL");
             } else if (val.isNumber()) {
-                values.add(val.asText());
+                values.add(formatNumericValue(val, sqlType));
             } else if (val.isBoolean()) {
-                values.add(val.asText());
+                values.add(formatBooleanValue(val, sqlType));
             } else if (val.isTextual()) {
-                String escaped = val.asText().replace("'", "''");
-                values.add("'" + escaped + "'");
+                values.add(formatTextValue(val.asText(), sqlType));
             } else if (val.isObject() || val.isArray()) {
                 // Handle complex objects by converting to JSON string
-                // Track this field for logging
                 complexFields.add(fieldName);
 
                 try {
                     String jsonString = mapper.writeValueAsString(val);
-                    String escaped = jsonString.replace("'", "''");
-                    values.add("'" + escaped + "'");
+                    values.add(formatTextValue(jsonString, sqlType));
                 } catch (JsonProcessingException e) {
                     logger.log(Level.SEVERE,
                         "Failed to serialize complex object to JSON for table ''{0}'', field ''{1}''",
@@ -76,8 +95,7 @@ public final class SqlInsertGenerator {
                 }
             } else {
                 // Fallback for any other JsonNode types
-                String escaped = val.asText().replace("'", "''");
-                values.add("'" + escaped + "'");
+                values.add(formatTextValue(val.asText(), sqlType));
             }
         }
 
@@ -85,7 +103,6 @@ public final class SqlInsertGenerator {
 
         // Log complex fields once per table with all fields listed
         if (!complexFields.isEmpty()) {
-            // First time seeing this table - log the warning
             logger.log(Level.WARNING,
                 "Complex objects detected in table ''{0}'', fields: {1}. " +
                     "Converting to JSON string representation for SQL insert. " +
@@ -94,5 +111,46 @@ public final class SqlInsertGenerator {
         }
 
         return sql.toString();
+    }
+
+    /**
+     * Formats a numeric value based on SQL type.
+     */
+    private static String formatNumericValue(JsonNode val, String sqlType) {
+        return val.asText();
+    }
+
+    /**
+     * Formats a boolean value based on SQL type.
+     */
+    private static String formatBooleanValue(JsonNode val, String sqlType) {
+        if (sqlType != null) {
+            String upperType = sqlType.toUpperCase();
+            // Handle different boolean representations
+            if (upperType.contains("TINYINT") || upperType.contains("INT")) {
+                return val.asBoolean() ? "1" : "0";
+            }
+        }
+        return val.asText();
+    }
+
+    /**
+     * Formats a text value based on SQL type.
+     * Handles special formatting for DATE, TIMESTAMP, and other types.
+     */
+    private static String formatTextValue(String text, String sqlType) {
+        String escaped = text.replace("'", "''");
+        
+        if (sqlType != null) {
+            String upperType = sqlType.toUpperCase();
+            
+            // For DATE and TIMESTAMP types, use appropriate SQL functions if needed
+            if (upperType.contains("DATE") || upperType.contains("TIMESTAMP")) {
+                // Keep as string literal - databases will handle conversion
+                return "'" + escaped + "'";
+            }
+        }
+        
+        return "'" + escaped + "'";
     }
 }
