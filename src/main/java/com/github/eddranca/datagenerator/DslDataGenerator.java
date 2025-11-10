@@ -3,7 +3,6 @@ package com.github.eddranca.datagenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.builder.DslTreeBuilder;
-import com.github.eddranca.datagenerator.exception.DataGenerationException;
 import com.github.eddranca.datagenerator.exception.DslValidationException;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
@@ -18,14 +17,30 @@ import net.datafaker.Faker;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * Main entry point for generating test data from a JSON DSL specification.
+ * <p>
+ * This class provides a fluent builder API for configuring and executing data generation.
+ * It supports both eager (all data in memory) and lazy (streaming) generation modes.
+ * <p>
+ * <b>Thread Safety:</b> This class is NOT thread-safe. Each instance should be used by a single thread.
+ * The internal Random instance and generator registry maintain mutable state that is not synchronized.
+ * If concurrent data generation is needed, create separate DslDataGenerator instances per thread.
+ * <p>
+ * Example usage:
+ * <pre>{@code
+ * Generation result = DslDataGenerator.builder()
+ *     .withSeed(12345L)
+ *     .withMemoryOptimization()
+ *     .generateFromFile("dsl.json");
+ * }</pre>
+ */
 public class DslDataGenerator {
     private final ObjectMapper mapper;
     private final GeneratorRegistry generatorRegistry;
@@ -129,15 +144,13 @@ public class DslDataGenerator {
         return getGeneration(context);
     }
 
-    private <T> Generation getGeneration(AbstractGenerationContext<T> context) {
-        try {
-            Constructor<? extends Generation> constructor = memoryOptimizationEnabled
-                ? LazyGeneration.class.getDeclaredConstructor(Map.class)
-                : EagerGeneration.class.getDeclaredConstructor(Map.class);
-            return constructor.newInstance(context.getNamedCollections());
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                 NoSuchMethodException e) {
-            throw new DataGenerationException("Could not create Generation instance.", e);
+    private Generation getGeneration(AbstractGenerationContext<?> context) {
+        if (memoryOptimizationEnabled) {
+            LazyGenerationContext lazyContext = (LazyGenerationContext) context;
+            return new LazyGeneration(lazyContext.getNamedCollections());
+        } else {
+            EagerGenerationContext eagerContext = (EagerGenerationContext) context;
+            return new EagerGeneration(eagerContext.getNamedCollections());
         }
     }
 

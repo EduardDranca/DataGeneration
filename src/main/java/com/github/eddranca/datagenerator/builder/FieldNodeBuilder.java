@@ -29,9 +29,12 @@ class FieldNodeBuilder implements FieldBuilder {
 
     @Override
     public DslNode buildField(String fieldName, JsonNode fieldDef) {
-        // Check for count field first - this creates arrays using the shorthand syntax
         if (fieldDef.isObject() && fieldDef.has(COUNT)) {
             return buildFieldWithCount(fieldName, fieldDef);
+        }
+
+        if (fieldDef.isObject()) {
+            validateNoConflictingKeywords(fieldName, fieldDef);
         }
 
         if (fieldDef.has(GENERATOR)) {
@@ -54,6 +57,17 @@ class FieldNodeBuilder implements FieldBuilder {
         }
 
         return new LiteralFieldNode(fieldDef);
+    }
+
+    private void validateNoConflictingKeywords(String fieldName, JsonNode fieldDef) {
+        int keywordCount = 0;
+        if (fieldDef.has(GENERATOR)) keywordCount++;
+        if (fieldDef.has(REF)) keywordCount++;
+        if (fieldDef.has(ARRAY)) keywordCount++;
+        
+        if (keywordCount > 1) {
+            addFieldError(fieldName, "cannot have multiple keywords (gen, ref, array)");
+        }
     }
 
     private DslNode buildObjectField(JsonNode fieldDef) {

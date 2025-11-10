@@ -12,8 +12,12 @@ import java.util.stream.Stream;
  * <p>
  * This interface provides a unified API for both normal and memory-optimized
  * data generation implementations. The memory-optimized implementation uses
- * lazy
- * evaluation to reduce memory usage for large datasets.
+ * lazy evaluation to reduce memory usage for large datasets.
+ * <p>
+ * <b>Thread Safety:</b> Implementations of this interface are NOT thread-safe.
+ * Streams returned by methods should not be accessed concurrently from multiple threads.
+ * Additionally, streams are single-use and cannot be reused after terminal operations.
+ * <p>
  * see {@link LazyGeneration} and {@link EagerGeneration}
  */
 public interface Generation {
