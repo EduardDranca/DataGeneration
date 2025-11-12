@@ -122,7 +122,6 @@
             <groupId>com.github.jsqlparser</groupId>
             <artifactId>jsqlparser</artifactId>
             <version>${jsqlparser.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

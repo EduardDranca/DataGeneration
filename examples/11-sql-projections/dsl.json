@@ -1,0 +1,21 @@
+{
+  "categories": {
+    "count": 3,
+    "item": {
+      "id": {"gen": "sequence", "start": 1},
+      "name": {"gen": "company.industry"}
+    }
+  },
+  "products": {
+    "count": 10,
+    "item": {
+      "id": {"gen": "sequence", "start": 1},
+      "name": {"gen": "company.name"},
+      "category_id": {"ref": "categories[*].id", "sequential": true},
+      "price": {"gen": "number", "min": 10, "max": 1000},
+      "in_stock": {"gen": "boolean"},
+      "created_at": {"gen": "date", "format": "iso_datetime"},
+      "_tempCategoryName": {"ref": "categories[*].name", "sequential": true}
+    }
+  }
+}
