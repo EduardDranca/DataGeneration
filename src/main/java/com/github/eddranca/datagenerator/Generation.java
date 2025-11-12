@@ -1,6 +1,7 @@
 package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.eddranca.datagenerator.util.SqlProjection;
 
 import java.util.Map;
 import java.util.Set;
@@ -136,7 +137,7 @@ public interface Generation {
      * @param projections map of collection names to their SQL projections
      * @return Map where keys are table names and values are streams of SQL INSERT statements
      */
-    Map<String, Stream<String>> asSqlInsertsWithProjections(Map<String, com.github.eddranca.datagenerator.util.SqlProjection> projections);
+    Map<String, Stream<String>> asSqlInsertsWithProjections(Map<String, SqlProjection> projections);
 
     /**
      * Generates SQL INSERT statements with projection support for a single collection.
@@ -146,7 +147,7 @@ public interface Generation {
      * @return Stream of SQL INSERT statements
      * @throws IllegalArgumentException if the collection doesn't exist
      */
-    Stream<String> streamSqlInsertsWithProjection(String collectionName, com.github.eddranca.datagenerator.util.SqlProjection projection);
+    Stream<String> streamSqlInsertsWithProjection(String collectionName, SqlProjection projection);
 
     /**
      * Convenience method to check if a collection exists.

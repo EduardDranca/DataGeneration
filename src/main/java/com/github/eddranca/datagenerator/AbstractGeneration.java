@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.util.SqlInsertGenerator;
 import com.github.eddranca.datagenerator.util.SqlProjection;
+import com.github.eddranca.datagenerator.util.SqlSchemaParser;
 
 import java.io.File;
 import java.io.IOException;
@@ -296,7 +297,7 @@ public abstract class AbstractGeneration<T> implements Generation {
          * @throws IOException if file reading fails or schema parsing fails
          */
         public Map<String, Stream<String>> generateAsSqlFromSchemas(Map<String, String> createTableStatements) throws IOException {
-            Map<String, SqlProjection> projections = com.github.eddranca.datagenerator.util.SqlSchemaParser.parseCreateTables(createTableStatements);
+            Map<String, SqlProjection> projections = SqlSchemaParser.parseCreateTables(createTableStatements);
             return generate().asSqlInsertsWithProjections(projections);
         }
 
@@ -309,7 +310,7 @@ public abstract class AbstractGeneration<T> implements Generation {
          * @throws IOException if file reading fails or schema parsing fails
          */
         public Stream<String> streamSqlInsertsFromSchema(String collectionName, String createTableSql) throws IOException {
-            SqlProjection projection = com.github.eddranca.datagenerator.util.SqlSchemaParser.parseCreateTable(createTableSql);
+            SqlProjection projection = SqlSchemaParser.parseCreateTable(createTableSql);
             return generate().streamSqlInsertsWithProjection(collectionName, projection);
         }
     }
