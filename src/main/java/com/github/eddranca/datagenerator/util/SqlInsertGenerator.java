@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.exception.SerializationException;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -54,9 +53,7 @@ public final class SqlInsertGenerator {
         StringJoiner values = new StringJoiner(", ");
         Set<String> complexFields = new HashSet<>();
 
-        Iterator<Map.Entry<String, JsonNode>> fields = item.fields();
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> field = fields.next();
+        for (Map.Entry<String, JsonNode> field : item.properties()) {
             String fieldName = field.getKey();
             JsonNode val = field.getValue();
 
@@ -153,17 +150,17 @@ public final class SqlInsertGenerator {
      */
     private static String formatTextValue(String text, String sqlType) {
         String escaped = text.replace("'", "''");
-        
+
         if (sqlType != null) {
             String upperType = sqlType.toUpperCase();
-            
+
             // For DATE and TIMESTAMP types, use appropriate SQL functions if needed
             if (upperType.contains("DATE") || upperType.contains("TIMESTAMP")) {
                 // Keep as string literal - databases will handle conversion
                 return "'" + escaped + "'";
             }
         }
-        
+
         return "'" + escaped + "'";
     }
 }
