@@ -63,12 +63,11 @@ public class DslTreeBuilder {
     }
 
     private void declareCollectionsAndTags(JsonNode dslJson) {
-        for (Iterator<Map.Entry<String, JsonNode>> it = dslJson.fields(); it.hasNext(); ) {
-            Map.Entry<String, JsonNode> entry = it.next();
+        dslJson.propertyStream().forEach(entry -> {
             if (!SEED.equals(entry.getKey())) {
                 declareCollectionAndTags(entry.getKey(), entry.getValue());
             }
-        }
+        });
     }
 
     private void declareCollectionAndTags(String dslKeyName, JsonNode collectionDef) {
@@ -79,7 +78,7 @@ public class DslTreeBuilder {
             errors.add(new ValidationError("root", "Duplicate collection key: " + dslKeyName));
         }
         context.declareCollection(dslKeyName);
-        
+
         if (!dslKeyName.equals(finalCollectionName)) {
             if (context.hasCollection(finalCollectionName)) {
                 errors.add(new ValidationError("root", "Duplicate collection name: " + finalCollectionName));
@@ -90,8 +89,7 @@ public class DslTreeBuilder {
 
 
     private void buildCollectionNodes(JsonNode dslJson, RootNode root) {
-        for (Iterator<Map.Entry<String, JsonNode>> it = dslJson.fields(); it.hasNext(); ) {
-            Map.Entry<String, JsonNode> entry = it.next();
+        for (Map.Entry<String, JsonNode> entry : dslJson.properties()) {
             if (!"seed".equals(entry.getKey())) {
                 context.setCurrentCollection(entry.getKey());
                 CollectionNode collection = collectionBuilder.buildCollection(entry.getKey(), entry.getValue());

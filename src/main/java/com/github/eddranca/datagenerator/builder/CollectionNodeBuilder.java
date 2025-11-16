@@ -72,8 +72,7 @@ class CollectionNodeBuilder {
         if (def.has(PICK)) {
             JsonNode pickNode = def.get(PICK);
             if (pickNode.isObject()) {
-                for (Iterator<Map.Entry<String, JsonNode>> it = pickNode.fields(); it.hasNext(); ) {
-                    Map.Entry<String, JsonNode> entry = it.next();
+                for (Map.Entry<String, JsonNode> entry : pickNode.properties()) {
                     int index = entry.getValue().asInt();
                     if (index >= count) {
                         addCollectionPickError(name, entry.getKey(), index, count);
@@ -106,8 +105,7 @@ class CollectionNodeBuilder {
 
         Map<String, DslNode> fields = new LinkedHashMap<>();
 
-        for (Iterator<Map.Entry<String, JsonNode>> it = itemDef.fields(); it.hasNext(); ) {
-            Map.Entry<String, JsonNode> entry = it.next();
+        for (Map.Entry<String, JsonNode> entry : itemDef.properties()) {
             String fieldName = entry.getKey();
             JsonNode fieldDef = entry.getValue();
 

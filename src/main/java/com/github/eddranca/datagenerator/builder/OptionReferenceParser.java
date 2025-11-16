@@ -11,8 +11,8 @@ import com.github.eddranca.datagenerator.node.GeneratorOptions;
 import com.github.eddranca.datagenerator.node.OptionReferenceNode;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.github.eddranca.datagenerator.builder.KeyWords.GENERATOR;
 import static com.github.eddranca.datagenerator.builder.KeyWords.MAP;
@@ -36,7 +36,7 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.REF;
  */
 class OptionReferenceParser {
     private static final String ERROR_IN_FIELD = "' in field '";
-    
+
     private final NodeBuilderContext context;
     private final ReferenceFieldNodeBuilder referenceBuilder;
 
@@ -58,9 +58,7 @@ class OptionReferenceParser {
         Map<String, OptionReferenceNode> runtimeOptions = new HashMap<>();
         Map<String, GeneratorOptionNode> generatorOptions = new HashMap<>();
 
-        Iterator<Map.Entry<String, JsonNode>> fields = optionsNode.fields();
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> entry = fields.next();
+        for (Map.Entry<String, JsonNode> entry : optionsNode.properties()) {
             String optionKey = entry.getKey();
             JsonNode optionValue = entry.getValue();
 
@@ -114,7 +112,7 @@ class OptionReferenceParser {
                     return null;
                 }
 
-                Map<String, JsonNode> valueMap = parseValueMap(mapNode);
+                Map<String, JsonNode> valueMap = mapNode.propertyStream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                 return new OptionReferenceNode(reference, valueMap);
             }
 
@@ -123,16 +121,6 @@ class OptionReferenceParser {
             context.addError("Failed to parse runtime option '" + optionKey + ERROR_IN_FIELD + fieldName + "': " + e.getMessage());
             return null;
         }
-    }
-
-    private Map<String, JsonNode> parseValueMap(JsonNode mapNode) {
-        Map<String, JsonNode> valueMap = new HashMap<>();
-        Iterator<Map.Entry<String, JsonNode>> fields = mapNode.fields();
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> entry = fields.next();
-            valueMap.put(entry.getKey(), entry.getValue());
-        }
-        return valueMap;
     }
 
     private GeneratorOptionNode parseGeneratorOption(String fieldName, String optionKey, JsonNode generatorNode) {

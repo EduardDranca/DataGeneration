@@ -64,7 +64,7 @@ class FieldNodeBuilder implements FieldBuilder {
         if (fieldDef.has(GENERATOR)) keywordCount++;
         if (fieldDef.has(REF)) keywordCount++;
         if (fieldDef.has(ARRAY)) keywordCount++;
-        
+
         if (keywordCount > 1) {
             addFieldError(fieldName, "cannot have multiple keywords (gen, ref, array)");
         }
@@ -72,8 +72,7 @@ class FieldNodeBuilder implements FieldBuilder {
 
     private DslNode buildObjectField(JsonNode fieldDef) {
         Map<String, DslNode> fields = new LinkedHashMap<>();
-        for (Iterator<Map.Entry<String, JsonNode>> it = fieldDef.fields(); it.hasNext(); ) {
-            var field = it.next();
+        for (Map.Entry<String, JsonNode> field : fieldDef.properties()) {
             DslNode fieldNode = buildField(field.getKey(), field.getValue());
             if (fieldNode != null) {
                 fields.put(field.getKey(), fieldNode);
