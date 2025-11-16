@@ -520,4 +520,55 @@ class ExamplesValidationTest extends ParameterizedGenerationTest {
             assertThat(dynamicBasedString).hasSize(dynamicLength);
         });
     }
+
+    @BothImplementationsTest
+    @DisplayName("11-sql-projections should generate SQL with projections and schema parsing")
+    void shouldValidateSqlProjectionsStructure(boolean memoryOptimized) throws IOException {
+        // Given
+        Path dslPath = Paths.get(EXAMPLES_DIR, "11-sql-projections", "dsl.json");
+        File dslFile = dslPath.toFile();
+
+        // When
+        Generation generation = createGenerator(memoryOptimized)
+            .fromFile(dslFile)
+            .generate();
+
+        // Then
+        assertThat(generation.getCollectionNames()).containsExactlyInAnyOrder("categories", "products");
+        assertThat(generation.getCollectionSize("categories")).isEqualTo(3);
+        assertThat(generation.getCollectionSize("products")).isEqualTo(10);
+
+        var collections = collectAllJsonNodes(generation);
+        var categories = collections.get("categories");
+        var products = collections.get("products");
+
+        var categoryIds = categories.stream().map(c -> c.get("id").asInt()).toList();
+
+        // Validate categories structure
+        assertThat(categories).allSatisfy(category -> {
+            assertThat(category.has("id")).isTrue();
+            assertThat(category.has("name")).isTrue();
+            assertThat(category.get("id").asInt()).isGreaterThan(0);
+        });
+
+        // Validate products structure including helper field
+        assertThat(products).allSatisfy(product -> {
+            assertThat(product.has("id")).isTrue();
+            assertThat(product.has("name")).isTrue();
+            assertThat(product.has("category_id")).isTrue();
+            assertThat(product.has("price")).isTrue();
+            assertThat(product.has("in_stock")).isTrue();
+            assertThat(product.has("created_at")).isTrue();
+            assertThat(product.has("_tempCategoryName")).isTrue(); // Helper field exists in data
+
+            // Validate references
+            assertThat(categoryIds).contains(product.get("category_id").asInt());
+            assertThat(product.get("price").asInt()).isBetween(10, 1000);
+            assertThat(product.get("in_stock").isBoolean()).isTrue();
+        });
+
+        // Validate sequential reference distribution
+        var productCategoryIds = products.stream().map(p -> p.get("category_id").asInt()).toList();
+        assertThat(productCategoryIds).containsAll(categoryIds); // All categories should be referenced
+    }
 }
