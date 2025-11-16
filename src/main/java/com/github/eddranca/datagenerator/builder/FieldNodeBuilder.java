@@ -7,7 +7,6 @@ import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

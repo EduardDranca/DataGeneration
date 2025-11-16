@@ -10,7 +10,6 @@ import com.github.eddranca.datagenerator.validation.ReferenceValidationVisitor;
 import com.github.eddranca.datagenerator.validation.ValidationContext;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
