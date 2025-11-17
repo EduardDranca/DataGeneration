@@ -93,14 +93,13 @@ class SimpleReferenceNodeTest {
     void testResolveWithFiltering() {
         SimpleReferenceNode node = new SimpleReferenceNode("users", "name", List.of(), false);
         JsonNode currentItem = mapper.createObjectNode();
-        JsonNode user1 = mapper.createObjectNode().put("name", "John");
-        JsonNode user2 = mapper.createObjectNode().put("name", "Jane");
-        List<JsonNode> filteredCollection = List.of(user2);
+        JsonNode user = mapper.createObjectNode().put("name", "Jane");
+        List<JsonNode> filteredCollection = List.of(user);
         JsonNode filterValue = mapper.valueToTree("John");
         List<JsonNode> filterValues = List.of(filterValue);
 
         when(mockContext.getFilteredCollection("users", null, filterValues, "name")).thenReturn(filteredCollection);
-        when(mockContext.getElementFromCollection(filteredCollection, node, false)).thenReturn(user2);
+        when(mockContext.getElementFromCollection(filteredCollection, node, false)).thenReturn(user);
 
         JsonNode result = node.resolve(mockContext, currentItem, filterValues);
 
