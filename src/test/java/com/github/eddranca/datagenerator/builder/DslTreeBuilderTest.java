@@ -399,4 +399,51 @@ class DslTreeBuilderTest {
         assertThat(result.getErrors()).hasSize(1);
         assertThat(result.getErrors().get(0).toString()).contains("maxSize must be >= minSize");
     }
+
+    @Test
+    void testDuplicateCollectionKeys() throws Exception {
+        // Note: JSON doesn't allow duplicate keys, so Jackson will only keep the last one
+        // This test verifies that when JSON is parsed, we only get one collection
+        String dsl = """
+            {
+                "users": {
+                    "count": 1,
+                    "item": {"id": {"gen": "uuid"}}
+                },
+                "users": {
+                    "count": 2,
+                    "item": {"name": {"gen": "name.firstName"}}
+                }
+            }
+            """;
+
+        DslTreeBuildResult result = builder.build(mapper.readTree(dsl));
+        // JSON parser will only keep the last "users" key, so no duplicate error
+        assertThat(result.hasErrors()).isFalse();
+        assertThat(result.getTree().getCollections()).hasSize(1);
+        assertThat(result.getTree().getCollections().get("users").getCount()).isEqualTo(2);
+    }
+
+    @Test
+    void testDuplicateCollectionNames() throws Exception {
+        String dsl = """
+            {
+                "usersKey1": {
+                    "name": "users",
+                    "count": 1,
+                    "item": {"id": {"gen": "uuid"}}
+                },
+                "usersKey2": {
+                    "name": "users",
+                    "count": 2,
+                    "item": {"name": {"gen": "name.firstName"}}
+                }
+            }
+            """;
+
+        DslTreeBuildResult result = builder.build(mapper.readTree(dsl));
+        assertThat(result.hasErrors()).isTrue();
+        assertThat(result.getErrors()).hasSize(1);
+        assertThat(result.getErrors().get(0).toString()).contains("Duplicate collection name: users");
+    }
 }

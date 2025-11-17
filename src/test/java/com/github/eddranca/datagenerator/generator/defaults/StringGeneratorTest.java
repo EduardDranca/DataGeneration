@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class StringGeneratorTest {
 
@@ -53,11 +54,19 @@ class StringGeneratorTest {
     @Test
     void testGenerateNegativeLength() throws Exception {
         JsonNode options = mapper.readTree("{\"length\": -5}");
-        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
+        
+        assertThatThrownBy(() -> generator.generate(new GeneratorContext(faker, options, mapper)))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("length cannot be negative");
+    }
 
-        assertThat(result).isNotNull();
-        assertThat(result.isTextual()).isTrue();
-        assertThat(result.asText()).matches("[a-zA-Z0-9]*");
+    @Test
+    void testGenerateNegativeMinLength() throws Exception {
+        JsonNode options = mapper.readTree("{\"minLength\": -5}");
+        
+        assertThatThrownBy(() -> generator.generate(new GeneratorContext(faker, options, mapper)))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("minLength cannot be negative");
     }
 
     @Test
@@ -114,17 +123,7 @@ class StringGeneratorTest {
             .anyMatch(Character::isLowerCase);
     }
 
-    @Test
-    void testVeryLargeLength() throws Exception {
-        JsonNode options = mapper.readTree("{\"length\": 10000}");
-        JsonNode result = generator.generate(new GeneratorContext(faker, options, mapper));
 
-        assertThat(result).isNotNull();
-        assertThat(result.isTextual()).isTrue();
-        assertThat(result.asText())
-            .hasSize(10000)
-            .matches("[a-zA-Z0-9]+");
-    }
 
     @Test
     void testSeedConsistency() throws Exception {

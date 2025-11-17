@@ -49,6 +49,7 @@ public abstract class AbstractGenerationContext<T> {
         this.generatorRegistry = generatorRegistry;
         this.random = random;
         this.mapper = new ObjectMapper();
+        // IdentityHashMap for Sequential keys - object identity matters for per-node counters
         this.sequentialCounters = new IdentityHashMap<>();
         this.filteredCollectionCache = new HashMap<>();
         this.maxFilteringRetries = maxFilteringRetries;

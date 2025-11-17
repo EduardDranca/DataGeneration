@@ -36,6 +36,10 @@ public class ValidationContext {
         this.currentCollection = collection;
     }
 
+    public boolean hasCollection(String name) {
+        return declaredCollections.contains(name);
+    }
+
     public boolean isCollectionDeclared(String name) {
         return declaredCollections.contains(name);
     }

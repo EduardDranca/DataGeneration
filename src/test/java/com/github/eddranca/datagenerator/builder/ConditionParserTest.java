@@ -253,7 +253,7 @@ class ConditionParserTest {
 
     @Test
     @DisplayName("Should handle single quote in middle of unquoted value")
-    void shouldHandleSingleQuoteInUnquotedValue() throws Exception {
+    void shouldHandleSingleQuoteInUnquotedValue() {
         // This is an edge case - unquoted value with apostrophe
         // The parser will treat it as starting a quoted string
         Condition condition = parser.parse("name=O'Brien");

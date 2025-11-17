@@ -21,11 +21,12 @@ class GeneratedFieldNodeTest {
 
     @Test
     void testGeneratedFieldWithPath() {
-        JsonNode options = mapper.createObjectNode().put("type", "object");
+        JsonNode optionsNode = mapper.createObjectNode().put("type", "object");
+        GeneratorOptions options = new GeneratorOptions(optionsNode);
         GeneratedFieldNode node = new GeneratedFieldNode("person", options, "firstName", List.of());
 
         assertThat(node.getGeneratorName()).isEqualTo("person");
-        assertThat(node.getOptions()).isEqualTo(options);
+        assertThat(node.getOptions().getStaticOptions()).isEqualTo(optionsNode);
         assertThat(node.getPath()).isEqualTo("firstName");
         assertThat(node.hasPath()).isTrue();
         assertThat(node.hasFilters()).isFalse();
@@ -33,7 +34,8 @@ class GeneratedFieldNodeTest {
 
     @Test
     void testGeneratedFieldWithEmptyPath() {
-        JsonNode options = mapper.createObjectNode();
+        JsonNode optionsNode = mapper.createObjectNode();
+        GeneratorOptions options = new GeneratorOptions(optionsNode);
         GeneratedFieldNode node = new GeneratedFieldNode("name", options, "", List.of());
 
         assertThat(node.getPath()).isEmpty();
@@ -42,7 +44,8 @@ class GeneratedFieldNodeTest {
 
     @Test
     void testGeneratedFieldWithFilters() {
-        JsonNode options = mapper.createObjectNode();
+        JsonNode optionsNode = mapper.createObjectNode();
+        GeneratorOptions options = new GeneratorOptions(optionsNode);
         FilterNode filter1 = new FilterNode(new LiteralFieldNode(mapper.valueToTree("exclude1")));
         FilterNode filter2 = new FilterNode(new LiteralFieldNode(mapper.valueToTree("exclude2")));
         List<FilterNode> filters = List.of(filter1, filter2);
@@ -56,29 +59,32 @@ class GeneratedFieldNodeTest {
 
     @Test
     void testGeneratedFieldWithNullOptions() {
-        GeneratedFieldNode node = new GeneratedFieldNode("name", null, null, List.of());
+        GeneratorOptions options = new GeneratorOptions(null);
+        GeneratedFieldNode node = new GeneratedFieldNode("name", options, null, List.of());
 
         assertThat(node.getGeneratorName()).isEqualTo("name");
-        assertThat(node.getOptions()).isNull();
+        assertThat(node.getOptions().getStaticOptions()).isNull();
     }
 
     @Test
     void testGeneratedFieldWithComplexOptions() {
-        JsonNode options = mapper.createObjectNode()
+        JsonNode optionsNode = mapper.createObjectNode()
             .put("min", 1)
             .put("max", 100)
             .put("type", "integer");
+        GeneratorOptions options = new GeneratorOptions(optionsNode);
 
         GeneratedFieldNode node = new GeneratedFieldNode("number", options, null, List.of());
 
-        assertThat(node.getOptions().get("min").asInt()).isEqualTo(1);
-        assertThat(node.getOptions().get("max").asInt()).isEqualTo(100);
-        assertThat(node.getOptions().get("type").asText()).isEqualTo("integer");
+        assertThat(node.getOptions().getStaticOptions().get("min").asInt()).isEqualTo(1);
+        assertThat(node.getOptions().getStaticOptions().get("max").asInt()).isEqualTo(100);
+        assertThat(node.getOptions().getStaticOptions().get("type").asText()).isEqualTo("integer");
     }
 
     @Test
     void testGeneratedFieldIsImmutable() {
-        JsonNode options = mapper.createObjectNode();
+        JsonNode optionsNode = mapper.createObjectNode();
+        GeneratorOptions options = new GeneratorOptions(optionsNode);
         FilterNode filter = new FilterNode(new LiteralFieldNode(mapper.valueToTree("test")));
         List<FilterNode> originalFilters = List.of(filter);
 

@@ -20,7 +20,7 @@ import java.util.Optional;
 import static com.github.eddranca.datagenerator.builder.KeyWords.ELLIPSIS;
 import static com.github.eddranca.datagenerator.builder.KeyWords.FIELDS;
 import static com.github.eddranca.datagenerator.builder.KeyWords.FILTER;
-import static com.github.eddranca.datagenerator.builder.KeyWords.REFERENCE;
+import static com.github.eddranca.datagenerator.builder.KeyWords.REF;
 import static com.github.eddranca.datagenerator.builder.KeyWords.SEQUENTIAL;
 import static com.github.eddranca.datagenerator.builder.KeyWords.THIS_PREFIX;
 
@@ -29,12 +29,28 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.THIS_PREFIX;
  * Handles all reference types and patterns.
  */
 class ReferenceFieldNodeBuilder {
+    private static final String ERROR_UNDECLARED_COLLECTION = "references undeclared collection: ";
+    private static final String ERROR_INVALID_RANGE_FORMAT = "has invalid range format '";
+    private static final String ERROR_EMPTY_REFERENCE = "has empty reference";
+    private static final String ERROR_FILTER_MUST_BE_ARRAY = "filter must be an array";
+    private static final String ERROR_EMPTY_FIELD_IN_ARRAY_REF = "has empty field name in array reference: ";
+    private static final String ERROR_FIELD_WITHOUT_INDEX = "references field within collection: ";
+    private static final String ERROR_UNDECLARED_COLLECTION_OR_PICK = "references undeclared collection or pick: ";
+    
     private final NodeBuilderContext context;
     private final FieldBuilder fieldBuilder;
 
     public ReferenceFieldNodeBuilder(NodeBuilderContext context, FieldBuilder fieldBuilder) {
         this.context = context;
         this.fieldBuilder = fieldBuilder;
+    }
+
+    /**
+     * Builds a reference node from a reference string.
+     * Used by OptionReferenceParser to build runtime option references.
+     */
+    public AbstractReferenceNode buildReferenceNode(String fieldName, String reference) {
+        return parseReference(fieldName, reference, new ArrayList<>(), false).orElse(null);
     }
 
     public DslNode buildReferenceBasedField(String fieldName, JsonNode fieldDef) {
@@ -45,7 +61,7 @@ class ReferenceFieldNodeBuilder {
     }
 
     private DslNode buildReferenceField(String fieldName, JsonNode fieldDef) {
-        String reference = fieldDef.get(REFERENCE).asText();
+        String reference = fieldDef.get(REF).asText();
         boolean sequential = fieldDef.path(SEQUENTIAL).asBoolean(false);
 
         List<FilterNode> filters = buildReferenceFilters(fieldName, fieldDef);
@@ -55,7 +71,7 @@ class ReferenceFieldNodeBuilder {
     }
 
     private DslNode buildReferenceSpreadField(String fieldName, JsonNode fieldDef) {
-        String reference = fieldDef.get(REFERENCE).asText();
+        String reference = fieldDef.get(REF).asText();
         boolean sequential = fieldDef.path(SEQUENTIAL).asBoolean(false);
 
         List<String> fields = extractSpreadFields(fieldName, fieldDef);
@@ -80,7 +96,7 @@ class ReferenceFieldNodeBuilder {
                     }
                 }
             } else {
-                addReferenceFieldError(fieldName, "filter must be an array");
+                addReferenceFieldError(fieldName, ERROR_FILTER_MUST_BE_ARRAY);
             }
         }
 
@@ -122,7 +138,7 @@ class ReferenceFieldNodeBuilder {
                     }
                 }
             } else {
-                addReferenceSpreadFieldError(fieldName, "filter must be an array");
+                addReferenceSpreadFieldError(fieldName, ERROR_FILTER_MUST_BE_ARRAY);
             }
         }
         return filters;
@@ -131,7 +147,7 @@ class ReferenceFieldNodeBuilder {
     private Optional<AbstractReferenceNode> parseReference(String fieldName, String reference,
                                                            List<FilterNode> filters, boolean sequential) {
         if (reference == null || reference.trim().isEmpty()) {
-            addReferenceFieldError(fieldName, "has empty reference");
+            addReferenceFieldError(fieldName, ERROR_EMPTY_REFERENCE);
             return Optional.empty();
         }
 
@@ -191,12 +207,12 @@ class ReferenceFieldNodeBuilder {
         String field = reference.substring(reference.indexOf("[*].") + 4);
 
         if (!context.isCollectionDeclared(collectionName)) {
-            addReferenceFieldError(fieldName, "references undeclared collection: " + collectionName);
+            addReferenceFieldError(fieldName, ERROR_UNDECLARED_COLLECTION + collectionName);
             return Optional.empty();
         }
 
         if (field.isEmpty()) {
-            addReferenceFieldError(fieldName, "has empty field name in array reference: " + reference);
+            addReferenceFieldError(fieldName, ERROR_EMPTY_FIELD_IN_ARRAY_REF + reference);
             return Optional.empty();
         }
 
@@ -214,7 +230,7 @@ class ReferenceFieldNodeBuilder {
         }
 
         if (!context.isCollectionDeclared(collectionName)) {
-            addReferenceFieldError(fieldName, "references undeclared collection: " + collectionName);
+            addReferenceFieldError(fieldName, ERROR_UNDECLARED_COLLECTION + collectionName);
             return Optional.empty();
         }
 
@@ -227,7 +243,7 @@ class ReferenceFieldNodeBuilder {
         try {
             return Optional.of(new IndexedReferenceNode(collectionName, indexPart, fieldPart, filters, sequential));
         } catch (IllegalArgumentException e) {
-            addReferenceFieldError(fieldName, "has invalid range format '" + indexPart + "': " + e.getMessage());
+            addReferenceFieldError(fieldName, ERROR_INVALID_RANGE_FORMAT + indexPart + "': " + e.getMessage());
             return Optional.empty();
         }
     }
@@ -245,7 +261,7 @@ class ReferenceFieldNodeBuilder {
             return Optional.of(new SimpleReferenceNode(baseName, field, filters, sequential));
         }
 
-        addReferenceFieldError(fieldName, "references field within collection: " + reference + " without index");
+        addReferenceFieldError(fieldName, ERROR_FIELD_WITHOUT_INDEX + reference + " without index");
         return Optional.empty();
     }
 
@@ -259,7 +275,7 @@ class ReferenceFieldNodeBuilder {
             return Optional.of(new SimpleReferenceNode(reference, null, filters, sequential));
         }
 
-        addReferenceFieldError(fieldName, "references undeclared collection or pick: " + reference);
+        addReferenceFieldError(fieldName, ERROR_UNDECLARED_COLLECTION_OR_PICK + reference);
         return Optional.empty();
     }
 
@@ -287,7 +303,7 @@ class ReferenceFieldNodeBuilder {
 
         // Check for multiple colons (invalid)
         if (indexPart.chars().filter(ch -> ch == ':').count() > 1) {
-            return Optional.of("has invalid range format '" + indexPart + "' - use 'start:end' with single colon (e.g., '0:99', '10:', ':99')");
+            return Optional.of(ERROR_INVALID_RANGE_FORMAT + indexPart + "' - use 'start:end' with single colon (e.g., '0:99', '10:', ':99')");
         }
 
         // If it contains a colon, it's a range
@@ -302,7 +318,7 @@ class ReferenceFieldNodeBuilder {
     private Optional<String> validateRangeFormat(String indexPart) {
         String[] parts = indexPart.split(":", -1);
         if (parts.length != 2) {
-            return Optional.of("has invalid range format '" + indexPart + "' - use 'start:end' format (e.g., '0:99', '10:', ':99')");
+            return Optional.of(ERROR_INVALID_RANGE_FORMAT + indexPart + "' - use 'start:end' format (e.g., '0:99', '10:', ':99')");
         }
 
         String start = parts[0];
@@ -372,7 +388,7 @@ class ReferenceFieldNodeBuilder {
         }
         
         if (!context.isCollectionDeclared(collectionName)) {
-            addReferenceFieldError(fieldName, "references undeclared collection: " + collectionName);
+            addReferenceFieldError(fieldName, ERROR_UNDECLARED_COLLECTION + collectionName);
             return Optional.empty();
         }
         

@@ -1,5 +1,6 @@
 package com.github.eddranca.datagenerator.node;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public class CollectionNode implements DslNode {
         this.name = name;
         this.count = count;
         this.item = item;
-        this.picks = new HashMap<>(picks);
+        this.picks = Collections.unmodifiableMap(new HashMap<>(picks));
         this.collectionName = collectionName;
     }
 

@@ -59,16 +59,7 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
             }
             """);
 
-        assertThatThrownBy(() -> {
-            Generation generation = createGenerator(memoryOptimized)
-                .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
-                .fromJsonNode(dslNode)
-                .generate();
-
-            // Force evaluation by consuming the stream
-            generation.streamJsonNodes("items").forEach(item -> {
-            });
-        })
+        assertThatThrownBy(() -> generateAndConsumeWithThrowBehavior(dslNode, memoryOptimized))
             .isInstanceOf(FilteringException.class)
             .hasMessageContaining("All choice options were filtered out");
     }
@@ -96,16 +87,7 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
             }
             """);
 
-        assertThatThrownBy(() -> {
-            Generation generation = createGenerator(memoryOptimized)
-                .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
-                .fromJsonNode(dslNode)
-                .generate();
-
-            // Force evaluation by consuming the stream
-            generation.streamJsonNodes("filtered_items").forEach(item -> {
-            });
-        })
+        assertThatThrownBy(() -> generateAndConsumeCollection(dslNode, memoryOptimized, "filtered_items"))
             .isInstanceOf(FilteringException.class)
             .hasMessageContaining("has no valid values after filtering");
     }
@@ -206,5 +188,27 @@ class FilteringConfigurationTest extends ParameterizedGenerationTest {
                 int value = number.intValue();
                 assertThat(value).isBetween(6, 10);
             });
+    }
+
+    private void generateAndConsumeWithThrowBehavior(JsonNode dslNode, boolean memoryOptimized) throws IOException {
+        Generation generation = createGenerator(memoryOptimized)
+            .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
+            .fromJsonNode(dslNode)
+            .generate();
+
+        // Force evaluation by consuming the stream
+        generation.streamJsonNodes("items").forEach(item -> {
+        });
+    }
+
+    private void generateAndConsumeCollection(JsonNode dslNode, boolean memoryOptimized, String collectionName) throws IOException {
+        Generation generation = createGenerator(memoryOptimized)
+            .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
+            .fromJsonNode(dslNode)
+            .generate();
+
+        // Force evaluation by consuming the stream
+        generation.streamJsonNodes(collectionName).forEach(item -> {
+        });
     }
 }

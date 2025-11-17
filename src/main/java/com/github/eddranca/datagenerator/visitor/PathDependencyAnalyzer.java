@@ -9,10 +9,12 @@ import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
+import com.github.eddranca.datagenerator.node.GeneratorOptionNode;
 import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
 import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
+import com.github.eddranca.datagenerator.node.OptionReferenceNode;
 import com.github.eddranca.datagenerator.node.PickReferenceNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
@@ -152,7 +154,26 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitGeneratedField(GeneratedFieldNode node) {
-        // Generated fields don't reference collections
+        // Analyze runtime-computed options for cross-collection dependencies
+        if (node.getOptions().hasRuntimeOptions()) {
+            for (OptionReferenceNode optionRef : node.getOptions().getRuntimeOptions().values()) {
+                // Visit the reference node to track any cross-collection dependencies
+                // (self-references are handled separately in LazyItemProxy)
+                optionRef.getReference().accept(this);
+            }
+        }
+        
+        // Analyze filters for dependencies
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
+        
+        return null;
+    }
+
+    @Override
+    public Void visitGeneratorOption(GeneratorOptionNode node) {
+        // Generator options don't reference other collections
         return null;
     }
 
