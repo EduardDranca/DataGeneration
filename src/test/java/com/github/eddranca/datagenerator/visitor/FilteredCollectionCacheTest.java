@@ -116,14 +116,9 @@ class FilteredCollectionCacheTest extends ParameterizedGenerationTest {
             assertThat(productId).isNotEqualTo(expensiveId);
 
             // Find the product and verify it's electronics
-            JsonNode product = products.stream()
+            products.stream()
                 .filter(p -> p.get("id").asText().equals(productId))
-                .findFirst()
-                .orElse(null);
-
-            if (product != null) {
-                assertThat(product.get("category").asText()).isEqualTo("electronics");
-            }
+                .findFirst().ifPresent(product -> assertThat(product.get("category").asText()).isEqualTo("electronics"));
         }
     }
 
@@ -239,8 +234,8 @@ class FilteredCollectionCacheTest extends ParameterizedGenerationTest {
         FilteredCollectionKey key1 = new FilteredCollectionKey("users", null, filterValues, "name");
         FilteredCollectionKey key2 = new FilteredCollectionKey("users", null, filterValues, "name");
 
-        assertThat(key1).isEqualTo(key2);
-        assertThat(key1.hashCode()).isEqualTo(key2.hashCode());
+        assertThat(key1).isEqualTo(key2)
+            .hasSameHashCodeAs(key2);
 
         // Different collection names
         FilteredCollectionKey key3 = new FilteredCollectionKey("products", null, filterValues, "name");
@@ -252,9 +247,9 @@ class FilteredCollectionCacheTest extends ParameterizedGenerationTest {
 
         // Test toString
         String toString = key1.toString();
-        assertThat(toString).contains("users");
-        assertThat(toString).contains("filters=1");
-        assertThat(toString).contains("field='name'");
+        assertThat(toString).contains("users")
+            .contains("filters=1")
+            .contains("field='name'");
     }
 
 
@@ -306,9 +301,8 @@ class FilteredCollectionCacheTest extends ParameterizedGenerationTest {
         int totalReferences = 5000; // 1000 activities × 5 references each
         int collectionSize = 100; // users collection size
         int cachedOperations = totalReferences - 1; // All but the first reference hit cache
-        int operationsPerFilter = collectionSize; // Each filter iterates through collection
-        int operationsSaved = cachedOperations * operationsPerFilter;
-        
+        int operationsSaved = cachedOperations * collectionSize;
+
         System.out.println("\n=== Cache Performance Analysis ===");
         System.out.println("Generation time: " + timeWithCache / 1_000_000 + "ms");
         System.out.println("Total references: " + totalReferences);
@@ -317,7 +311,7 @@ class FilteredCollectionCacheTest extends ParameterizedGenerationTest {
         System.out.println("Without cache: Would need to filter 100-item collection 5000 times");
         System.out.println("With cache: Filter once, reuse 4999 times");
         System.out.println("Theoretical speedup: ~" + totalReferences + "x for filtering operations\n");
-        
+
         assertThat(timeWithCache).isGreaterThan(0);
     }
 
@@ -353,19 +347,19 @@ class FilteredCollectionCacheTest extends ParameterizedGenerationTest {
         long duration = System.nanoTime() - start;
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
-        
+
         assertThat(collections.get("products")).hasSize(500);
         assertThat(collections.get("recommendations")).hasSize(200);
 
         // With cache: The complex condition is evaluated once and reused 600 times (200 × 3)
         // Without cache: Would evaluate the condition 600 times
-        System.out.println("Generation time (" + (memoryOptimized ? "lazy" : "eager") + "): " + 
-                          duration / 1_000_000 + "ms for 600 filtered references");
-        
+        System.out.println("Generation time (" + (memoryOptimized ? "lazy" : "eager") + "): " +
+            duration / 1_000_000 + "ms for 600 filtered references");
+
         // Verify all recommendations reference valid products
         List<JsonNode> products = collections.get("products");
         List<JsonNode> recommendations = collections.get("recommendations");
-        
+
         for (JsonNode rec : recommendations) {
             for (String field : List.of("product1", "product2", "product3")) {
                 String productId = rec.get(field).asText();
@@ -373,7 +367,7 @@ class FilteredCollectionCacheTest extends ParameterizedGenerationTest {
                     .filter(p -> p.get("id").asText().equals(productId))
                     .findFirst()
                     .orElse(null);
-                
+
                 if (product != null) {
                     assertThat(product.get("category").asText()).isEqualTo("electronics");
                     assertThat(product.get("inStock").asBoolean()).isTrue();
