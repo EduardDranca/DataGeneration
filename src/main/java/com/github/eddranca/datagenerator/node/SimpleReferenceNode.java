@@ -41,15 +41,16 @@ public class SimpleReferenceNode extends AbstractReferenceNode {
 
     @Override
     public JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues) {
-        // Get the collection
-        List<JsonNode> collection = context.getCollection(collectionName);
-
-        // Apply filtering if needed
+        // Use cached filtered collection if filtering is needed
+        List<JsonNode> collection;
         if (filterValues != null && !filterValues.isEmpty()) {
-            collection = context.applyFiltering(collection, hasFieldName() ? fieldName : "", filterValues);
+            collection = context.getFilteredCollection(collectionName, null, filterValues, hasFieldName() ? fieldName : "");
             if (collection.isEmpty()) {
                 return context.handleFilteringFailure("Simple reference '" + getReferenceString() + "' has no valid values after filtering");
             }
+        } else {
+            // No filtering needed, get collection directly
+            collection = context.getCollection(collectionName);
         }
 
         if (collection.isEmpty()) {

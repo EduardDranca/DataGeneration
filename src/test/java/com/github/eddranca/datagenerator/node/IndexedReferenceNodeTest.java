@@ -142,15 +142,12 @@ class IndexedReferenceNodeTest {
     void testResolveWildcardIndexWithFiltering() {
         IndexedReferenceNode node = new IndexedReferenceNode("users", "*", "name", List.of(), false);
         JsonNode currentItem = mapper.createObjectNode();
-        JsonNode user1 = mapper.createObjectNode().put("name", "John");
         JsonNode user2 = mapper.createObjectNode().put("name", "Jane");
-        List<JsonNode> originalCollection = List.of(user1, user2);
         List<JsonNode> filteredCollection = List.of(user2);
         JsonNode filterValue = mapper.valueToTree("John");
         List<JsonNode> filterValues = List.of(filterValue);
 
-        when(mockContext.getCollection("users")).thenReturn(originalCollection);
-        when(mockContext.applyFiltering(originalCollection, "name", filterValues)).thenReturn(filteredCollection);
+        when(mockContext.getFilteredCollection("users", null, filterValues, "name")).thenReturn(filteredCollection);
         when(mockContext.getElementFromCollection(filteredCollection, node, false)).thenReturn(user2);
 
         JsonNode result = node.resolve(mockContext, currentItem, filterValues);
