@@ -321,10 +321,19 @@ Prevent items from referencing themselves:
 ## Limitations
 
 - Can only filter by specific item references (e.g., `{"ref": "users[0].id"}`), not by field values
-- Cannot filter based on complex conditions (e.g., "all users where age > 30")
 - Cannot filter based on computed values
 - Filtering all values throws exception (unless configured otherwise)
 - Boolean generator is the only generator with built-in filtering support
+
+:::tip Use Conditional References for Field-Based Filtering
+If you need to filter based on field values (e.g., "all users where status='active'"), use **conditional references** instead:
+
+```json
+{"ref": "users[status='active'].id"}
+```
+
+See [References - Conditional Reference](./references.md#conditional-reference) for details.
+:::
 
 ## Error Handling
 

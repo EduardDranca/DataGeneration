@@ -8,6 +8,7 @@ Step-by-step guides for specific tasks:
 
 - [Custom Generators](./how-to/custom-generators.md) - Create your own generators
 - [Memory Optimization](./how-to/memory-optimization.md) - Handle large datasets efficiently
+- [Runtime-Computed Options](./how-to/runtime-computed-options.md) - Dynamic generator options based on other fields
 
 ## Patterns
 
@@ -75,6 +76,37 @@ Exclude specific values from references:
   "userId": {
     "ref": "users[*].id",
     "filter": [{"ref": "bannedUser.id"}]
+  }
+}
+```
+
+### Use Conditional References for Field-Based Filtering
+
+Filter collections by field values before referencing:
+
+```json
+{
+  "orders": {
+    "count": 50,
+    "item": {
+      "userId": {"ref": "users[status='active' and age>=21].id"},
+      "productId": {"ref": "products[stock>0].id"}
+    }
+  }
+}
+```
+
+### Use Range References for Segmented Data
+
+Reference specific subsets by index:
+
+```json
+{
+  "regionalManagers": {
+    "count": 4,
+    "item": {
+      "managedEmployeeId": {"ref": "employees[0:4].id"}
+    }
   }
 }
 ```

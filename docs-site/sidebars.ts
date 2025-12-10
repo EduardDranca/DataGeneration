@@ -87,6 +87,29 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Guides',
+      items: [
+        'guides/overview',
+        {
+          type: 'category',
+          label: 'How-To',
+          items: [
+            'guides/how-to/custom-generators',
+            'guides/how-to/memory-optimization',
+            'guides/how-to/runtime-computed-options',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Patterns',
+          items: [
+            'guides/patterns/complex-scenarios',
+          ],
+        },
+      ],
+    },
+    {
+      type: 'category',
       label: 'API',
       items: [
         'api/java-api',
@@ -147,6 +170,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'guides/how-to/custom-generators',
         'guides/how-to/memory-optimization',
+        'guides/how-to/runtime-computed-options',
       ],
     },
     {

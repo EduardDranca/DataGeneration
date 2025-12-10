@@ -18,10 +18,20 @@ Complete reference for the DataGeneration DSL syntax.
 ## Topics
 
 - [Collections](./collections.md) - Define collections and items
-- [References](./references.md) - Create relationships between collections
+- [References](./references.md) - Create relationships between collections (including range and conditional references)
 - [Arrays](./arrays.md) - Generate arrays of values
 - [Filtering](./filtering.md) - Exclude specific values
 - [Static Values](./static-values.md) - Use literal values
+
+## Key Features
+
+### Reference Types
+- **Simple** `[*]` - Random item
+- **Indexed** `[0]` - Specific item
+- **Range** `[0:9]` - Subset by index range
+- **Conditional** `[status='active']` - Filter by field values
+- **Sequential** - Cycle through items in order
+- **Self** `this.field` - Reference same item
 
 ## Quick Examples
 
