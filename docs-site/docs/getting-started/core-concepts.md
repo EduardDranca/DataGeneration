@@ -104,7 +104,7 @@ Generate arrays of values:
     "array": {
       "minSize": 2,                 // Variable size
       "maxSize": 10,
-      "item": {"gen": "number", "min": 0, "max": 100"}
+      "item": {"gen": "number", "min": 0, "max": 100}
     }
   }
 }

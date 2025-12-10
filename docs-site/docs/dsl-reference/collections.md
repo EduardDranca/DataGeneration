@@ -39,7 +39,7 @@ Define multiple collections in one DSL:
     "item": {
       "id": {"gen": "uuid"},
       "name": {"gen": "lorem.word"},
-      "price": {"gen": "float", "min": 9.99, "max": 999.99", "decimals": 2}
+      "price": {"gen": "float", "min": 9.99, "max": 999.99, "decimals": 2}
     }
   }
 }

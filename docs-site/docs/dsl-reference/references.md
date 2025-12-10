@@ -314,7 +314,7 @@ Copy all fields from a referenced object:
     "item": {
       "type": {"gen": "choice", "options": ["premium", "basic"]},
       "features": {"gen": "lorem.words", "words": 3},
-      "price": {"gen": "float", "min": 9.99, "max": 99.99", "decimals": 2}
+      "price": {"gen": "float", "min": 9.99, "max": 99.99, "decimals": 2}
     }
   },
   "products": {

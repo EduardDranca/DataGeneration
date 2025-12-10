@@ -158,7 +158,7 @@ Each field using sequence has its own independent counter:
     "count": 24,
     "item": {
       "hour": {"gen": "sequence", "start": 0, "increment": 1},
-      "temperature": {"gen": "float", "min": 15.0, "max": 30.0", "decimals": 1},
+      "temperature": {"gen": "float", "min": 15.0, "max": 30.0, "decimals": 1},
       "humidity": {"gen": "number", "min": 30, "max": 80}
     }
   }

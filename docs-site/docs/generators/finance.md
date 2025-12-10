@@ -159,7 +159,7 @@ This generator has **no options**.
       "cardNumber": {"gen": "finance.creditCard"},
       "cardHolder": {"gen": "name.fullName"},
       "expiryMonth": {"gen": "number", "min": 1, "max": 12},
-      "expiryYear": {"gen": "number", "min": 2024, "max": 2030"},
+      "expiryYear": {"gen": "number", "min": 2024, "max": 2030},
       "cvv": {"gen": "string", "regex": "[0-9]{3}"},
       "cardType": {"gen": "choice", "options": ["Visa", "Mastercard", "Amex"]},
       "creditLimit": {"gen": "float", "min": 1000, "max": 50000, "decimals": 2}

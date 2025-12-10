@@ -99,7 +99,7 @@ Any generator can be used in arrays:
       "prices": {
         "array": {
           "size": 5,
-          "item": {"gen": "float", "min": 9.99, "max": 999.99", "decimals": 2}
+          "item": {"gen": "float", "min": 9.99, "max": 999.99, "decimals": 2}
         }
       }
     }
@@ -184,7 +184,7 @@ Arrays can contain objects with nested structures:
           "item": {
             "productId": {"gen": "uuid"},
             "quantity": {"gen": "number", "min": 1, "max": 10},
-            "price": {"gen": "float", "min": 9.99, "max": 99.99", "decimals": 2}
+            "price": {"gen": "float", "min": 9.99, "max": 99.99, "decimals": 2}
           }
         }
       }
@@ -325,7 +325,7 @@ Use sequential references for predictable distribution:
       "item": {
         "productId": {"ref": "products[*].id"},
         "quantity": {"gen": "number", "min": 1, "max": 5},
-        "unitPrice": {"gen": "float", "min": 9.99, "max": 999.99", "decimals": 2}
+        "unitPrice": {"gen": "float", "min": 9.99, "max": 999.99, "decimals": 2}
       }
     }
   }
@@ -341,7 +341,7 @@ Use sequential references for predictable distribution:
       "size": 24,
       "item": {
         "hour": {"gen": "sequence", "start": 0, "increment": 1},
-        "temperature": {"gen": "float", "min": 15.0, "max": 30.0", "decimals": 1},
+        "temperature": {"gen": "float", "min": 15.0, "max": 30.0, "decimals": 1},
         "humidity": {"gen": "number", "min": 30, "max": 80}
       }
     }

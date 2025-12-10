@@ -74,8 +74,8 @@ Without options, generates any integer value.
     "item": {
       "id": {"gen": "uuid"},
       "name": {"gen": "lorem.word"},
-      "stock": {"gen": "number", "min": 0, "max": 1000"},
-      "reorderPoint": {"gen": "number", "min": 10, "max": 50"}
+      "stock": {"gen": "number", "min": 0, "max": 1000},
+      "reorderPoint": {"gen": "number", "min": 10, "max": 50}
     }
   }
 }

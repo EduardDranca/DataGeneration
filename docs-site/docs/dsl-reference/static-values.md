@@ -135,7 +135,7 @@ Combine static and generated values in the same item:
       "pricing": {
         "currency": "USD",
         "taxRate": 0.08,
-        "amount": {"gen": "float", "min": 9.99, "max": 999.99", "decimals": 2}
+        "amount": {"gen": "float", "min": 9.99, "max": 999.99, "decimals": 2}
       },
       "metadata": {
         "version": 1,

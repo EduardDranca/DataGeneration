@@ -57,7 +57,7 @@ Special-purpose generators:
 ```json
 {
   "age": {"gen": "number", "min": 18, "max": 65},
-  "price": {"gen": "float", "min": 9.99, "max": 999.99", "decimals": 2}
+  "price": {"gen": "float", "min": 9.99, "max": 999.99, "decimals": 2}
 }
 ```
 
