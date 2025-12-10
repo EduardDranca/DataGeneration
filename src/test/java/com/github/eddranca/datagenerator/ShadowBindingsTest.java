@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.Set;
 
 import static com.github.eddranca.datagenerator.ParameterizedGenerationTest.LegacyApiHelper.asJsonNode;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -398,5 +397,214 @@ class ShadowBindingsTest extends ParameterizedGenerationTest {
                 }
             }
         }
+    }
+
+    @Nested
+    @DisplayName("Validation Errors")
+    class ValidationErrors {
+
+        @Test
+        @DisplayName("error when shadow binding definition is not a ref")
+        void errorWhenShadowBindingDefinitionIsNotRef() {
+            String dsl = """
+                {
+                    "items": {
+                        "count": 5,
+                        "item": {
+                            "$binding": {"gen": "uuid"}
+                        }
+                    }
+                }
+                """;
+
+            assertThatThrownBy(() -> generateFromDsl(dsl, false))
+                .hasMessageContaining("shadow binding")
+                .hasMessageContaining("ref");
+        }
+
+        @Test
+        @DisplayName("error when shadow binding field reference has empty binding name")
+        void errorWhenShadowBindingFieldReferenceHasEmptyBindingName() {
+            String dsl = """
+                {
+                    "items": {
+                        "count": 5,
+                        "item": {
+                            "id": {"gen": "uuid"}
+                        }
+                    },
+                    "refs": {
+                        "count": 5,
+                        "item": {
+                            "value": {"ref": "$.id"}
+                        }
+                    }
+                }
+                """;
+
+            assertThatThrownBy(() -> generateFromDsl(dsl, false))
+                .hasMessageContaining("name cannot be empty");
+        }
+
+        @Test
+        @DisplayName("error when shadow binding field reference has empty field path")
+        void errorWhenShadowBindingFieldReferenceHasEmptyFieldPath() {
+            String dsl = """
+                {
+                    "items": {
+                        "count": 5,
+                        "item": {
+                            "id": {"gen": "uuid"}
+                        }
+                    },
+                    "refs": {
+                        "count": 5,
+                        "item": {
+                            "value": {"ref": "$binding."}
+                        }
+                    }
+                }
+                """;
+
+            assertThatThrownBy(() -> generateFromDsl(dsl, false))
+                .hasMessageContaining("field path cannot be empty");
+        }
+    }
+
+    @Nested
+    @DisplayName("Logical Conditions with Shadow Bindings")
+    class LogicalConditionsWithShadowBindings {
+
+        @BothImplementationsTest
+        @DisplayName("shadow binding with AND condition")
+        void shadowBindingWithAndCondition(boolean memoryOptimized) throws IOException {
+            String dsl = """
+                {
+                    "categories": {
+                        "count": 3,
+                        "item": {
+                            "id": {"gen": "sequence", "start": 1},
+                            "name": {"gen": "choice", "options": ["A", "B", "C"]}
+                        }
+                    },
+                    "users": {
+                        "count": 10,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "categoryId": {"ref": "categories[*].id"},
+                            "tier": {"gen": "choice", "options": ["gold", "silver", "bronze"]}
+                        }
+                    },
+                    "products": {
+                        "count": 30,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "categoryId": {"ref": "categories[*].id"},
+                            "tier": {"gen": "choice", "options": ["gold", "silver", "bronze"]}
+                        }
+                    },
+                    "matches": {
+                        "count": 20,
+                        "item": {
+                            "$user": {"ref": "users[*]"},
+                            "userId": {"ref": "$user.id"},
+                            "productId": {"ref": "products[categoryId=$user.categoryId and tier=$user.tier].id"}
+                        }
+                    }
+                }
+                """;
+
+            // Use seed for reproducible results - ensures products match user criteria
+            Generation generation = generateFromDslWithSeed(dsl, 42L, memoryOptimized);
+            JsonNode result = asJsonNode(generation);
+
+            JsonNode matches = result.get("matches");
+            assertThat(matches).hasSize(20);
+
+            // Verify all matches have both category and tier matching
+            JsonNode users = result.get("users");
+            JsonNode products = result.get("products");
+
+            for (JsonNode match : matches) {
+                String userId = match.get("userId").asText();
+                String productId = match.get("productId").asText();
+
+                // Find user
+                JsonNode user = findById(users, userId);
+                assertThat(user).isNotNull();
+
+                // Find product
+                JsonNode product = findById(products, productId);
+                assertThat(product).isNotNull();
+
+                // Verify both category and tier match
+                assertThat(product.get("categoryId").asInt()).isEqualTo(user.get("categoryId").asInt());
+                assertThat(product.get("tier").asText()).isEqualTo(user.get("tier").asText());
+            }
+        }
+
+        @BothImplementationsTest
+        @DisplayName("shadow binding with OR condition")
+        void shadowBindingWithOrCondition(boolean memoryOptimized) throws IOException {
+            String dsl = """
+                {
+                    "users": {
+                        "count": 10,
+                        "item": {
+                            "id": {"gen": "sequence", "start": 1},
+                            "role": {"gen": "choice", "options": ["admin", "user", "guest"]}
+                        }
+                    },
+                    "resources": {
+                        "count": 20,
+                        "item": {
+                            "id": {"gen": "uuid"},
+                            "ownerId": {"ref": "users[*].id"},
+                            "isPublic": {"gen": "boolean", "probability": 0.3}
+                        }
+                    },
+                    "accesses": {
+                        "count": 30,
+                        "item": {
+                            "$user": {"ref": "users[*]"},
+                            "userId": {"ref": "$user.id"},
+                            "resourceId": {"ref": "resources[ownerId=$user.id or isPublic=true].id"}
+                        }
+                    }
+                }
+                """;
+
+            Generation generation = generateFromDsl(dsl, memoryOptimized);
+            JsonNode result = asJsonNode(generation);
+
+            JsonNode accesses = result.get("accesses");
+            assertThat(accesses).hasSize(30);
+
+            // Verify all accesses are either owned by user or public
+            JsonNode resources = result.get("resources");
+
+            for (JsonNode access : accesses) {
+                int userId = access.get("userId").asInt();
+                String resourceId = access.get("resourceId").asText();
+
+                JsonNode resource = findById(resources, resourceId);
+                assertThat(resource).isNotNull();
+
+                int ownerId = resource.get("ownerId").asInt();
+                boolean isPublic = resource.get("isPublic").asBoolean();
+
+                // Either owned by user OR public
+                assertThat(ownerId == userId || isPublic).isTrue();
+            }
+        }
+    }
+
+    private JsonNode findById(JsonNode collection, String id) {
+        for (JsonNode item : collection) {
+            if (item.get("id").asText().equals(id)) {
+                return item;
+            }
+        }
+        return null;
     }
 }

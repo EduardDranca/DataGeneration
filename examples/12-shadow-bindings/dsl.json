@@ -26,14 +26,6 @@
       "category": {"gen": "choice", "options": ["electronics", "books", "clothing", "food"]}
     }
   },
-  "warehouses": {
-    "count": 10,
-    "item": {
-      "id": {"gen": "sequence", "start": 100},
-      "name": {"gen": "company.name"},
-      "regionId": {"ref": "regions[*].id"}
-    }
-  },
   "orders": {
     "count": 100,
     "item": {
@@ -51,17 +43,6 @@
       "orderId": {"gen": "uuid"},
       "userId": {"ref": "$user.id"},
       "productId": {"ref": "products[regionId=$user.regionId and category=$user.preferredCategory].id"}
-    }
-  },
-  "shipments": {
-    "count": 80,
-    "item": {
-      "$user": {"ref": "users[*]"},
-      "$warehouse": {"ref": "warehouses[regionId=$user.regionId]"},
-      "shipmentId": {"gen": "uuid"},
-      "userId": {"ref": "$user.id"},
-      "warehouseId": {"ref": "$warehouse.id"},
-      "warehouseName": {"ref": "$warehouse.name"}
     }
   },
   "friendships": {

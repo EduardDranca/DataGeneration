@@ -62,26 +62,7 @@ Shadow bindings are fields prefixed with `$` that are resolved during generation
 - Combines region matching with category preferences
 - Products must match both the user's region AND preferred category
 
-### 4. Multiple Shadow Bindings
-```json
-{
-  "shipments": {
-    "count": 80,
-    "item": {
-      "$user": {"ref": "users[*]"},
-      "$warehouse": {"ref": "warehouses[regionId=$user.regionId]"},
-      "userId": {"ref": "$user.id"},
-      "warehouseId": {"ref": "$warehouse.id"},
-      "warehouseName": {"ref": "$warehouse.name"}
-    }
-  }
-}
-```
-- Chain multiple bindings for complex constraints
-- `$warehouse` depends on `$user.regionId`
-- Both bindings are excluded from output
-
-### 5. Self-Exclusion Pattern
+### 4. Self-Exclusion Pattern
 ```json
 {
   "friendships": {

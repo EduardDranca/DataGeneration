@@ -5,6 +5,7 @@ import com.github.eddranca.datagenerator.Generation;
 import com.github.eddranca.datagenerator.ParameterizedGenerationTest;
 import com.github.eddranca.datagenerator.generator.Generator;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -570,5 +571,84 @@ class ExamplesValidationTest extends ParameterizedGenerationTest {
         // Validate sequential reference distribution
         var productCategoryIds = products.stream().map(p -> p.get("category_id").asInt()).toList();
         assertThat(productCategoryIds).containsAll(categoryIds); // All categories should be referenced
+    }
+
+    @BothImplementationsTest
+    @DisplayName("12-shadow-bindings should generate data with shadow bindings excluded from output")
+    void shouldValidateShadowBindingsStructure(boolean memoryOptimized) throws IOException {
+        // Given
+        Path dslPath = Paths.get(EXAMPLES_DIR, "12-shadow-bindings", "dsl.json");
+        File dslFile = dslPath.toFile();
+
+        // When
+        Generation generation = createGenerator(memoryOptimized)
+            .withSeed(12345L) // Use seed for reproducible results
+            .fromFile(dslFile)
+            .generate();
+
+        // Then
+        assertThat(generation.getCollectionNames()).containsExactlyInAnyOrder(
+            "regions", "users", "products", "orders", "personalizedOrders", "friendships"
+        );
+        assertThat(generation.getCollectionSize("regions")).isEqualTo(5);
+        assertThat(generation.getCollectionSize("users")).isEqualTo(20);
+        assertThat(generation.getCollectionSize("products")).isEqualTo(50);
+        assertThat(generation.getCollectionSize("orders")).isEqualTo(100);
+        assertThat(generation.getCollectionSize("personalizedOrders")).isEqualTo(50);
+        assertThat(generation.getCollectionSize("friendships")).isEqualTo(50);
+
+        var collections = collectAllJsonNodes(generation);
+        var users = collections.get("users");
+        var products = collections.get("products");
+        var orders = collections.get("orders");
+        var personalizedOrders = collections.get("personalizedOrders");
+        var friendships = collections.get("friendships");
+
+        var userIds = users.stream().map(u -> u.get("id").asText()).toList();
+        var productIds = products.stream().map(p -> p.get("id").asText()).toList();
+
+        // Validate shadow bindings are NOT in output
+        assertThat(orders).allSatisfy(order -> {
+            assertThat(order.has("$user")).isFalse();
+            assertThat(order.has("orderId")).isTrue();
+            assertThat(order.has("userId")).isTrue();
+            assertThat(order.has("userName")).isTrue();
+            assertThat(order.has("productId")).isTrue();
+            assertThat(userIds).contains(order.get("userId").asText());
+            assertThat(productIds).contains(order.get("productId").asText());
+        });
+
+        assertThat(personalizedOrders).allSatisfy(order -> {
+            assertThat(order.has("$user")).isFalse();
+            assertThat(order.has("orderId")).isTrue();
+            assertThat(order.has("userId")).isTrue();
+            assertThat(order.has("productId")).isTrue();
+            assertThat(userIds).contains(order.get("userId").asText());
+            // productId may be null if no product matches the user's region AND category
+            if (!order.get("productId").isNull()) {
+                assertThat(productIds).contains(order.get("productId").asText());
+            }
+        });
+
+        assertThat(friendships).allSatisfy(friendship -> {
+            assertThat(friendship.has("$person")).isFalse();
+            assertThat(friendship.has("userId")).isTrue();
+            assertThat(friendship.has("friendId")).isTrue();
+            assertThat(userIds).contains(friendship.get("userId").asText());
+            assertThat(userIds).contains(friendship.get("friendId").asText());
+            // Self-exclusion: userId != friendId
+            assertThat(friendship.get("userId").asText()).isNotEqualTo(friendship.get("friendId").asText());
+        });
+
+        // Validate geographic constraints: orders have products from same region as user
+        assertThat(orders).allSatisfy(order -> {
+            String userId = order.get("userId").asText();
+            String productId = order.get("productId").asText();
+
+            var user = users.stream().filter(u -> u.get("id").asText().equals(userId)).findFirst().orElseThrow();
+            var product = products.stream().filter(p -> p.get("id").asText().equals(productId)).findFirst().orElseThrow();
+
+            assertThat(user.get("regionId").asInt()).isEqualTo(product.get("regionId").asInt());
+        });
     }
 }

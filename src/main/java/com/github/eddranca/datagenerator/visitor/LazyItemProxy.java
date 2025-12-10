@@ -24,6 +24,8 @@ import java.util.Set;
 public class LazyItemProxy extends AbstractLazyProxy {
     private final String collectionName;
     private boolean fullyMaterialized = false;
+    // Store shadow bindings per-item to preserve them for later materialization
+    private final Map<String, JsonNode> itemShadowBindings = new java.util.HashMap<>();
 
     public LazyItemProxy(String collectionName,
                          Map<String, DslNode> fieldNodes,
@@ -38,6 +40,9 @@ public class LazyItemProxy extends AbstractLazyProxy {
         // First, materialize shadow bindings (fields starting with $)
         // These must be materialized before any fields that depend on them
         materializeShadowBindings();
+        
+        // Store shadow bindings for this item (for later materialization)
+        itemShadowBindings.putAll(visitor.getShadowBindings());
 
         // Then, materialize fields that are referenced by runtime options
         // This ensures they're available when generating fields that depend on them
@@ -163,7 +168,19 @@ public class LazyItemProxy extends AbstractLazyProxy {
 
         // First, ensure all fields are materialized in this proxy
         if (!fullyMaterialized) {
-            materializeAll();
+            // Restore shadow bindings for this item before materializing remaining fields
+            // This is necessary because shadow bindings may have been cleared by subsequent items
+            Map<String, JsonNode> previousBindings = new java.util.HashMap<>(visitor.getShadowBindings());
+            visitor.getShadowBindings().clear();
+            visitor.getShadowBindings().putAll(itemShadowBindings);
+            
+            try {
+                materializeAll();
+            } finally {
+                // Restore previous bindings
+                visitor.getShadowBindings().clear();
+                visitor.getShadowBindings().putAll(previousBindings);
+            }
             fullyMaterialized = true;
         }
 
