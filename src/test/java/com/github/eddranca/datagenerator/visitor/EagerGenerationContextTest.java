@@ -202,10 +202,10 @@ class EagerGenerationContextTest {
 
     @Test
     void testGetNextSequentialIndex() {
-        assertThat(context.getNextSequentialIndex(mockSequentialNode, 3)).isEqualTo(0);
+        assertThat(context.getNextSequentialIndex(mockSequentialNode, 3)).isZero();
         assertThat(context.getNextSequentialIndex(mockSequentialNode, 3)).isEqualTo(1);
         assertThat(context.getNextSequentialIndex(mockSequentialNode, 3)).isEqualTo(2);
-        assertThat(context.getNextSequentialIndex(mockSequentialNode, 3)).isEqualTo(0); // Wraps around
+        assertThat(context.getNextSequentialIndex(mockSequentialNode, 3)).isZero(); // Wraps around
     }
 
     @Test

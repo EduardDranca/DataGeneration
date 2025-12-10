@@ -54,8 +54,7 @@ class GeneratorRegistryTest {
 
         assertThat(result1).isNotNull();
         assertThat(result1.isInt()).isTrue();
-        assertThat(result1.asInt()).isEqualTo(0);
-
+        assertThat(result1.asInt()).isZero();
         assertThat(result2).isNotNull();
         assertThat(result2.isInt()).isTrue();
         assertThat(result2.asInt()).isEqualTo(2);

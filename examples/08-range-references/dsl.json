@@ -1,0 +1,102 @@
+{
+  "employees": {
+    "count": 20,
+    "item": {
+      "id": {
+        "gen": "sequence",
+        "start": 1001
+      },
+      "firstName": {
+        "gen": "name.firstName"
+      },
+      "lastName": {
+        "gen": "name.lastName"
+      },
+      "email": {
+        "gen": "internet.emailAddress"
+      },
+      "department": {
+        "gen": "choice",
+        "options": [
+          "Engineering",
+          "Sales",
+          "Marketing",
+          "Support"
+        ]
+      },
+      "hireDate": {
+        "gen": "date",
+        "from": "2020-01-01",
+        "to": "2024-12-31"
+      },
+      "salary": {
+        "gen": "number",
+        "min": 50000,
+        "max": 120000
+      }
+    }
+  },
+  "regionalManagers": {
+    "count": 4,
+    "item": {
+      "id": {
+        "gen": "uuid"
+      },
+      "firstName": {
+        "gen": "name.firstName"
+      },
+      "lastName": {
+        "gen": "name.lastName"
+      },
+      "region": {
+        "gen": "choice",
+        "options": [
+          "North",
+          "South",
+          "East",
+          "West"
+        ]
+      },
+      "managedEmployeeId": {
+        "ref": "employees[0:4].id",
+        "comment": "Each manager oversees 5 employees (indices 0-4)"
+      },
+      "email": {
+        "gen": "internet.emailAddress"
+      }
+    }
+  },
+  "performanceReviews": {
+    "count": 10,
+    "item": {
+      "id": {
+        "gen": "uuid"
+      },
+      "employeeId": {
+        "ref": "employees[0:9].id",
+        "comment": "Reviews for first 10 employees only (indices 0-9)"
+      },
+      "reviewDate": {
+        "gen": "date",
+        "from": "2024-01-01",
+        "to": "2024-12-31"
+      },
+      "rating": {
+        "gen": "choice",
+        "options": [
+          "Exceeds Expectations",
+          "Meets Expectations",
+          "Needs Improvement"
+        ],
+        "weights": [
+          20,
+          70,
+          10
+        ]
+      },
+      "comments": {
+        "gen": "lorem.sentence"
+      }
+    }
+  }
+}

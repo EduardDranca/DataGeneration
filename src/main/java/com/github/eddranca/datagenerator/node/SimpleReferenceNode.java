@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Reference node for simple collection references like "users" or "collection.field".
@@ -24,8 +25,9 @@ public class SimpleReferenceNode extends AbstractReferenceNode {
         return !fieldName.isEmpty();
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    @Override
+    public Optional<String> getCollectionName() {
+        return Optional.of(collectionName);
     }
 
     public String getFieldName() {
@@ -39,15 +41,16 @@ public class SimpleReferenceNode extends AbstractReferenceNode {
 
     @Override
     public JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues) {
-        // Get the collection
-        List<JsonNode> collection = context.getCollection(collectionName);
-
-        // Apply filtering if needed
+        // Use cached filtered collection if filtering is needed
+        List<JsonNode> collection;
         if (filterValues != null && !filterValues.isEmpty()) {
-            collection = context.applyFiltering(collection, hasFieldName() ? fieldName : "", filterValues);
+            collection = context.getFilteredCollection(collectionName, null, filterValues, hasFieldName() ? fieldName : "");
             if (collection.isEmpty()) {
                 return context.handleFilteringFailure("Simple reference '" + getReferenceString() + "' has no valid values after filtering");
             }
+        } else {
+            // No filtering needed, get collection directly
+            collection = context.getCollection(collectionName);
         }
 
         if (collection.isEmpty()) {

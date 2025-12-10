@@ -37,7 +37,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
 
         assertThat(products).hasSize(3);
 
-        for (JsonNode product : products) {
+        assertThat(products).allSatisfy(product -> {
             // Dynamic fields should be present and different
             assertThat(product.get("id")).isNotNull();
             assertThat(product.get("name")).isNotNull();
@@ -54,7 +54,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
             List<String> tagList = new ArrayList<>();
             tags.forEach(tag -> tagList.add(tag.asText()));
             assertThat(tagList).containsExactly("electronics", "gadget");
-        }
+        });
     }
 
     @BothImplementationsTest
@@ -90,7 +90,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
 
         assertThat(orders).hasSize(2);
 
-        for (JsonNode order : orders) {
+        assertThat(orders).allSatisfy(order -> {
             // Dynamic field
             assertThat(order.get("id")).isNotNull();
 
@@ -114,7 +114,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
             assertThat(constants.get("pi").asDouble()).isEqualTo(3.14159);
             assertThat(constants.get("enabled").asBoolean()).isTrue();
             assertThat(constants.get("description").isNull()).isTrue();
-        }
+        });
     }
 
     @BothImplementationsTest
@@ -145,7 +145,7 @@ class StaticValueTest extends ParameterizedGenerationTest {
 
         assertThat(users).hasSize(3);
 
-        for (JsonNode user : users) {
+        assertThat(users).allSatisfy(user -> {
             // Dynamic fields should vary
             assertThat(user.get("id")).isNotNull();
             assertThat(user.get("name")).isNotNull();
@@ -164,6 +164,6 @@ class StaticValueTest extends ParameterizedGenerationTest {
             assertThat(settings.get("theme").asText()).isEqualTo("dark");
             assertThat(settings.get("notifications").asBoolean()).isTrue();
             assertThat(settings.get("language").asText()).isEqualTo("en");
-        }
+        });
     }
 }

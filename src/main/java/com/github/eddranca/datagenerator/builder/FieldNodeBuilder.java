@@ -7,14 +7,13 @@ import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static com.github.eddranca.datagenerator.builder.KeyWords.ARRAY;
 import static com.github.eddranca.datagenerator.builder.KeyWords.COUNT;
 import static com.github.eddranca.datagenerator.builder.KeyWords.GENERATOR;
-import static com.github.eddranca.datagenerator.builder.KeyWords.REFERENCE;
+import static com.github.eddranca.datagenerator.builder.KeyWords.REF;
 
 /**
  * Main field builder that coordinates with specialized builders.
@@ -29,9 +28,12 @@ class FieldNodeBuilder implements FieldBuilder {
 
     @Override
     public DslNode buildField(String fieldName, JsonNode fieldDef) {
-        // Check for count field first - this creates arrays using the shorthand syntax
         if (fieldDef.isObject() && fieldDef.has(COUNT)) {
             return buildFieldWithCount(fieldName, fieldDef);
+        }
+
+        if (fieldDef.isObject()) {
+            validateNoConflictingKeywords(fieldName, fieldDef);
         }
 
         if (fieldDef.has(GENERATOR)) {
@@ -39,7 +41,7 @@ class FieldNodeBuilder implements FieldBuilder {
             return generatedBuilder.buildGeneratorBasedField(fieldName, fieldDef);
         }
 
-        if (fieldDef.has(REFERENCE)) {
+        if (fieldDef.has(REF)) {
             ReferenceFieldNodeBuilder referenceBuilder = new ReferenceFieldNodeBuilder(context, this);
             return referenceBuilder.buildReferenceBasedField(fieldName, fieldDef);
         }
@@ -56,10 +58,20 @@ class FieldNodeBuilder implements FieldBuilder {
         return new LiteralFieldNode(fieldDef);
     }
 
+    private void validateNoConflictingKeywords(String fieldName, JsonNode fieldDef) {
+        int keywordCount = 0;
+        if (fieldDef.has(GENERATOR)) keywordCount++;
+        if (fieldDef.has(REF)) keywordCount++;
+        if (fieldDef.has(ARRAY)) keywordCount++;
+
+        if (keywordCount > 1) {
+            addFieldError(fieldName, "cannot have multiple keywords (gen, ref, array)");
+        }
+    }
+
     private DslNode buildObjectField(JsonNode fieldDef) {
         Map<String, DslNode> fields = new LinkedHashMap<>();
-        for (Iterator<Map.Entry<String, JsonNode>> it = fieldDef.fields(); it.hasNext(); ) {
-            var field = it.next();
+        for (Map.Entry<String, JsonNode> field : fieldDef.properties()) {
             DslNode fieldNode = buildField(field.getKey(), field.getValue());
             if (fieldNode != null) {
                 fields.put(field.getKey(), fieldNode);

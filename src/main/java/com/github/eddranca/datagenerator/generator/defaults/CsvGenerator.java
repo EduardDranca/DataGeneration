@@ -12,13 +12,16 @@ import net.datafaker.service.RandomService;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class CsvGenerator implements Generator {
+    // IdentityHashMap for JsonNode keys - object identity matters for per-field counters
     private final Map<JsonNode, Integer> sequentialCounters = new IdentityHashMap<>();
-    private final Map<String, List<String[]>> csvCache = new IdentityHashMap<>();
+    // Regular HashMap for String keys - file paths should use value equality
+    private final Map<String, List<String[]>> csvCache = new HashMap<>();
 
     @Override
     public JsonNode generate(GeneratorContext context) {

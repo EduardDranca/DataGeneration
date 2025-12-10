@@ -9,6 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SequenceGeneratorTest {
 
@@ -25,7 +26,7 @@ class SequenceGeneratorTest {
 
         assertThat(result1).isNotNull();
         assertThat(result1.isInt()).isTrue();
-        assertThat(result1.asInt()).isEqualTo(0);
+        assertThat(result1.asInt()).isZero();
 
         assertThat(result2).isNotNull();
         assertThat(result2.isInt()).isTrue();
@@ -65,16 +66,10 @@ class SequenceGeneratorTest {
     @Test
     void testGenerateZeroIncrement() throws Exception {
         JsonNode options = mapper.readTree("{\"start\": 5, \"increment\": 0}");
-        JsonNode result1 = generator.generate(new GeneratorContext(faker, options, mapper));
-        JsonNode result2 = generator.generate(new GeneratorContext(faker, options, mapper));
-
-        assertThat(result1).isNotNull();
-        assertThat(result1.isInt()).isTrue();
-        assertThat(result1.asInt()).isEqualTo(5);
-
-        assertThat(result2).isNotNull();
-        assertThat(result2.isInt()).isTrue();
-        assertThat(result2.asInt()).isEqualTo(5);
+        
+        assertThatThrownBy(() -> generator.generate(new GeneratorContext(faker, options, mapper)))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Sequence increment cannot be zero");
     }
 
     @Test

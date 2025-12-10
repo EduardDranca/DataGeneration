@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.visitor.AbstractGenerationContext;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Reference node for array field references like "collection[*].field".
@@ -27,12 +28,13 @@ public class ArrayFieldReferenceNode extends AbstractReferenceNode {
         this.fieldName = fieldName;
     }
 
-    public String getCollectionName() {
-        return collectionName;
-    }
-
     public String getFieldName() {
         return fieldName;
+    }
+
+    @Override
+    public Optional<String> getCollectionName() {
+        return Optional.of(collectionName);
     }
 
     @Override
@@ -42,18 +44,14 @@ public class ArrayFieldReferenceNode extends AbstractReferenceNode {
 
     @Override
     public JsonNode resolve(AbstractGenerationContext<?> context, JsonNode currentItem, List<JsonNode> filterValues) {
-        List<JsonNode> collection = context.getCollection(collectionName);
+        // Use cached filtered collection for array field references
+        List<JsonNode> collection = context.getFilteredCollectionForArrayField(collectionName, fieldName, filterValues);
 
-        // Apply filtering based on the field values
-        if (filterValues != null && !filterValues.isEmpty()) {
-            collection = context.applyFilteringOnField(collection, fieldName, filterValues);
-            if (collection.isEmpty()) {
+        if (collection.isEmpty()) {
+            if (filterValues != null && !filterValues.isEmpty()) {
                 return context.handleFilteringFailure(
                     "Array field reference '" + getReferenceString() + "' has no valid values after filtering");
             }
-        }
-
-        if (collection.isEmpty()) {
             return context.getMapper().nullNode();
         }
 

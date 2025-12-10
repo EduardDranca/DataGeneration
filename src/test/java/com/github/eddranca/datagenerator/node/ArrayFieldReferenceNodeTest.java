@@ -31,7 +31,7 @@ class ArrayFieldReferenceNodeTest {
     void testArrayFieldReferenceBasicConstructor() {
         ArrayFieldReferenceNode node = new ArrayFieldReferenceNode("users", "name", true);
 
-        assertThat(node.getCollectionName()).isEqualTo("users");
+        assertThat(node.getCollectionName()).contains("users");
         assertThat(node.getFieldName()).isEqualTo("name");
         assertThat(node.isSequential()).isTrue();
         assertThat(node.getReferenceString()).isEqualTo("users[*].name");
@@ -45,7 +45,7 @@ class ArrayFieldReferenceNodeTest {
 
         ArrayFieldReferenceNode node = new ArrayFieldReferenceNode("products", "price", filters, false);
 
-        assertThat(node.getCollectionName()).isEqualTo("products");
+        assertThat(node.getCollectionName()).contains("products");
         assertThat(node.getFieldName()).isEqualTo("price");
         assertThat(node.isSequential()).isFalse();
         assertThat(node.getReferenceString()).isEqualTo("products[*].price");
@@ -61,7 +61,7 @@ class ArrayFieldReferenceNodeTest {
         JsonNode user2 = mapper.createObjectNode().put("name", "Jane").put("age", 25);
         List<JsonNode> collection = List.of(user1, user2);
 
-        when(mockContext.getCollection("users")).thenReturn(collection);
+        when(mockContext.getFilteredCollectionForArrayField("users", "name", null)).thenReturn(collection);
         when(mockContext.getElementFromCollection(collection, node, false)).thenReturn(user1);
 
         JsonNode result = node.resolve(mockContext, currentItem, null);
@@ -73,16 +73,13 @@ class ArrayFieldReferenceNodeTest {
     void testResolveWithFiltering() {
         ArrayFieldReferenceNode node = new ArrayFieldReferenceNode("users", "name", false);
         JsonNode currentItem = mapper.createObjectNode();
-        JsonNode user1 = mapper.createObjectNode().put("name", "John");
-        JsonNode user2 = mapper.createObjectNode().put("name", "Jane");
-        List<JsonNode> originalCollection = List.of(user1, user2);
-        List<JsonNode> filteredCollection = List.of(user2);
+        JsonNode user = mapper.createObjectNode().put("name", "Jane");
+        List<JsonNode> filteredCollection = List.of(user);
         JsonNode filterValue = mapper.valueToTree("John");
         List<JsonNode> filterValues = List.of(filterValue);
 
-        when(mockContext.getCollection("users")).thenReturn(originalCollection);
-        when(mockContext.applyFilteringOnField(originalCollection, "name", filterValues)).thenReturn(filteredCollection);
-        when(mockContext.getElementFromCollection(filteredCollection, node, false)).thenReturn(user2);
+        when(mockContext.getFilteredCollectionForArrayField("users", "name", filterValues)).thenReturn(filteredCollection);
+        when(mockContext.getElementFromCollection(filteredCollection, node, false)).thenReturn(user);
 
         JsonNode result = node.resolve(mockContext, currentItem, filterValues);
 
@@ -94,7 +91,7 @@ class ArrayFieldReferenceNodeTest {
         ArrayFieldReferenceNode node = new ArrayFieldReferenceNode("users", "name", false);
         JsonNode currentItem = mapper.createObjectNode();
 
-        when(mockContext.getCollection("users")).thenReturn(List.of());
+        when(mockContext.getFilteredCollectionForArrayField("users", "name", null)).thenReturn(List.of());
         when(mockContext.getMapper()).thenReturn(mapper);
 
         JsonNode result = node.resolve(mockContext, currentItem, null);
@@ -106,15 +103,12 @@ class ArrayFieldReferenceNodeTest {
     void testResolveWithFilteringReturnsFailure() {
         ArrayFieldReferenceNode node = new ArrayFieldReferenceNode("users", "name", false);
         JsonNode currentItem = mapper.createObjectNode();
-        JsonNode user1 = mapper.createObjectNode().put("name", "John");
-        List<JsonNode> originalCollection = List.of(user1);
         List<JsonNode> emptyFilteredCollection = List.of();
         JsonNode filterValue = mapper.valueToTree("John");
         List<JsonNode> filterValues = List.of(filterValue);
         JsonNode failureResult = mapper.nullNode();
 
-        when(mockContext.getCollection("users")).thenReturn(originalCollection);
-        when(mockContext.applyFilteringOnField(originalCollection, "name", filterValues)).thenReturn(emptyFilteredCollection);
+        when(mockContext.getFilteredCollectionForArrayField("users", "name", filterValues)).thenReturn(emptyFilteredCollection);
         when(mockContext.handleFilteringFailure("Array field reference 'users[*].name' has no valid values after filtering"))
             .thenReturn(failureResult);
 
@@ -130,7 +124,7 @@ class ArrayFieldReferenceNodeTest {
         JsonNode user = mapper.createObjectNode().put("name", "John");
         List<JsonNode> collection = List.of(user);
 
-        when(mockContext.getCollection("users")).thenReturn(collection);
+        when(mockContext.getFilteredCollectionForArrayField("users", "missingField", null)).thenReturn(collection);
         when(mockContext.getElementFromCollection(collection, node, false)).thenReturn(user);
         when(mockContext.getMapper()).thenReturn(mapper);
 

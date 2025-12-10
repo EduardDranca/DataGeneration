@@ -5,10 +5,12 @@ import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
+import com.github.eddranca.datagenerator.node.ConditionalReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
+import com.github.eddranca.datagenerator.node.GeneratorOptionNode;
 import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
 import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
@@ -36,9 +38,11 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
     private final List<ValidationError> errors;
     private String currentCollection;
     private Map<String, DslNode> currentItemFields;
+    private final Map<String, Map<String, DslNode>> collectionSchemas;
 
     public ReferenceValidationVisitor() {
         this.errors = new ArrayList<>();
+        this.collectionSchemas = new HashMap<>();
     }
 
     public List<ValidationError> getErrors() {
@@ -68,6 +72,11 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
         Map<String, DslNode> previousItemFields = currentItemFields;
         currentItemFields = new HashMap<>(node.getFields());
 
+        // Store collection schema for conditional reference validation
+        if (currentCollection != null) {
+            collectionSchemas.put(currentCollection, new HashMap<>(node.getFields()));
+        }
+
         // Visit all fields
         for (DslNode field : node.getFields().values()) {
             field.accept(this);
@@ -84,6 +93,11 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
         return null;
     }
 
+    @Override
+    public Void visitGeneratorOption(GeneratorOptionNode node) {
+        // Generator options don't have references to validate
+        return null;
+    }
 
     @Override
     public Void visitIndexedReference(IndexedReferenceNode node) {
@@ -130,6 +144,40 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
     @Override
     public Void visitPickReference(PickReferenceNode node) {
         // Pick references don't need additional validation beyond what was done during parsing
+        // Visit filters if present
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitConditionalReference(ConditionalReferenceNode node) {
+        // Validate that fields referenced in the condition exist in the target collection
+        String collectionName = node.getCollectionNameString();
+        Map<String, DslNode> collectionFields = collectionSchemas.get(collectionName);
+
+        if (collectionFields != null) {
+            // Validate all field paths referenced in the condition
+            for (String fieldPath : node.getCondition().getReferencedPaths()) {
+                if (!validateFieldPath(fieldPath, collectionFields)) {
+                    addError("Conditional reference '" + node.getReferenceString() + 
+                            "' references non-existent field '" + fieldPath + 
+                            "' in collection '" + collectionName + "'");
+                }
+            }
+
+            // Validate the extracted field if specified
+            if (node.hasFieldName() && !node.getFieldName().isEmpty()) {
+                String fieldName = node.getFieldName();
+                if (!validateFieldPath(fieldName, collectionFields)) {
+                    addError("Conditional reference '" + node.getReferenceString() + 
+                            "' extracts non-existent field '" + fieldName + 
+                            "' from collection '" + collectionName + "'");
+                }
+            }
+        }
+
         // Visit filters if present
         for (FilterNode filter : node.getFilters()) {
             filter.accept(this);

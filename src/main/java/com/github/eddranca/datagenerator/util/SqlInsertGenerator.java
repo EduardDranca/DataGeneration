@@ -5,14 +5,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.exception.SerializationException;
 
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Utility class for generating SQL INSERT statements from JsonNode data.
+ * Supports field projections and data type-aware formatting.
  */
 public final class SqlInsertGenerator {
     private static final Logger logger = Logger.getLogger(SqlInsertGenerator.class.getName());
@@ -31,55 +33,134 @@ public final class SqlInsertGenerator {
      * @throws SerializationException if JSON serialization fails for complex objects
      */
     public static String generateSqlInsert(String tableName, JsonNode item) {
+        return generateSqlInsert(tableName, item, null);
+    }
+
+    /**
+     * Generates a single SQL INSERT statement for an item with projection support.
+     *
+     * @param tableName  the name of the table
+     * @param item       the JsonNode representing the item data
+     * @param projection optional projection for field filtering and type mapping
+     * @return SQL INSERT statement
+     * @throws SerializationException if JSON serialization fails for complex objects
+     */
+    public static String generateSqlInsert(String tableName, JsonNode item, SqlProjection projection) {
         StringBuilder sql = new StringBuilder("INSERT INTO ");
         sql.append(tableName).append(" (");
 
         StringJoiner columns = new StringJoiner(", ");
         StringJoiner values = new StringJoiner(", ");
+        Set<String> complexFields = new HashSet<>();
 
-        Iterator<Map.Entry<String, JsonNode>> fields = item.fields();
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> field = fields.next();
+        for (Map.Entry<String, JsonNode> field : item.properties()) {
             String fieldName = field.getKey();
             JsonNode val = field.getValue();
 
-            columns.add(fieldName);
-
-            if (val.isNull()) {
-                values.add("NULL");
-            } else if (val.isNumber()) {
-                values.add(val.asText());
-            } else if (val.isBoolean()) {
-                values.add(val.asText());
-            } else if (val.isTextual()) {
-                String escaped = val.asText().replace("'", "''");
-                values.add("'" + escaped + "'");
-            } else if (val.isObject() || val.isArray()) {
-                // Handle complex objects by converting to JSON string
-                logger.log(Level.WARNING,
-                    "Complex object detected in table ''{0}'', field ''{1}''. " +
-                        "Converting to JSON string representation for SQL insert. " +
-                        "Consider using a database with native JSON support for optimal performance.",
-                    new Object[]{tableName, fieldName});
-
-                try {
-                    String jsonString = mapper.writeValueAsString(val);
-                    String escaped = jsonString.replace("'", "''");
-                    values.add("'" + escaped + "'");
-                } catch (JsonProcessingException e) {
-                    logger.log(Level.SEVERE,
-                        "Failed to serialize complex object to JSON for table ''{0}'', field ''{1}''",
-                        new Object[]{tableName, fieldName});
-                    throw new SerializationException("Failed to serialize complex object to JSON", e);
-                }
-            } else {
-                // Fallback for any other JsonNode types
-                String escaped = val.asText().replace("'", "''");
-                values.add("'" + escaped + "'");
+            if (shouldSkipField(projection, fieldName)) {
+                continue;
             }
+
+            columns.add(fieldName);
+            String sqlType = getSqlType(projection, fieldName);
+            String formattedValue = formatValue(val, sqlType, tableName, fieldName, complexFields);
+            values.add(formattedValue);
         }
 
         sql.append(columns).append(") VALUES (").append(values).append(");");
+        logComplexFields(tableName, complexFields);
+
         return sql.toString();
+    }
+
+    private static boolean shouldSkipField(SqlProjection projection, String fieldName) {
+        return projection != null && !projection.shouldIncludeField(fieldName);
+    }
+
+    private static String getSqlType(SqlProjection projection, String fieldName) {
+        return projection != null ? projection.getFieldType(fieldName) : null;
+    }
+
+    private static String formatValue(JsonNode val, String sqlType, String tableName, String fieldName, Set<String> complexFields) {
+        if (val.isNull()) {
+            return "NULL";
+        }
+        if (val.isNumber()) {
+            return formatNumericValue(val);
+        }
+        if (val.isBoolean()) {
+            return formatBooleanValue(val, sqlType);
+        }
+        if (val.isTextual()) {
+            return formatTextValue(val.asText(), sqlType);
+        }
+        if (val.isObject() || val.isArray()) {
+            return formatComplexValue(val, sqlType, tableName, fieldName, complexFields);
+        }
+        return formatTextValue(val.asText(), sqlType);
+    }
+
+    private static String formatComplexValue(JsonNode val, String sqlType, String tableName, String fieldName, Set<String> complexFields) {
+        complexFields.add(fieldName);
+        try {
+            String jsonString = mapper.writeValueAsString(val);
+            return formatTextValue(jsonString, sqlType);
+        } catch (JsonProcessingException e) {
+            logger.log(Level.SEVERE,
+                "Failed to serialize complex object to JSON for table ''{0}'', field ''{1}''",
+                new Object[]{tableName, fieldName});
+            throw new SerializationException("Failed to serialize complex object to JSON", e);
+        }
+    }
+
+    private static void logComplexFields(String tableName, Set<String> complexFields) {
+        if (!complexFields.isEmpty()) {
+            logger.log(Level.WARNING,
+                "Complex objects detected in table ''{0}'', fields: {1}. " +
+                    "Converting to JSON string representation for SQL insert. " +
+                    "Consider using a database with native JSON support for optimal performance.",
+                new Object[]{tableName, String.join(", ", complexFields)});
+        }
+    }
+
+    /**
+     * Formats a numeric value.
+     */
+    private static String formatNumericValue(JsonNode val) {
+        return val.asText();
+    }
+
+    /**
+     * Formats a boolean value based on SQL type.
+     */
+    private static String formatBooleanValue(JsonNode val, String sqlType) {
+        if (sqlType != null) {
+            String upperType = sqlType.toUpperCase();
+            // Handle different boolean representations
+            if (upperType.contains("TINYINT") || upperType.contains("INT")) {
+                return val.asBoolean() ? "1" : "0";
+            }
+        }
+        return val.asText();
+    }
+
+    /**
+     * Formats a text value based on SQL type.
+     * Handles special formatting for DATE, TIMESTAMP, and other types.
+     */
+    private static String formatTextValue(String text, String sqlType) {
+        String escaped = text.replace("'", "''");
+
+        if (sqlType != null) {
+            String upperType = sqlType.toUpperCase();
+
+            // For DATE and TIMESTAMP types, use appropriate SQL functions if needed
+            if (upperType.contains("DATE") || upperType.contains("TIMESTAMP")) {
+                // Keep as string literal - databases will handle conversion
+                return "'" + escaped + "'";
+            }
+        }
+
+        return "'" + escaped + "'";
     }
 }

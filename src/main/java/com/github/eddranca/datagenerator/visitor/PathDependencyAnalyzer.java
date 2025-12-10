@@ -4,14 +4,17 @@ import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
+import com.github.eddranca.datagenerator.node.ConditionalReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
+import com.github.eddranca.datagenerator.node.GeneratorOptionNode;
 import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
 import com.github.eddranca.datagenerator.node.ItemNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
+import com.github.eddranca.datagenerator.node.OptionReferenceNode;
 import com.github.eddranca.datagenerator.node.PickReferenceNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
@@ -35,7 +38,6 @@ import java.util.Set;
  * at any depth in the object hierarchy.
  */
 public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
-    // Clean implementation using proper node getters - no regex parsing needed!
     private final Map<String, Set<String>> referencedPaths = new HashMap<>();
 
     @Override
@@ -62,35 +64,37 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitSimpleReference(SimpleReferenceNode node) {
-        String collectionName = node.getCollectionName();
-        String fieldName = node.getFieldName();
-
-        if (fieldName != null && !fieldName.isEmpty()) {
-            addReferencedPath(collectionName, fieldName);
-        } else {
-            // Entire object referenced
-            addReferencedPath(collectionName, "*");
-        }
+        node.getCollectionName().ifPresent(collectionName -> {
+            String fieldName = node.getFieldName();
+            if (fieldName != null && !fieldName.isEmpty()) {
+                addReferencedPath(collectionName, fieldName);
+            } else {
+                // Entire object referenced
+                addReferencedPath(collectionName, "*");
+            }
+        });
         return null;
     }
 
     @Override
     public Void visitArrayFieldReference(ArrayFieldReferenceNode node) {
-        addReferencedPath(node.getCollectionName(), node.getFieldName());
+        node.getCollectionName().ifPresent(collectionName ->
+            addReferencedPath(collectionName, node.getFieldName())
+        );
         return null;
     }
 
     @Override
     public Void visitIndexedReference(IndexedReferenceNode node) {
-        String collectionName = node.getCollectionName();
-        String fieldName = node.getFieldName();
-
-        if (fieldName != null && !fieldName.isEmpty()) {
-            addReferencedPath(collectionName, fieldName);
-        } else {
-            // Entire object referenced
-            addReferencedPath(collectionName, "*");
-        }
+        node.getCollectionName().ifPresent(collectionName -> {
+            String fieldName = node.getFieldName();
+            if (fieldName != null && !fieldName.isEmpty()) {
+                addReferencedPath(collectionName, fieldName);
+            } else {
+                // Entire object referenced
+                addReferencedPath(collectionName, "*");
+            }
+        });
         return null;
     }
 
@@ -98,6 +102,26 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
     @Override
     public Void visitPickReference(PickReferenceNode node) {
         // Pick references don't reference collection fields directly
+        return null;
+    }
+
+    @Override
+    public Void visitConditionalReference(ConditionalReferenceNode node) {
+        String collectionName = node.getCollectionNameString();
+        String fieldName = node.getFieldName();
+
+        // Add all paths referenced by the condition
+        for (String path : node.getCondition().getReferencedPaths()) {
+            addReferencedPath(collectionName, path);
+        }
+
+        // Add the extracted field if specified
+        if (fieldName != null && !fieldName.isEmpty()) {
+            addReferencedPath(collectionName, fieldName);
+        } else {
+            // Entire object referenced
+            addReferencedPath(collectionName, "*");
+        }
         return null;
     }
 
@@ -117,23 +141,39 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
 
     @Override
     public Void visitReferenceSpreadField(ReferenceSpreadFieldNode node) {
-        // Get collection name from the reference node using proper getters
-        String collectionName = getCollectionNameFromReferenceNode(node.getReferenceNode());
-
-        if (collectionName != null) {
+        node.getReferenceNode().getCollectionName().ifPresent(collectionName -> {
             // For spread fields, we need specific fields
             for (String field : node.getFields()) {
                 // Handle field mappings like "name:firstName" -> we want "firstName"
                 String actualField = field.contains(":") ? field.split(":", 2)[1] : field;
                 addReferencedPath(collectionName, actualField);
             }
-        }
+        });
         return null;
     }
 
     @Override
     public Void visitGeneratedField(GeneratedFieldNode node) {
-        // Generated fields don't reference collections
+        // Analyze runtime-computed options for cross-collection dependencies
+        if (node.getOptions().hasRuntimeOptions()) {
+            for (OptionReferenceNode optionRef : node.getOptions().getRuntimeOptions().values()) {
+                // Visit the reference node to track any cross-collection dependencies
+                // (self-references are handled separately in LazyItemProxy)
+                optionRef.getReference().accept(this);
+            }
+        }
+        
+        // Analyze filters for dependencies
+        for (FilterNode filter : node.getFilters()) {
+            filter.accept(this);
+        }
+        
+        return null;
+    }
+
+    @Override
+    public Void visitGeneratorOption(GeneratorOptionNode node) {
+        // Generator options don't reference other collections
         return null;
     }
 
@@ -166,21 +206,6 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
     @Override
     public Void visitFilter(FilterNode node) {
         node.getFilterExpression().accept(this);
-        return null;
-    }
-
-    /**
-     * Helper method to get collection name from any reference node type.
-     * Now uses proper getters instead of string parsing - no more regex needed!
-     */
-    private String getCollectionNameFromReferenceNode(Object referenceNode) {
-        if (referenceNode instanceof SimpleReferenceNode simpleReferenceNode) {
-            return simpleReferenceNode.getCollectionName();
-        } else if (referenceNode instanceof ArrayFieldReferenceNode arrayFieldReferenceNode) {
-            return arrayFieldReferenceNode.getCollectionName();
-        } else if (referenceNode instanceof IndexedReferenceNode indexedReferenceNode) {
-            return indexedReferenceNode.getCollectionName();
-        }
         return null;
     }
 

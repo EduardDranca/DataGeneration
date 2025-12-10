@@ -1,7 +1,7 @@
 package com.github.eddranca.datagenerator.builder;
 
 public class KeyWords {
-    public static final String REFERENCE = "ref";
+    public static final String REF = "ref";
     public static final String GENERATOR = "gen";
     public static final String ELLIPSIS = "...";
     public static final String SEQUENTIAL = "sequential";
@@ -18,6 +18,7 @@ public class KeyWords {
     public static final String MIN_SIZE = "minSize";
     public static final String MAX_SIZE = "maxSize";
     public static final String THIS_PREFIX = "this.";
+    public static final String MAP = "map";
 
     private KeyWords() {
         // Prevent instantiation

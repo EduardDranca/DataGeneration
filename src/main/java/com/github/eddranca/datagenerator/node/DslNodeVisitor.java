@@ -16,6 +16,7 @@ public interface DslNodeVisitor<T> {
 
     T visitGeneratedField(GeneratedFieldNode node);
 
+    T visitGeneratorOption(GeneratorOptionNode node);
 
     T visitIndexedReference(IndexedReferenceNode node);
 
@@ -26,6 +27,8 @@ public interface DslNodeVisitor<T> {
     T visitSimpleReference(SimpleReferenceNode node);
 
     T visitPickReference(PickReferenceNode node);
+
+    T visitConditionalReference(ConditionalReferenceNode node);
 
     T visitChoiceField(ChoiceFieldNode node);
 

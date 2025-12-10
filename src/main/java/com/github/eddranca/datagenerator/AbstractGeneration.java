@@ -2,6 +2,8 @@ package com.github.eddranca.datagenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.util.SqlInsertGenerator;
+import com.github.eddranca.datagenerator.util.SqlProjection;
+import com.github.eddranca.datagenerator.util.SqlSchemaParser;
 
 import java.io.File;
 import java.io.IOException;
@@ -122,6 +124,32 @@ public abstract class AbstractGeneration<T> implements Generation {
             .map(item -> SqlInsertGenerator.generateSqlInsert(collectionName, toJsonNode(item)));
     }
 
+    @Override
+    public Map<String, Stream<String>> asSqlInsertsWithProjections(Map<String, SqlProjection> projections) {
+        Map<String, Stream<String>> sqlStreams = new HashMap<>();
+
+        for (Map.Entry<String, List<T>> entry : collections.entrySet()) {
+            String tableName = entry.getKey();
+            SqlProjection projection = projections.get(tableName);
+
+            Stream<String> sqlStream = entry.getValue().stream()
+                .map(item -> SqlInsertGenerator.generateSqlInsert(tableName, toJsonNode(item), projection));
+            sqlStreams.put(tableName, sqlStream);
+        }
+        return sqlStreams;
+    }
+
+    @Override
+    public Stream<String> streamSqlInsertsWithProjection(String collectionName, SqlProjection projection) {
+        List<T> collection = collections.get(collectionName);
+        if (collection == null) {
+            throw new IllegalArgumentException("Collection '" + collectionName + "' not found");
+        }
+
+        return collection.stream()
+            .map(item -> SqlInsertGenerator.generateSqlInsert(collectionName, toJsonNode(item), projection));
+    }
+
     /**
      * Fluent builder for generation operations.
      */
@@ -235,6 +263,55 @@ public abstract class AbstractGeneration<T> implements Generation {
          */
         public Stream<String> streamSqlInserts(String collectionName) throws IOException {
             return generate().streamSqlInserts(collectionName);
+        }
+
+        /**
+         * Generates the data and returns SQL INSERT statements with projection support.
+         *
+         * @param projections map of collection names to SQL projections
+         * @return a map of table names to SQL INSERT statement streams
+         * @throws IOException if file reading fails
+         */
+        public Map<String, Stream<String>> generateAsSqlWithProjections(Map<String, SqlProjection> projections) throws IOException {
+            return generate().asSqlInsertsWithProjections(projections);
+        }
+
+        /**
+         * Generates the data and returns SQL INSERT statements with a single projection.
+         *
+         * @param collectionName the name of the collection
+         * @param projection     the SQL projection
+         * @return a stream of SQL INSERT statements
+         * @throws IOException if file reading fails
+         */
+        public Stream<String> streamSqlInsertsWithProjection(String collectionName, SqlProjection projection) throws IOException {
+            return generate().streamSqlInsertsWithProjection(collectionName, projection);
+        }
+
+        /**
+         * Generates the data and returns SQL INSERT statements based on CREATE TABLE schemas.
+         * Automatically parses the schemas to extract column types and applies them.
+         *
+         * @param createTableStatements map of table names to CREATE TABLE SQL statements
+         * @return a map of table names to SQL INSERT statement streams
+         * @throws IOException if file reading fails or schema parsing fails
+         */
+        public Map<String, Stream<String>> generateAsSqlFromSchemas(Map<String, String> createTableStatements) throws IOException {
+            Map<String, SqlProjection> projections = SqlSchemaParser.parseCreateTables(createTableStatements);
+            return generate().asSqlInsertsWithProjections(projections);
+        }
+
+        /**
+         * Generates the data and returns SQL INSERT statements for a single table based on its CREATE TABLE schema.
+         *
+         * @param collectionName    the name of the collection
+         * @param createTableSql    the CREATE TABLE SQL statement
+         * @return a stream of SQL INSERT statements
+         * @throws IOException if file reading fails or schema parsing fails
+         */
+        public Stream<String> streamSqlInsertsFromSchema(String collectionName, String createTableSql) throws IOException {
+            SqlProjection projection = SqlSchemaParser.parseCreateTable(createTableSql);
+            return generate().streamSqlInsertsWithProjection(collectionName, projection);
         }
     }
 }
