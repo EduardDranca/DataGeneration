@@ -10,6 +10,7 @@ import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.CollectionNode;
+import com.github.eddranca.datagenerator.node.Condition;
 import com.github.eddranca.datagenerator.node.ConditionalReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
@@ -26,11 +27,14 @@ import com.github.eddranca.datagenerator.node.PickReferenceNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
+import com.github.eddranca.datagenerator.node.ShadowBindingFieldNode;
+import com.github.eddranca.datagenerator.node.ShadowBindingNode;
 import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
 import com.github.eddranca.datagenerator.util.FieldApplicationUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,9 +46,18 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
     private final AbstractGenerationContext<T> context;
     private ObjectNode currentItem; // Track current item for "this" references
     private String currentCollectionName; // Track current collection for lazy generation
+    private Map<String, JsonNode> shadowBindings = new HashMap<>(); // Track shadow bindings for current item
 
     public DataGenerationVisitor(AbstractGenerationContext<T> context) {
         this.context = context;
+    }
+
+    /**
+     * Gets the current shadow bindings map.
+     * Used by condition evaluation to resolve $binding.field references.
+     */
+    public Map<String, JsonNode> getShadowBindings() {
+        return shadowBindings;
     }
 
     public ObjectNode getCurrentItem() {
@@ -94,14 +107,17 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
     @Override
     public JsonNode visitItem(ItemNode node) {
         ObjectNode previousItem = this.currentItem;
+        Map<String, JsonNode> previousShadowBindings = this.shadowBindings;
 
         try {
             // Standard item generation - lazy generation is now handled at collection level
             ObjectNode item = context.getMapper().createObjectNode();
             this.currentItem = item;
+            this.shadowBindings = new HashMap<>(); // Fresh shadow bindings for each item
             return visitObjectLikeNode(node.getFields(), item);
         } finally {
             this.currentItem = previousItem; // Restore previous item context
+            this.shadowBindings = previousShadowBindings; // Restore previous shadow bindings
         }
     }
 
@@ -238,7 +254,54 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
     @Override
     public JsonNode visitConditionalReference(ConditionalReferenceNode node) {
         List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
+        
+        // Resolve shadow bindings in the condition if present
+        if (node.getCondition().hasShadowBindingReferences()) {
+            Condition resolvedCondition = node.getCondition().resolveShadowBindings(shadowBindings);
+            return resolveConditionalReference(node, resolvedCondition, filterValues);
+        }
+        
         return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
+    }
+
+    private JsonNode resolveConditionalReference(ConditionalReferenceNode node, Condition resolvedCondition, List<JsonNode> filterValues) {
+        // Use the context's filtered collection with the resolved condition
+        List<JsonNode> filteredCollection = context.getFilteredCollection(
+            node.getCollectionNameString(),
+            resolvedCondition,
+            filterValues.isEmpty() ? null : filterValues,
+            node.hasFieldName() ? node.getFieldName() : ""
+        );
+
+        if (filteredCollection.isEmpty()) {
+            if (filterValues != null && !filterValues.isEmpty()) {
+                return context.handleFilteringFailure("Conditional reference '" + node.getReferenceString() + "' has no valid values after filtering");
+            } else {
+                return context.handleFilteringFailure("Conditional reference '" + node.getReferenceString() + "' matched no items");
+            }
+        }
+
+        // Select an element
+        JsonNode selected = context.getElementFromCollection(filteredCollection, node, node.isSequential());
+
+        // Extract field if specified
+        return node.hasFieldName() ? extractNestedField(selected, node.getFieldName()) : selected;
+    }
+
+    private JsonNode extractNestedField(JsonNode item, String fieldPath) {
+        if (item == null || item.isNull()) {
+            return context.getMapper().nullNode();
+        }
+        
+        String[] parts = fieldPath.split("\\.");
+        JsonNode current = item;
+        for (String part : parts) {
+            if (current == null || current.isNull() || current.isMissingNode()) {
+                return context.getMapper().nullNode();
+            }
+            current = current.get(part);
+        }
+        return current != null ? current : context.getMapper().nullNode();
     }
 
     @Override
@@ -306,6 +369,12 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
             DslNode fieldNode = entry.getValue();
 
             JsonNode value = fieldNode.accept(this);
+            
+            // Skip shadow binding fields from output (they start with $)
+            if (fieldName.startsWith("$")) {
+                continue;
+            }
+            
             FieldApplicationUtil.applyFieldToObject(newObject, fieldName, fieldNode, value);
         }
 
@@ -373,6 +442,34 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
     @Override
     public JsonNode visitFilter(FilterNode node) {
         return node.getFilterExpression().accept(this);
+    }
+
+    @Override
+    public JsonNode visitShadowBinding(ShadowBindingNode node) {
+        // Resolve the reference to get the bound value
+        JsonNode boundValue = node.getReferenceNode().accept(this);
+        
+        // Store in shadow bindings map for later use in conditions
+        shadowBindings.put(node.getBindingName(), boundValue);
+        
+        // Return the bound value (but it won't be added to output due to $ prefix handling)
+        return boundValue;
+    }
+
+    @Override
+    public JsonNode visitShadowBindingField(ShadowBindingFieldNode node) {
+        String bindingName = node.getBindingName();
+        JsonNode boundValue = shadowBindings.get(bindingName);
+        
+        if (boundValue == null) {
+            throw new IllegalArgumentException(
+                "Shadow binding '" + bindingName + "' not found. " +
+                "Make sure it's defined before use in the item."
+            );
+        }
+        
+        // Extract the field from the bound value
+        return extractNestedField(boundValue, node.getFieldPath());
     }
 
 

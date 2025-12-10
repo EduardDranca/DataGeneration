@@ -8,6 +8,7 @@ import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
 import com.github.eddranca.datagenerator.node.OptionReferenceNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
+import com.github.eddranca.datagenerator.node.ShadowBindingNode;
 
 import java.util.Map;
 import java.util.Set;
@@ -31,12 +32,34 @@ public class LazyItemProxy extends AbstractLazyProxy {
         super(fieldNodes, referencedPaths, visitor);
         this.collectionName = collectionName;
 
-        // First, materialize fields that are referenced by runtime options
+        // Clear shadow bindings for this new item
+        visitor.getShadowBindings().clear();
+
+        // First, materialize shadow bindings (fields starting with $)
+        // These must be materialized before any fields that depend on them
+        materializeShadowBindings();
+
+        // Then, materialize fields that are referenced by runtime options
         // This ensures they're available when generating fields that depend on them
         materializeRuntimeOptionDependencies();
 
         // Then generate only referenced fields immediately
         materializeReferencedFields();
+    }
+
+    /**
+     * Materializes all shadow binding fields first.
+     * Shadow bindings must be processed before other fields that may depend on them.
+     */
+    private void materializeShadowBindings() {
+        for (Map.Entry<String, DslNode> entry : fieldNodes.entrySet()) {
+            String fieldName = entry.getKey();
+            DslNode fieldNode = entry.getValue();
+
+            if (fieldNode instanceof ShadowBindingNode) {
+                materializeField(fieldName);
+            }
+        }
     }
 
     /**
@@ -111,7 +134,14 @@ public class LazyItemProxy extends AbstractLazyProxy {
             ObjectNode previousItem = visitor.getCurrentItem();
             try {
                 visitor.setCurrentItem(delegate);
-                return fieldNode.accept(visitor);
+                JsonNode value = fieldNode.accept(visitor);
+                
+                // If this is a shadow binding, store the value in the visitor's shadow bindings map
+                if (fieldNode instanceof ShadowBindingNode) {
+                    visitor.getShadowBindings().put(fieldName, value);
+                }
+                
+                return value;
             } finally {
                 visitor.setCurrentItem(previousItem);
             }

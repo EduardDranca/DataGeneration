@@ -19,6 +19,8 @@ import com.github.eddranca.datagenerator.node.PickReferenceNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
+import com.github.eddranca.datagenerator.node.ShadowBindingFieldNode;
+import com.github.eddranca.datagenerator.node.ShadowBindingNode;
 import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
 
@@ -206,6 +208,22 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
     @Override
     public Void visitFilter(FilterNode node) {
         node.getFilterExpression().accept(this);
+        return null;
+    }
+
+    @Override
+    public Void visitShadowBinding(ShadowBindingNode node) {
+        // Visit the reference node within the shadow binding to track dependencies
+        if (node.getReferenceNode() != null) {
+            node.getReferenceNode().accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitShadowBindingField(ShadowBindingFieldNode node) {
+        // Shadow binding field references don't directly reference collections
+        // The dependency is tracked through the shadow binding definition
         return null;
     }
 

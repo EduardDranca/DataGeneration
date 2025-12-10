@@ -2,8 +2,10 @@ package com.github.eddranca.datagenerator.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -72,5 +74,23 @@ public class LogicalCondition implements Condition {
             paths.addAll(condition.getReferencedPaths());
         }
         return paths;
+    }
+
+    @Override
+    public boolean hasShadowBindingReferences() {
+        return conditions.stream().anyMatch(Condition::hasShadowBindingReferences);
+    }
+
+    @Override
+    public Condition resolveShadowBindings(Map<String, JsonNode> shadowBindings) {
+        if (!hasShadowBindingReferences()) {
+            return this;
+        }
+        
+        List<Condition> resolvedConditions = new ArrayList<>();
+        for (Condition condition : conditions) {
+            resolvedConditions.add(condition.resolveShadowBindings(shadowBindings));
+        }
+        return new LogicalCondition(type, resolvedConditions);
     }
 }
