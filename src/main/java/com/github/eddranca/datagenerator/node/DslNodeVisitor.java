@@ -43,4 +43,8 @@ public interface DslNodeVisitor<T> {
     T visitArrayField(ArrayFieldNode node);
 
     T visitFilter(FilterNode node);
+
+    T visitShadowBinding(ShadowBindingNode node);
+
+    T visitShadowBindingField(ShadowBindingFieldNode node);
 }

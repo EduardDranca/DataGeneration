@@ -3,6 +3,7 @@ package com.github.eddranca.datagenerator.node;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.util.JsonNodeUtils;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -30,6 +31,56 @@ public class ComparisonCondition implements Condition {
 
     public Object getExpectedValue() {
         return expectedValue;
+    }
+
+    @Override
+    public boolean hasShadowBindingReferences() {
+        return expectedValue instanceof ShadowBindingReference;
+    }
+
+    @Override
+    public Condition resolveShadowBindings(Map<String, JsonNode> shadowBindings) {
+        if (!(expectedValue instanceof ShadowBindingReference ref)) {
+            return this;
+        }
+
+        JsonNode boundValue = shadowBindings.get(ref.getBindingName());
+        if (boundValue == null) {
+            throw new IllegalArgumentException(
+                "Shadow binding '" + ref.getBindingName() + "' not found. " +
+                "Make sure it's defined before use in the item."
+            );
+        }
+
+        // Extract the field from the bound value
+        JsonNode fieldValue = JsonNodeUtils.extractNestedField(boundValue, ref.getFieldPath());
+        
+        // Convert JsonNode to appropriate Java type for comparison
+        Object resolvedValue = jsonNodeToValue(fieldValue);
+        
+        return new ComparisonCondition(fieldPath, operator, resolvedValue);
+    }
+
+    private Object jsonNodeToValue(JsonNode node) {
+        if (node == null || node.isNull() || node.isMissingNode()) {
+            return null;
+        }
+        if (node.isTextual()) {
+            return node.asText();
+        }
+        if (node.isBoolean()) {
+            return node.asBoolean();
+        }
+        if (node.isInt()) {
+            return node.asInt();
+        }
+        if (node.isLong()) {
+            return node.asLong();
+        }
+        if (node.isDouble() || node.isFloat()) {
+            return node.asDouble();
+        }
+        return node.asText();
     }
 
     @Override

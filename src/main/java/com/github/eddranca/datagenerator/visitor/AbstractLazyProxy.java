@@ -56,7 +56,10 @@ abstract class AbstractLazyProxy {
             DslNode fieldNode = fieldNodes.get(fieldName);
             if (fieldNode != null) {
                 JsonNode value = generateFieldValue(fieldName, fieldNode);
-                FieldApplicationUtil.applyFieldToObject(delegate, fieldName, fieldNode, value);
+                // Skip shadow binding fields from output (they start with $)
+                if (!fieldName.startsWith("$")) {
+                    FieldApplicationUtil.applyFieldToObject(delegate, fieldName, fieldNode, value);
+                }
                 materializedFieldNames.add(fieldName);
             }
         }

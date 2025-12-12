@@ -6,6 +6,7 @@ import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
+import com.github.eddranca.datagenerator.node.ShadowBindingNode;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -36,6 +37,11 @@ class FieldNodeBuilder implements FieldBuilder {
             validateNoConflictingKeywords(fieldName, fieldDef);
         }
 
+        // Check for shadow binding (field name starts with $)
+        if (fieldName.startsWith("$")) {
+            return buildShadowBinding(fieldName, fieldDef);
+        }
+
         if (fieldDef.has(GENERATOR)) {
             GeneratedFieldNodeBuilder generatedBuilder = new GeneratedFieldNodeBuilder(context, this);
             return generatedBuilder.buildGeneratorBasedField(fieldName, fieldDef);
@@ -56,6 +62,23 @@ class FieldNodeBuilder implements FieldBuilder {
         }
 
         return new LiteralFieldNode(fieldDef);
+    }
+
+    private DslNode buildShadowBinding(String fieldName, JsonNode fieldDef) {
+        if (!fieldDef.isObject() || !fieldDef.has(REF)) {
+            addFieldError(fieldName, "shadow binding must have a 'ref' definition");
+            return null;
+        }
+
+        // Build the reference node that this shadow binding wraps
+        ReferenceFieldNodeBuilder referenceBuilder = new ReferenceFieldNodeBuilder(context, this);
+        DslNode referenceNode = referenceBuilder.buildReferenceBasedField(fieldName, fieldDef);
+
+        if (referenceNode == null) {
+            return null;
+        }
+
+        return new ShadowBindingNode(fieldName, referenceNode);
     }
 
     private void validateNoConflictingKeywords(String fieldName, JsonNode fieldDef) {

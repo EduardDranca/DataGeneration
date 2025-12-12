@@ -4,6 +4,7 @@ import com.github.eddranca.datagenerator.node.ComparisonCondition;
 import com.github.eddranca.datagenerator.node.ComparisonOperator;
 import com.github.eddranca.datagenerator.node.Condition;
 import com.github.eddranca.datagenerator.node.LogicalCondition;
+import com.github.eddranca.datagenerator.node.ShadowBindingReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -177,11 +178,16 @@ class ConditionParser {
 
     /**
      * Parses a condition value from string to appropriate type.
-     * Supports: 'string', true, false, null, numbers
+     * Supports: 'string', true, false, null, numbers, $binding.field references
      */
     private Object parseValue(String valueStr) {
         if (valueStr.isEmpty()) {
             return "";
+        }
+
+        // Check for shadow binding reference ($name.field)
+        if (valueStr.startsWith("$") && valueStr.contains(".")) {
+            return ShadowBindingReference.parse(valueStr);
         }
 
         // Check for quoted string (single quotes)

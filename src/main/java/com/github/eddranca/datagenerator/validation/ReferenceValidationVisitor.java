@@ -19,6 +19,8 @@ import com.github.eddranca.datagenerator.node.PickReferenceNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.RootNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
+import com.github.eddranca.datagenerator.node.ShadowBindingFieldNode;
+import com.github.eddranca.datagenerator.node.ShadowBindingNode;
 import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 import com.github.eddranca.datagenerator.node.SpreadFieldNode;
 
@@ -246,6 +248,22 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
     public Void visitFilter(FilterNode node) {
         // Filter expressions are now handled by their specific typed reference nodes
         node.getFilterExpression().accept(this);
+        return null;
+    }
+
+    @Override
+    public Void visitShadowBinding(ShadowBindingNode node) {
+        // Visit the reference node within the shadow binding
+        if (node.getReferenceNode() != null) {
+            node.getReferenceNode().accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitShadowBindingField(ShadowBindingFieldNode node) {
+        // Shadow binding field references are validated at runtime
+        // (we can't validate binding existence at build time since order matters)
         return null;
     }
 
