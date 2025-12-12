@@ -10,6 +10,7 @@ import com.github.eddranca.datagenerator.node.OptionReferenceNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
 import com.github.eddranca.datagenerator.node.ShadowBindingNode;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,7 +26,7 @@ public class LazyItemProxy extends AbstractLazyProxy {
     private final String collectionName;
     private boolean fullyMaterialized = false;
     // Store shadow bindings per-item to preserve them for later materialization
-    private final Map<String, JsonNode> itemShadowBindings = new java.util.HashMap<>();
+    private final Map<String, JsonNode> itemShadowBindings = new HashMap<>();
 
     public LazyItemProxy(String collectionName,
                          Map<String, DslNode> fieldNodes,
@@ -40,7 +41,7 @@ public class LazyItemProxy extends AbstractLazyProxy {
         // First, materialize shadow bindings (fields starting with $)
         // These must be materialized before any fields that depend on them
         materializeShadowBindings();
-        
+
         // Store shadow bindings for this item (for later materialization)
         itemShadowBindings.putAll(visitor.getShadowBindings());
 
@@ -140,12 +141,12 @@ public class LazyItemProxy extends AbstractLazyProxy {
             try {
                 visitor.setCurrentItem(delegate);
                 JsonNode value = fieldNode.accept(visitor);
-                
+
                 // If this is a shadow binding, store the value in the visitor's shadow bindings map
                 if (fieldNode instanceof ShadowBindingNode) {
                     visitor.getShadowBindings().put(fieldName, value);
                 }
-                
+
                 return value;
             } finally {
                 visitor.setCurrentItem(previousItem);
@@ -170,10 +171,10 @@ public class LazyItemProxy extends AbstractLazyProxy {
         if (!fullyMaterialized) {
             // Restore shadow bindings for this item before materializing remaining fields
             // This is necessary because shadow bindings may have been cleared by subsequent items
-            Map<String, JsonNode> previousBindings = new java.util.HashMap<>(visitor.getShadowBindings());
+            Map<String, JsonNode> previousBindings = new HashMap<>(visitor.getShadowBindings());
             visitor.getShadowBindings().clear();
             visitor.getShadowBindings().putAll(itemShadowBindings);
-            
+
             try {
                 materializeAll();
             } finally {

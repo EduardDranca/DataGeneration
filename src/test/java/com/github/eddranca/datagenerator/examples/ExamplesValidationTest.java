@@ -5,7 +5,6 @@ import com.github.eddranca.datagenerator.Generation;
 import com.github.eddranca.datagenerator.ParameterizedGenerationTest;
 import com.github.eddranca.datagenerator.generator.Generator;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -618,27 +617,31 @@ class ExamplesValidationTest extends ParameterizedGenerationTest {
             assertThat(productIds).contains(order.get("productId").asText());
         });
 
-        assertThat(personalizedOrders).allSatisfy(order -> {
-            assertThat(order.has("$user")).isFalse();
-            assertThat(order.has("orderId")).isTrue();
-            assertThat(order.has("userId")).isTrue();
-            assertThat(order.has("productId")).isTrue();
-            assertThat(userIds).contains(order.get("userId").asText());
-            // productId may be null if no product matches the user's region AND category
-            if (!order.get("productId").isNull()) {
-                assertThat(productIds).contains(order.get("productId").asText());
-            }
-        });
+        assertThat(personalizedOrders)
+            .hasSize(50)
+            .allSatisfy(order -> {
+                assertThat(order.has("$user")).isFalse();
+                assertThat(order.has("orderId")).isTrue();
+                assertThat(order.has("userId")).isTrue();
+                assertThat(order.has("productId")).isTrue();
+                assertThat(userIds).contains(order.get("userId").asText());
+                // productId may be null if no product matches the user's region AND category
+                if (!order.get("productId").isNull()) {
+                    assertThat(productIds).contains(order.get("productId").asText());
+                }
+            });
 
-        assertThat(friendships).allSatisfy(friendship -> {
-            assertThat(friendship.has("$person")).isFalse();
-            assertThat(friendship.has("userId")).isTrue();
-            assertThat(friendship.has("friendId")).isTrue();
-            assertThat(userIds).contains(friendship.get("userId").asText());
-            assertThat(userIds).contains(friendship.get("friendId").asText());
-            // Self-exclusion: userId != friendId
-            assertThat(friendship.get("userId").asText()).isNotEqualTo(friendship.get("friendId").asText());
-        });
+        assertThat(friendships)
+            .hasSize(50)
+            .allSatisfy(friendship -> {
+                assertThat(friendship.has("$person")).isFalse();
+                assertThat(friendship.has("userId")).isTrue();
+                assertThat(friendship.has("friendId")).isTrue();
+                assertThat(userIds).contains(friendship.get("userId").asText());
+                assertThat(userIds).contains(friendship.get("friendId").asText());
+                // Self-exclusion: userId != friendId
+                assertThat(friendship.get("userId").asText()).isNotEqualTo(friendship.get("friendId").asText());
+            });
 
         // Validate geographic constraints: orders have products from same region as user
         assertThat(orders).allSatisfy(order -> {

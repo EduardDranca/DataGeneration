@@ -183,7 +183,7 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
             OptionReferenceNode optionRef = entry.getValue();
 
             JsonNode referencedValue = optionRef.getReference().resolve(context, currentItem, null);
-            
+
             if (referencedValue == null || referencedValue.isNull()) {
                 continue;
             }
@@ -212,7 +212,7 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
         for (Map.Entry<String, GeneratorOptionNode> entry : options.getGeneratorOptions().entrySet()) {
             String optionKey = entry.getKey();
             GeneratorOptionNode generatorOption = entry.getValue();
-            
+
             JsonNode generatedValue = generatorOption.accept(this);
             if (generatedValue != null && !generatedValue.isNull()) {
                 resolved.set(optionKey, generatedValue);
@@ -254,13 +254,13 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
     @Override
     public JsonNode visitConditionalReference(ConditionalReferenceNode node) {
         List<JsonNode> filterValues = computeFilteredValues(node.getFilters());
-        
+
         // Resolve shadow bindings in the condition if present
         if (node.getCondition().hasShadowBindingReferences()) {
             Condition resolvedCondition = node.getCondition().resolveShadowBindings(shadowBindings);
             return resolveConditionalReference(node, resolvedCondition, filterValues);
         }
-        
+
         return node.resolve(context, currentItem, filterValues.isEmpty() ? null : filterValues);
     }
 
@@ -274,7 +274,7 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
         );
 
         if (filteredCollection.isEmpty()) {
-            if (filterValues != null && !filterValues.isEmpty()) {
+            if (!filterValues.isEmpty()) {
                 return context.handleFilteringFailure("Conditional reference '" + node.getReferenceString() + "' has no valid values after filtering");
             } else {
                 return context.handleFilteringFailure("Conditional reference '" + node.getReferenceString() + "' matched no items");
@@ -292,7 +292,7 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
         if (item == null || item.isNull()) {
             return context.getMapper().nullNode();
         }
-        
+
         String[] parts = fieldPath.split("\\.");
         JsonNode current = item;
         for (String part : parts) {
@@ -369,12 +369,12 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
             DslNode fieldNode = entry.getValue();
 
             JsonNode value = fieldNode.accept(this);
-            
+
             // Skip shadow binding fields from output (they start with $)
             if (fieldName.startsWith("$")) {
                 continue;
             }
-            
+
             FieldApplicationUtil.applyFieldToObject(newObject, fieldName, fieldNode, value);
         }
 
@@ -448,10 +448,10 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
     public JsonNode visitShadowBinding(ShadowBindingNode node) {
         // Resolve the reference to get the bound value
         JsonNode boundValue = node.getReferenceNode().accept(this);
-        
+
         // Store in shadow bindings map for later use in conditions
         shadowBindings.put(node.getBindingName(), boundValue);
-        
+
         // Return the bound value (but it won't be added to output due to $ prefix handling)
         return boundValue;
     }
@@ -460,14 +460,14 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
     public JsonNode visitShadowBindingField(ShadowBindingFieldNode node) {
         String bindingName = node.getBindingName();
         JsonNode boundValue = shadowBindings.get(bindingName);
-        
+
         if (boundValue == null) {
             throw new IllegalArgumentException(
                 "Shadow binding '" + bindingName + "' not found. " +
                 "Make sure it's defined before use in the item."
             );
         }
-        
+
         // Extract the field from the bound value
         return extractNestedField(boundValue, node.getFieldPath());
     }

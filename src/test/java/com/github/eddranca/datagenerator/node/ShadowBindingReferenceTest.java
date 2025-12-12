@@ -18,7 +18,7 @@ class ShadowBindingReferenceTest {
         @DisplayName("parses valid reference with simple field")
         void parsesValidReferenceWithSimpleField() {
             ShadowBindingReference ref = ShadowBindingReference.parse("$user.id");
-            
+
             assertThat(ref.getBindingName()).isEqualTo("$user");
             assertThat(ref.getFieldPath()).isEqualTo("id");
         }
@@ -27,7 +27,7 @@ class ShadowBindingReferenceTest {
         @DisplayName("parses valid reference with nested field path")
         void parsesValidReferenceWithNestedFieldPath() {
             ShadowBindingReference ref = ShadowBindingReference.parse("$user.profile.settings.theme");
-            
+
             assertThat(ref.getBindingName()).isEqualTo("$user");
             assertThat(ref.getFieldPath()).isEqualTo("profile.settings.theme");
         }
@@ -73,7 +73,7 @@ class ShadowBindingReferenceTest {
         @DisplayName("creates reference with provided values")
         void createsReferenceWithProvidedValues() {
             ShadowBindingReference ref = new ShadowBindingReference("$binding", "field");
-            
+
             assertThat(ref.getBindingName()).isEqualTo("$binding");
             assertThat(ref.getFieldPath()).isEqualTo("field");
         }
@@ -87,16 +87,16 @@ class ShadowBindingReferenceTest {
         @DisplayName("returns binding name and field path joined by dot")
         void returnsBindingNameAndFieldPathJoinedByDot() {
             ShadowBindingReference ref = new ShadowBindingReference("$user", "regionId");
-            
-            assertThat(ref.toString()).isEqualTo("$user.regionId");
+
+            assertThat(ref).hasToString("$user.regionId");
         }
 
         @Test
         @DisplayName("handles nested field paths")
         void handlesNestedFieldPaths() {
             ShadowBindingReference ref = new ShadowBindingReference("$user", "profile.email");
-            
-            assertThat(ref.toString()).isEqualTo("$user.profile.email");
+
+            assertThat(ref).hasToString("$user.profile.email");
         }
     }
 }
