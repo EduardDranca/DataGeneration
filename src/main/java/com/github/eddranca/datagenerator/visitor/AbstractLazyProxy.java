@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.util.FieldApplicationUtil;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +25,7 @@ abstract class AbstractLazyProxy {
     protected AbstractLazyProxy(Map<String, DslNode> fieldNodes,
                                 Set<String> referencedPaths,
                                 DataGenerationVisitor<LazyItemProxy> visitor) {
-        this.fieldNodes = new HashMap<>(fieldNodes);
+        this.fieldNodes = new LinkedHashMap<>(fieldNodes);
         this.referencedPaths = referencedPaths != null ? referencedPaths : Set.of();
         this.visitor = visitor;
         this.delegate = JsonNodeFactory.instance.objectNode();
