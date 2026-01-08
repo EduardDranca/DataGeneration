@@ -252,69 +252,6 @@ class FilteredCollectionCacheTest extends ParameterizedGenerationTest {
             .contains("field='name'");
     }
 
-
-    @Test
-    void testCachePerformanceImprovement() throws IOException {
-        // This test demonstrates the performance benefit of caching
-        // by generating data with many repeated filtered references
-        String dsl = """
-            {
-              "users": {
-                "count": 100,
-                "item": {
-                  "id": {"gen": "uuid"},
-                  "name": {"gen": "name.firstName"},
-                  "status": {"gen": "choice", "options": ["active", "inactive", "pending"]},
-                  "role": {"gen": "choice", "options": ["admin", "user", "guest"]}
-                }
-              },
-              "activities": {
-                "count": 1000,
-                "item": {
-                  "activityId": {"gen": "uuid"},
-                  "userId1": {"ref": "users[status='active'].id"},
-                  "userId2": {"ref": "users[status='active'].id"},
-                  "userId3": {"ref": "users[status='active'].id"},
-                  "userId4": {"ref": "users[status='active'].id"},
-                  "userId5": {"ref": "users[status='active'].id"}
-                }
-              }
-            }
-            """;
-
-        // Warm up JVM
-        for (int i = 0; i < 3; i++) {
-            generateFromDsl(dsl, false);
-        }
-
-        // Measure with cache (current implementation)
-        long startWithCache = System.nanoTime();
-        Generation resultWithCache = generateFromDsl(dsl, false);
-        long timeWithCache = System.nanoTime() - startWithCache;
-
-        // Verify correctness
-        Map<String, List<JsonNode>> collections = collectAllJsonNodes(resultWithCache);
-        assertThat(collections.get("users")).hasSize(100);
-        assertThat(collections.get("activities")).hasSize(1000);
-
-        // Calculate theoretical performance improvement
-        int totalReferences = 5000; // 1000 activities × 5 references each
-        int collectionSize = 100; // users collection size
-        int cachedOperations = totalReferences - 1; // All but the first reference hit cache
-        int operationsSaved = cachedOperations * collectionSize;
-
-        System.out.println("\n=== Cache Performance Analysis ===");
-        System.out.println("Generation time: " + timeWithCache / 1_000_000 + "ms");
-        System.out.println("Total references: " + totalReferences);
-        System.out.println("Cache hits: " + cachedOperations + " (99.98%)");
-        System.out.println("Operations saved: ~" + operationsSaved + " collection iterations");
-        System.out.println("Without cache: Would need to filter 100-item collection 5000 times");
-        System.out.println("With cache: Filter once, reuse 4999 times");
-        System.out.println("Theoretical speedup: ~" + totalReferences + "x for filtering operations\n");
-
-        assertThat(timeWithCache).isGreaterThan(0);
-    }
-
     @BothImplementationsTest
     void testCacheWithHighlyFilteredCollections(boolean memoryOptimized) throws IOException {
         // Test scenario where caching provides maximum benefit:
@@ -341,20 +278,12 @@ class FilteredCollectionCacheTest extends ParameterizedGenerationTest {
               }
             }
             """;
-
-        long start = System.nanoTime();
         Generation generation = generateFromDsl(dsl, memoryOptimized);
-        long duration = System.nanoTime() - start;
 
         Map<String, List<JsonNode>> collections = collectAllJsonNodes(generation);
 
         assertThat(collections.get("products")).hasSize(500);
         assertThat(collections.get("recommendations")).hasSize(200);
-
-        // With cache: The complex condition is evaluated once and reused 600 times (200 × 3)
-        // Without cache: Would evaluate the condition 600 times
-        System.out.println("Generation time (" + (memoryOptimized ? "lazy" : "eager") + "): " +
-            duration / 1_000_000 + "ms for 600 filtered references");
 
         // Verify all recommendations reference valid products
         List<JsonNode> products = collections.get("products");

@@ -11,6 +11,7 @@ import com.github.eddranca.datagenerator.node.IndexedReferenceNode;
 import com.github.eddranca.datagenerator.node.PickReferenceNode;
 import com.github.eddranca.datagenerator.node.ReferenceSpreadFieldNode;
 import com.github.eddranca.datagenerator.node.SelfReferenceNode;
+import com.github.eddranca.datagenerator.node.ShadowBindingFieldNode;
 import com.github.eddranca.datagenerator.node.SimpleReferenceNode;
 
 import java.util.ArrayList;
@@ -153,7 +154,9 @@ class ReferenceFieldNodeBuilder {
 
         reference = reference.trim();
 
-        if (reference.startsWith(THIS_PREFIX)) {
+        if (reference.startsWith("$")) {
+            return parseShadowBindingFieldReference(fieldName, reference, filters, sequential);
+        } else if (reference.startsWith(THIS_PREFIX)) {
             return parseSelfReference(fieldName, reference, filters, sequential);
         } else if (reference.contains("[*].")) {
             return parseArrayFieldReference(fieldName, reference, filters, sequential);
@@ -188,6 +191,30 @@ class ReferenceFieldNodeBuilder {
                bracketContent.contains(" or ");
     }
 
+
+    private Optional<AbstractReferenceNode> parseShadowBindingFieldReference(String fieldName, String reference,
+                                                                              List<FilterNode> filters, boolean sequential) {
+        int dotIndex = reference.indexOf('.');
+        if (dotIndex == -1) {
+            addReferenceFieldError(fieldName, "shadow binding reference must include field path: " + reference);
+            return Optional.empty();
+        }
+
+        String bindingName = reference.substring(0, dotIndex);
+        String fieldPath = reference.substring(dotIndex + 1);
+
+        if (bindingName.length() <= 1) {
+            addReferenceFieldError(fieldName, "shadow binding name cannot be empty: " + reference);
+            return Optional.empty();
+        }
+
+        if (fieldPath.isEmpty()) {
+            addReferenceFieldError(fieldName, "shadow binding field path cannot be empty: " + reference);
+            return Optional.empty();
+        }
+
+        return Optional.of(new ShadowBindingFieldNode(bindingName, fieldPath, filters, sequential));
+    }
 
     private Optional<AbstractReferenceNode> parseSelfReference(String fieldName, String reference,
                                                            List<FilterNode> filters, boolean sequential) {

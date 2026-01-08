@@ -1,0 +1,56 @@
+{
+  "regions": {
+    "count": 5,
+    "item": {
+      "id": {"gen": "sequence", "start": 1},
+      "name": {"gen": "choice", "options": ["North", "South", "East", "West", "Central"]}
+    }
+  },
+  "users": {
+    "count": 20,
+    "item": {
+      "id": {"gen": "uuid"},
+      "name": {"gen": "name.fullName"},
+      "email": {"gen": "internet.emailAddress"},
+      "regionId": {"ref": "regions[*].id"},
+      "preferredCategory": {"gen": "choice", "options": ["electronics", "books", "clothing", "food"]}
+    }
+  },
+  "products": {
+    "count": 50,
+    "item": {
+      "id": {"gen": "uuid"},
+      "name": {"gen": "lorem.word"},
+      "price": {"gen": "number", "min": 10, "max": 500},
+      "regionId": {"ref": "regions[*].id"},
+      "category": {"gen": "choice", "options": ["electronics", "books", "clothing", "food"]}
+    }
+  },
+  "orders": {
+    "count": 100,
+    "item": {
+      "$user": {"ref": "users[*]"},
+      "orderId": {"gen": "uuid"},
+      "userId": {"ref": "$user.id"},
+      "userName": {"ref": "$user.name"},
+      "productId": {"ref": "products[regionId=$user.regionId].id"}
+    }
+  },
+  "personalizedOrders": {
+    "count": 50,
+    "item": {
+      "$user": {"ref": "users[*]"},
+      "orderId": {"gen": "uuid"},
+      "userId": {"ref": "$user.id"},
+      "productId": {"ref": "products[regionId=$user.regionId and category=$user.preferredCategory].id"}
+    }
+  },
+  "friendships": {
+    "count": 50,
+    "item": {
+      "$person": {"ref": "users[*]"},
+      "userId": {"ref": "$person.id"},
+      "friendId": {"ref": "users[id!=$person.id].id"}
+    }
+  }
+}
