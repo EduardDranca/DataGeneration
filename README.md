@@ -11,6 +11,8 @@
 
 A powerful Java library for generating complex, realistic test data using a declarative JSON DSL. Perfect for testing, development, and data seeding scenarios.
 
+**[Full Documentation](https://eduarddranca.github.io/DataGeneration/)**
+
 ## Why DataGeneration?
 DataGeneration creates **complex, interconnected datasets** with relationships, filtering, and advanced constraints.
 
@@ -50,13 +52,13 @@ String dsl = """
 <dependency>
     <groupId>io.github.eduarddranca</groupId>
     <artifactId>data-generator</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 </dependency>
 ```
 
 **Gradle:**
 ```gradle
-implementation 'io.github.eduarddranca:data-generator:0.1.0'
+implementation 'io.github.eduarddranca:data-generator:0.2.0'
 ```
 
 ### Basic Usage
