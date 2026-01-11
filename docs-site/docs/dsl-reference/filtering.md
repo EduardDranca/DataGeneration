@@ -192,14 +192,14 @@ Control what happens when all values are filtered:
 
 ```java
 Generation generation = DslDataGenerator.create()
-    .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)  // Default
+    .withFilteringBehavior(FilteringBehavior.THROW_EXCEPTION)
     .fromJsonString(dsl)
     .generate();
 ```
 
 **Options:**
-- `THROW_EXCEPTION` (default) - Throws `FilteringException` if all values filtered
-- `RETURN_NULL` - Returns `null` if all values filtered
+- `RETURN_NULL` (default) - Returns `null` if all values filtered
+- `THROW_EXCEPTION` - Throws `FilteringException` if all values filtered
 
 ### Example with RETURN_NULL
 

@@ -9,14 +9,15 @@ Implement the `Generator` interface:
 ```java
 package com.example;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorContext;
 
 public class CustomGenerator implements Generator {
     @Override
-    public Object generate(GeneratorContext context) {
+    public JsonNode generate(GeneratorContext context) {
         // Your generation logic here
-        return "custom value";
+        return context.mapper().valueToTree("custom value");
     }
 }
 ```
@@ -26,8 +27,8 @@ public class CustomGenerator implements Generator {
 Register it with the builder:
 
 ```java
-DslDataGenerator generator = DslDataGenerator.create()
-    .registerGenerator("custom", new CustomGenerator())
+Generation result = DslDataGenerator.create()
+    .withCustomGenerator("custom", new CustomGenerator())
     .fromJsonString(dsl)
     .generate();
 ```
@@ -48,18 +49,19 @@ DslDataGenerator generator = DslDataGenerator.create()
 
 ## Accessing Options
 
-Use `GeneratorContext` to access options:
+Use `GeneratorContext` to access options (it's a Java record):
 
 ```java
 public class ConfigurableGenerator implements Generator {
     @Override
-    public Object generate(GeneratorContext context) {
+    public JsonNode generate(GeneratorContext context) {
         int min = context.getIntOption("min", 0);
         int max = context.getIntOption("max", 100);
-        String format = context.getStringOption("format", "default");
+        String format = context.getStringOption("format");  // Returns null if not set
+        if (format == null) format = "default";
         
         // Your logic using options
-        return generateValue(min, max, format);
+        return context.mapper().valueToTree(generateValue(min, max, format));
     }
 }
 ```
@@ -83,9 +85,10 @@ Access the Faker instance for realistic data:
 ```java
 public class CustomNameGenerator implements Generator {
     @Override
-    public Object generate(GeneratorContext context) {
-        Faker faker = context.getFaker();
-        return faker.name().fullName() + " " + faker.number().digits(4);
+    public JsonNode generate(GeneratorContext context) {
+        Faker faker = context.faker();
+        String value = faker.name().fullName() + " " + faker.number().digits(4);
+        return context.mapper().valueToTree(value);
     }
 }
 ```
@@ -95,14 +98,15 @@ public class CustomNameGenerator implements Generator {
 ```java
 public class SkuGenerator implements Generator {
     @Override
-    public Object generate(GeneratorContext context) {
-        String prefix = context.getStringOption("prefix", "PROD");
+    public JsonNode generate(GeneratorContext context) {
+        String prefix = context.getStringOption("prefix");
+        if (prefix == null) prefix = "PROD";
         int digits = context.getIntOption("digits", 6);
         
-        Faker faker = context.getFaker();
+        Faker faker = context.faker();
         String number = faker.number().digits(digits);
         
-        return prefix + "-" + number;
+        return context.mapper().valueToTree(prefix + "-" + number);
     }
 }
 ```
@@ -131,8 +135,8 @@ public class StatusGenerator implements Generator {
     );
     
     @Override
-    public Object generate(GeneratorContext context) {
-        Faker faker = context.getFaker();
+    public JsonNode generate(GeneratorContext context) {
+        Faker faker = context.faker();
         int total = STATUS_WEIGHTS.values().stream().mapToInt(Integer::intValue).sum();
         int random = faker.number().numberBetween(0, total);
         
@@ -140,11 +144,11 @@ public class StatusGenerator implements Generator {
         for (Map.Entry<String, Integer> entry : STATUS_WEIGHTS.entrySet()) {
             cumulative += entry.getValue();
             if (random < cumulative) {
-                return entry.getKey();
+                return context.mapper().valueToTree(entry.getKey());
             }
         }
         
-        return "active";
+        return context.mapper().valueToTree("active");
     }
 }
 ```

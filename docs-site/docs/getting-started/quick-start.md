@@ -26,9 +26,10 @@ Create a JSON file defining your data structure:
 ```java
 import com.github.eddranca.datagenerator.DslDataGenerator;
 import com.github.eddranca.datagenerator.Generation;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class QuickStart {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         String dsl = // ... your JSON from above
 
         Generation generation = DslDataGenerator.create()
@@ -36,13 +37,14 @@ public class QuickStart {
             .fromJsonString(dsl)
             .generate();
 
-        // Get as JSON
-        String json = generation.toJson();
-        System.out.println(json);
+        // Stream as JsonNode
+        generation.streamJsonNodes("users").forEach(user -> {
+            System.out.println(user.get("firstName").asText());
+        });
 
-        // Or access programmatically
-        List<Map<String, Object>> users = generation.getCollection("users");
-        System.out.println("Generated " + users.size() + " users");
+        // Check collection size
+        int userCount = generation.getCollectionSize("users");
+        System.out.println("Generated " + userCount + " users");
     }
 }
 ```
@@ -87,9 +89,15 @@ Generation generation = DslDataGenerator.create()
     .fromJsonString(dsl)
     .generate();
 
-// Generate SQL INSERT statements
-String sql = generation.toSqlInserts();
-System.out.println(sql);
+// Stream SQL INSERT statements for each collection
+generation.streamSqlInserts("users").forEach(System.out::println);
+generation.streamSqlInserts("orders").forEach(System.out::println);
+
+// Or get all collections as SQL streams
+Map<String, Stream<String>> allSql = generation.asSqlInserts();
+allSql.forEach((table, sqlStream) -> {
+    sqlStream.forEach(System.out::println);
+});
 ```
 
 Output:
@@ -183,9 +191,9 @@ Generation generation = DslDataGenerator.create()
     .generate();
 
 // Stream collections one at a time
-generation.streamCollection("users").forEach(user -> {
-    // Process each user
-    System.out.println(user);
+generation.streamJsonNodes("users").forEach(user -> {
+    // Process each user as JsonNode
+    System.out.println(user.get("name").asText());
 });
 ```
 

@@ -25,9 +25,9 @@ Generation generation = DslDataGenerator.create()
 Process collections one item at a time:
 
 ```java
-generation.streamCollection("users").forEach(user -> {
-    // Process each user
-    System.out.println(user);
+generation.streamJsonNodes("users").forEach(user -> {
+    // Process each user as JsonNode
+    System.out.println(user.get("name").asText());
     // Or save to database, write to file, etc.
 });
 ```
@@ -41,17 +41,16 @@ Generation generation = DslDataGenerator.create()
     .fromJsonString(dsl)
     .generate();
 
-// All data generated upfront
-List<Map<String, Object>> users = generation.getCollection("users");
+// Stream data (can be consumed once per call)
+generation.streamJsonNodes("users").forEach(user -> process(user));
 
-// Can iterate multiple times
-users.forEach(user -> process(user));
-users.forEach(user -> validate(user));
+// Or get all streams at once
+Map<String, Stream<JsonNode>> allData = generation.asJsonNodes();
 ```
 
 **Pros:**
 - Fast random access
-- Can iterate multiple times
+- Can call streaming methods multiple times
 - Simpler to use
 
 **Cons:**
@@ -68,7 +67,7 @@ Generation generation = DslDataGenerator.create()
     .generate();
 
 // Data generated on-demand
-generation.streamCollection("users").forEach(user -> {
+generation.streamJsonNodes("users").forEach(user -> {
     process(user);
 });
 ```
@@ -79,7 +78,7 @@ generation.streamCollection("users").forEach(user -> {
 - Efficient streaming
 
 **Cons:**
-- Can only stream once
+- Streaming same collection multiple times yields different results
 - No random access
 - Slightly slower per-item
 
@@ -105,8 +104,8 @@ Generation generation = DslDataGenerator.create()
     .generate();
 
 // Process in batches
-List<Map<String, Object>> batch = new ArrayList<>();
-generation.streamCollection("users").forEach(user -> {
+List<JsonNode> batch = new ArrayList<>();
+generation.streamJsonNodes("users").forEach(user -> {
     batch.add(user);
     
     if (batch.size() >= 1000) {
@@ -133,11 +132,11 @@ try (Connection conn = dataSource.getConnection()) {
     String sql = "INSERT INTO users (id, name, email) VALUES (?, ?, ?)";
     PreparedStatement stmt = conn.prepareStatement(sql);
     
-    generation.streamCollection("users").forEach(user -> {
+    generation.streamJsonNodes("users").forEach(user -> {
         try {
-            stmt.setString(1, (String) user.get("id"));
-            stmt.setString(2, (String) user.get("name"));
-            stmt.setString(3, (String) user.get("email"));
+            stmt.setString(1, user.get("id").asText());
+            stmt.setString(2, user.get("name").asText());
+            stmt.setString(3, user.get("email").asText());
             stmt.addBatch();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -160,15 +159,14 @@ try (BufferedWriter writer = Files.newBufferedWriter(Path.of("output.json"))) {
     writer.write("[\n");
     
     AtomicBoolean first = new AtomicBoolean(true);
-    generation.streamCollection("users").forEach(user -> {
+    generation.streamJsonNodes("users").forEach(user -> {
         try {
             if (!first.get()) {
                 writer.write(",\n");
             }
             first.set(false);
             
-            String json = new ObjectMapper().writeValueAsString(user);
-            writer.write("  " + json);
+            writer.write("  " + user.toString());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

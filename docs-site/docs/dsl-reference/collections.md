@@ -183,17 +183,21 @@ Generation generation = DslDataGenerator.create()
     .fromJsonString(dsl)
     .generate();
 
-// Get entire collection
-List<Map<String, Object>> users = generation.getCollection("users");
+// Get collection names
+Set<String> names = generation.getCollectionNames();
 
-// Get specific item
-Map<String, Object> firstUser = users.get(0);
-String userId = (String) firstUser.get("id");
+// Get collection size
+int userCount = generation.getCollectionSize("users");
 
-// Stream collection (lazy mode)
-generation.streamCollection("users").forEach(user -> {
-    System.out.println(user);
+// Stream collection as JsonNode
+generation.streamJsonNodes("users").forEach(user -> {
+    String id = user.get("id").asText();
+    String name = user.get("name").asText();
+    System.out.println(name + " (" + id + ")");
 });
+
+// Get all collections as streams
+Map<String, Stream<JsonNode>> allData = generation.asJsonNodes();
 ```
 
 ## Best Practices

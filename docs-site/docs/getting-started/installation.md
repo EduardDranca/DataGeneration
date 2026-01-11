@@ -46,7 +46,7 @@ import com.github.eddranca.datagenerator.DslDataGenerator;
 import com.github.eddranca.datagenerator.Generation;
 
 public class InstallationTest {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         String dsl = """
             {
               "test": {
@@ -62,20 +62,17 @@ public class InstallationTest {
             .fromJsonString(dsl)
             .generate();
 
-        System.out.println(generation.toJson());
+        // Stream the generated data
+        generation.streamJsonNodes("test").forEach(item -> {
+            System.out.println(item.get("message").asText());
+        });
     }
 }
 ```
 
 Expected output:
-```json
-{
-  "test": [
-    {
-      "message": "Hello DataGeneration!"
-    }
-  ]
-}
+```
+Hello DataGeneration!
 ```
 
 ## Next Steps

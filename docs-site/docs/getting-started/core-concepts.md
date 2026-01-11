@@ -149,10 +149,13 @@ Generation generation = DslDataGenerator.create()
     .fromJsonString(dsl)
     .generate();
 
-List<Map<String, Object>> users = generation.getCollection("users");
+// Stream as JsonNode
+generation.streamJsonNodes("users").forEach(user -> {
+    System.out.println(user.get("name").asText());
+});
 ```
 
-**Pros**: Fast access, can iterate multiple times
+**Pros**: Fast access, can call streaming methods multiple times
 **Cons**: High memory usage for large datasets
 
 ### Lazy Mode
@@ -165,13 +168,14 @@ Generation generation = DslDataGenerator.create()
     .fromJsonString(dsl)
     .generate();
 
-generation.streamCollection("users").forEach(user -> {
-    // Process user
+generation.streamJsonNodes("users").forEach(user -> {
+    // Process user as JsonNode
+    System.out.println(user.get("name").asText());
 });
 ```
 
 **Pros**: Low memory usage, handles huge datasets
-**Cons**: Can only stream once, slightly slower
+**Cons**: Streaming same collection multiple times yields different results
 
 ## Seeds
 

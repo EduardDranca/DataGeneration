@@ -110,7 +110,7 @@ Generation gen2 = DslDataGenerator.create()
 ## SQL Output
 
 ```java
-String sql = generation.toSqlInserts();
+generation.streamSqlInserts("users").forEach(System.out::println);
 ```
 
 **Output:**

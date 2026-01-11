@@ -92,15 +92,15 @@ You can create custom generators by implementing the `Generator` interface:
 ```java
 public class CustomGenerator implements Generator {
     @Override
-    public Object generate(GeneratorContext context) {
+    public JsonNode generate(GeneratorContext context) {
         // Your generation logic
-        return "custom value";
+        return context.mapper().valueToTree("custom value");
     }
 }
 
 // Register it
 DslDataGenerator.create()
-    .registerGenerator("custom", new CustomGenerator())
+    .withCustomGenerator("custom", new CustomGenerator())
     .fromJsonString(dsl)
     .generate();
 ```

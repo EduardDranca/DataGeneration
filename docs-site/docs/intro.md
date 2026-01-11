@@ -40,7 +40,13 @@ Generation generation = DslDataGenerator.create()
     .fromJsonString(dsl)
     .generate();
 
-String json = generation.toJson();
+// Stream as JSON
+generation.streamJsonNodes("users").forEach(user -> {
+    System.out.println(user.get("name").asText());
+});
+
+// Or export as SQL
+generation.streamSqlInserts("users").forEach(System.out::println);
 ```
 
 ## Get Started

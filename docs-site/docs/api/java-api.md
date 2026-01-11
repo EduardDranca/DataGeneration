@@ -16,14 +16,17 @@ DslDataGenerator.Builder builder = DslDataGenerator.create();
 
 - `.withSeed(long seed)` - Set seed for reproducible generation
 - `.withMemoryOptimization()` - Enable lazy generation mode
-- `.registerGenerator(String name, Generator generator)` - Add custom generator
+- `.withCustomGenerator(String name, Generator generator)` - Add custom generator
 - `.withFilteringBehavior(FilteringBehavior behavior)` - Configure filtering behavior
+- `.withMaxFilteringRetries(int maxRetries)` - Set max retries when filtering
 
 #### Input Methods
 
 - `.fromJsonString(String json)` - Load DSL from JSON string
-- `.fromJsonFile(String path)` - Load DSL from file
-- `.fromJsonFile(Path path)` - Load DSL from Path
+- `.fromFile(String path)` - Load DSL from file path
+- `.fromFile(File file)` - Load DSL from File
+- `.fromFile(Path path)` - Load DSL from Path
+- `.fromJsonNode(JsonNode node)` - Load DSL from JsonNode
 
 #### Generation
 
@@ -35,7 +38,7 @@ DslDataGenerator.Builder builder = DslDataGenerator.create();
 Generation generation = DslDataGenerator.create()
     .withSeed(123L)
     .withMemoryOptimization()
-    .fromJsonFile("dsl.json")
+    .fromFile("dsl.json")
     .generate();
 ```
 
@@ -58,8 +61,16 @@ Interface for accessing generated data.
 
 ### SQL Projection Methods
 
-- `Stream<String> streamSqlInserts(String name, SqlProjection projection)` - Stream with field projection
-- `Stream<String> streamSqlInsertsFromSchema(String name, String createTableSql)` - Stream with auto-parsed schema
+- `Stream<String> streamSqlInsertsWithProjection(String name, SqlProjection projection)` - Stream with field projection
+- `Map<String, Stream<String>> asSqlInsertsWithProjections(Map<String, SqlProjection> projections)` - All collections with projections
+
+### Builder Convenience Methods
+
+The builder also provides convenience methods that combine generation and output:
+
+- `.generateAsSql()` - Generate and return SQL streams for all collections
+- `.generateAsJson()` - Generate and return JsonNode streams for all collections
+- `.streamSqlInsertsFromSchema(String name, String createTableSql)` - Generate with auto-parsed schema
 
 ### Example
 
@@ -102,7 +113,7 @@ SqlProjection projection = SqlProjection.builder()
     .includeFields(Set.of("id", "name", "email"))  // Only these fields
     .build();
 
-result.streamSqlInserts("users", projection).forEach(System.out::println);
+result.streamSqlInsertsWithProjection("users", projection).forEach(System.out::println);
 ```
 
 ### Type Specifications
@@ -132,8 +143,11 @@ String createTableSql = """
     )
     """;
 
-// Automatically extracts column types and formats values correctly
-result.streamSqlInsertsFromSchema("users", createTableSql)
+// Use the builder's convenience method for schema-based generation
+DslDataGenerator.create()
+    .withSeed(123L)
+    .fromJsonString(dsl)
+    .streamSqlInsertsFromSchema("users", createTableSql)
     .forEach(System.out::println);
 ```
 
@@ -143,27 +157,29 @@ Implement the `Generator` interface:
 
 ```java
 public interface Generator {
-    Object generate(GeneratorContext context);
+    JsonNode generate(GeneratorContext context);
 }
 ```
 
 ### GeneratorContext
 
-Provides access to options and utilities:
+Provides access to options and utilities (it's a Java record):
 
 ```java
 public class MyGenerator implements Generator {
     @Override
-    public Object generate(GeneratorContext context) {
-        // Get options
-        int min = context.getIntOption("min", 0);
-        String format = context.getStringOption("format", "default");
+    public JsonNode generate(GeneratorContext context) {
+        // Get options (no default parameter - check for null)
+        String format = context.getStringOption("format");
+        int min = context.getIntOption("min", 0);  // Has default overload
         
-        // Access Faker
-        Faker faker = context.getFaker();
+        // Access Faker (record accessor, not getter)
+        Faker faker = context.faker();
         
-        // Your logic
-        return faker.name().fullName();
+        // Access ObjectMapper for creating JsonNodes
+        ObjectMapper mapper = context.mapper();
+        
+        return mapper.valueToTree(faker.name().fullName());
     }
 }
 ```
@@ -172,7 +188,7 @@ public class MyGenerator implements Generator {
 
 ```java
 DslDataGenerator.create()
-    .registerGenerator("myGenerator", new MyGenerator())
+    .withCustomGenerator("myGenerator", new MyGenerator())
     .fromJsonString(dsl)
     .generate();
 ```
