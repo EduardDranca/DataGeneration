@@ -19,6 +19,7 @@ Complete reference for the DataGeneration DSL syntax.
 
 - [Collections](./collections.md) - Define collections and items
 - [References](./references.md) - Create relationships between collections (including range and conditional references)
+- [Shadow Bindings](./shadow-bindings.md) - Bind and reuse referenced items for cross-entity constraints
 - [Arrays](./arrays.md) - Generate arrays of values
 - [Filtering](./filtering.md) - Exclude specific values
 - [Static Values](./static-values.md) - Use literal values
@@ -32,6 +33,7 @@ Complete reference for the DataGeneration DSL syntax.
 - **Conditional** `[status='active']` - Filter by field values
 - **Sequential** - Cycle through items in order
 - **Self** `this.field` - Reference same item
+- **Shadow Bindings** `$name` - Bind items for reuse in conditions
 
 ## Quick Examples
 

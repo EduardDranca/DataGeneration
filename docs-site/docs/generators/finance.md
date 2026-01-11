@@ -226,7 +226,7 @@ This generator has **no options**.
 
 ## Security Note
 
-⚠️ **Important**: The generated financial data is for **testing purposes only**. These are randomly generated numbers that may not pass real validation algorithms. Do not use this data for:
+**Important**: The generated financial data is for **testing purposes only**. These are randomly generated numbers that may not pass real validation algorithms. Do not use this data for:
 - Production systems
 - Real financial transactions
 - Fraud testing without proper authorization

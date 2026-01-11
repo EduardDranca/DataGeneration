@@ -135,7 +135,7 @@ Collections are generated in the order they appear in the DSL. This matters for 
     "count": 20,
     "item": {
       "id": {"gen": "uuid"},
-      "categoryId": {"ref": "categories[*].id"}  // ✅ Works - categories defined first
+      "categoryId": {"ref": "categories[*].id"}  // Works - categories defined first
     }
   }
 }
@@ -147,7 +147,7 @@ Collections are generated in the order they appear in the DSL. This matters for 
   "products": {
     "count": 20,
     "item": {
-      "categoryId": {"ref": "categories[*].id"}  // ❌ Error - categories not defined yet
+      "categoryId": {"ref": "categories[*].id"}  // Error - categories not defined yet
     }
   },
   "categories": {

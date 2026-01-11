@@ -31,6 +31,7 @@ const sidebars: SidebarsConfig = {
         'dsl-reference/overview',
         'dsl-reference/collections',
         'dsl-reference/references',
+        'dsl-reference/shadow-bindings',
         'dsl-reference/arrays',
         'dsl-reference/filtering',
         'dsl-reference/static-values',

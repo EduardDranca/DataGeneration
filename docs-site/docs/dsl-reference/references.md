@@ -174,6 +174,8 @@ Combine conditions with `and` / `or`:
 
 **Note:** If no items match the condition, a `FilteringException` is thrown.
 
+**Tip:** For complex cross-entity constraints (e.g., products matching a user's region), use [Shadow Bindings](./shadow-bindings.md) to bind a referenced item and use its values in conditions.
+
 ## Sequential Reference
 
 Cycle through collection items in order:
@@ -457,6 +459,7 @@ See [Filtering](./filtering.md) for more details.
 
 ## Next Steps
 
+- [Shadow Bindings](./shadow-bindings.md) - Bind and reuse referenced items for cross-entity constraints
 - [Filtering](./filtering.md) - Exclude specific values from references
 - [Arrays](./arrays.md) - Generate arrays with references
 - [Generators Overview](../generators/overview.md) - Explore all generators
