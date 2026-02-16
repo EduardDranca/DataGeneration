@@ -79,9 +79,6 @@ public class DslTreeBuilder {
         context.declareCollection(dslKeyName);
 
         if (!dslKeyName.equals(finalCollectionName)) {
-            if (context.hasCollection(finalCollectionName)) {
-                errors.add(new ValidationError("root", "Duplicate collection name: " + finalCollectionName));
-            }
             context.declareCollection(finalCollectionName);
         }
     }

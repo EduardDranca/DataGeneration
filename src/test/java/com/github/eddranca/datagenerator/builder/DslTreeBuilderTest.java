@@ -425,7 +425,7 @@ class DslTreeBuilderTest {
     }
 
     @Test
-    void testDuplicateCollectionNames() throws Exception {
+    void testDuplicateCollectionNamesAllowed() throws Exception {
         String dsl = """
             {
                 "usersKey1": {
@@ -442,8 +442,14 @@ class DslTreeBuilderTest {
             """;
 
         DslTreeBuildResult result = builder.build(mapper.readTree(dsl));
-        assertThat(result.hasErrors()).isTrue();
-        assertThat(result.getErrors()).hasSize(1);
-        assertThat(result.getErrors().get(0).toString()).contains("Duplicate collection name: users");
+        assertThat(result.hasErrors()).isFalse();
+        assertThat(result.getTree().getCollections()).hasSize(2);
+
+        CollectionNode key1 = result.getTree().getCollections().get("usersKey1");
+        CollectionNode key2 = result.getTree().getCollections().get("usersKey2");
+        assertThat(key1.getCollectionName()).isEqualTo("users");
+        assertThat(key2.getCollectionName()).isEqualTo("users");
+        assertThat(key1.getCount()).isEqualTo(1);
+        assertThat(key2.getCount()).isEqualTo(2);
     }
 }
