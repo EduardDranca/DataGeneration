@@ -67,7 +67,7 @@
         <datafaker.version>2.5.3</datafaker.version>
         <junit.version>6.0.2</junit.version>
         <mockito.version>5.21.0</mockito.version>
-        <assertj.version>3.27.6</assertj.version>
+        <assertj.version>3.27.7</assertj.version>
         <jsqlparser.version>4.7</jsqlparser.version>
         <opencsv.version>5.12.0</opencsv.version>
     </properties>
