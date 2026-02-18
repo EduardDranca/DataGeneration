@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.exception.DataGenerationException;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorContext;
+import com.github.eddranca.datagenerator.generator.GeneratorOptionSpec;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 import net.datafaker.service.RandomService;
@@ -22,6 +23,14 @@ public class CsvGenerator implements Generator {
     private final Map<JsonNode, Integer> sequentialCounters = new IdentityHashMap<>();
     // Regular HashMap for String keys - file paths should use value equality
     private final Map<String, List<String[]>> csvCache = new HashMap<>();
+
+    @Override
+    public GeneratorOptionSpec getOptionSpec() {
+        return GeneratorOptionSpec.builder()
+            .required("file")
+            .optional("sequential")
+            .build();
+    }
 
     @Override
     public JsonNode generate(GeneratorContext context) {

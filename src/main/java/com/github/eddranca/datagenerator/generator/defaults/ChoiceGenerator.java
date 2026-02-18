@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.exception.FilteringException;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorContext;
+import com.github.eddranca.datagenerator.generator.GeneratorOptionSpec;
 import net.datafaker.service.RandomService;
 
 import java.util.ArrayList;
@@ -14,11 +15,21 @@ import java.util.List;
  * Supports both weighted and unweighted random selection with filtering.
  */
 public class ChoiceGenerator implements Generator {
+    public static final String OPTIONS = "options";
+    public static final String WEIGHTS = "weights";
+
+    @Override
+    public GeneratorOptionSpec getOptionSpec() {
+        return GeneratorOptionSpec.builder()
+            .required(OPTIONS)
+            .optional(WEIGHTS)
+            .build();
+    }
 
     @Override
     public JsonNode generate(GeneratorContext context) {
         JsonNode options = context.options();
-        JsonNode optionsArray = options.get("options");
+        JsonNode optionsArray = options.get(OPTIONS);
         List<Double> weights = getWeights(options, optionsArray.size());
 
         // Use the Faker's random instance for consistency
@@ -30,7 +41,7 @@ public class ChoiceGenerator implements Generator {
     @Override
     public JsonNode generateWithFilter(GeneratorContext context, List<JsonNode> filterValues) {
         JsonNode options = context.options();
-        JsonNode optionsArray = options.get("options");
+        JsonNode optionsArray = options.get(OPTIONS);
 
         // If no filtering needed, use regular generate
         if (filterValues == null || filterValues.isEmpty()) {
@@ -77,7 +88,7 @@ public class ChoiceGenerator implements Generator {
     }
 
     private List<Double> getWeights(JsonNode options, int optionsCount) {
-        if (!options.has("weights")) {
+        if (!options.has(WEIGHTS)) {
             // Default to equal weights of 1.0
             List<Double> defaultWeights = new ArrayList<>();
             for (int i = 0; i < optionsCount; i++) {
@@ -86,7 +97,7 @@ public class ChoiceGenerator implements Generator {
             return defaultWeights;
         }
 
-        JsonNode weightsArray = options.get("weights");
+        JsonNode weightsArray = options.get(WEIGHTS);
         List<Double> weights = new ArrayList<>();
         for (JsonNode weightNode : weightsArray) {
             weights.add(weightNode.asDouble());

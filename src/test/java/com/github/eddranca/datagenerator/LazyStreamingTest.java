@@ -23,14 +23,14 @@ class LazyStreamingTest {
                   "id": {"gen": "uuid"},
                   "name": {"gen": "name.firstName"},
                   "email": {"gen": "internet.emailAddress"},
-                  "bio": {"gen": "lorem", "options": {"length": 100}}
+                  "bio": {"gen": "lorem", "words": 20}
                 }
               },
               "posts": {
                 "count": 30,
                 "item": {
                   "id": {"gen": "uuid"},
-                  "title": {"gen": "lorem", "options": {"length": 50}},
+                  "title": {"gen": "lorem", "words": 10},
                   "authorId": {"ref": "users[*].id"},
                   "authorName": {"ref": "users[*].name"}
                 }
@@ -93,7 +93,7 @@ class LazyStreamingTest {
                   "id": {"gen": "uuid"},
                   "name": {"gen": "name.firstName"},
                   "email": {"gen": "internet.emailAddress"},
-                  "bio": {"gen": "lorem", "options": {"length": 200}},
+                  "bio": {"gen": "lorem", "words": 40},
                   "address": {"gen": "address.fullAddress"}
                 }
               },
@@ -101,8 +101,8 @@ class LazyStreamingTest {
                 "count": 20,
                 "item": {
                   "id": {"gen": "uuid"},
-                  "title": {"gen": "lorem", "options": {"length": 50}},
-                  "content": {"gen": "lorem", "options": {"length": 500}},
+                  "title": {"gen": "lorem", "words": 10},
+                  "content": {"gen": "lorem", "words": 100},
                   "authorId": {"ref": "users[*].id"},
                   "authorName": {"ref": "users[*].name"}
                 }

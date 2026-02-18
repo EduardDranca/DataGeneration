@@ -160,10 +160,59 @@ class ExamplesValidationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementationsTest
-    @DisplayName("04-social-media should generate social media data")
+    @DisplayName("04-memory-optimization should generate large dataset with references")
+    void shouldValidateMemoryOptimizationStructure(boolean memoryOptimized) throws IOException {
+        // Given
+        Path dslPath = Paths.get(EXAMPLES_DIR, "04-memory-optimization", "dsl.json");
+        File dslFile = dslPath.toFile();
+
+        // When
+        Generation generation = createGenerator(memoryOptimized)
+            .fromFile(dslFile)
+            .generate();
+
+        // Then
+        assertThat(generation.getCollectionNames()).containsExactlyInAnyOrder("users", "posts");
+        assertThat(generation.getCollectionSize("users")).isEqualTo(100);
+        assertThat(generation.getCollectionSize("posts")).isEqualTo(50);
+
+        var collections = collectAllJsonNodes(generation);
+        var users = collections.get("users");
+        var posts = collections.get("posts");
+
+        var userIds = users.stream().map(u -> u.get("id").asText()).toList();
+        var userNames = users.stream().map(u -> u.get("name").asText()).toList();
+
+        // Validate users have all expected fields
+        assertThat(users).allSatisfy(user -> {
+            assertThat(user.has("id")).isTrue();
+            assertThat(user.has("name")).isTrue();
+            assertThat(user.has("email")).isTrue();
+            assertThat(user.has("bio")).isTrue();
+            assertThat(user.has("address")).isTrue();
+            assertThat(user.has("phone")).isTrue();
+            assertThat(user.has("company")).isTrue();
+            assertThat(user.has("salary")).isTrue();
+            assertThat(user.get("salary").asInt()).isBetween(30000, 150000);
+        });
+
+        // Validate posts reference users
+        assertThat(posts).allSatisfy(post -> {
+            assertThat(post.has("id")).isTrue();
+            assertThat(post.has("title")).isTrue();
+            assertThat(post.has("content")).isTrue();
+            assertThat(post.has("authorId")).isTrue();
+            assertThat(post.has("authorName")).isTrue();
+            assertThat(userIds).contains(post.get("authorId").asText());
+            assertThat(userNames).contains(post.get("authorName").asText());
+        });
+    }
+
+    @BothImplementationsTest
+    @DisplayName("05-social-media should generate social media data")
     void shouldValidateSocialMediaStructure(boolean memoryOptimized) throws IOException {
         // Given
-        Path dslPath = Paths.get(EXAMPLES_DIR, "04-social-media", "dsl.json");
+        Path dslPath = Paths.get(EXAMPLES_DIR, "05-social-media", "dsl.json");
         File dslFile = dslPath.toFile();
 
         // When
@@ -205,10 +254,10 @@ class ExamplesValidationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementationsTest
-    @DisplayName("05-financial-transactions should generate financial data")
+    @DisplayName("06-financial-transactions should generate financial data")
     void shouldValidateFinancialTransactionsStructure(boolean memoryOptimized) throws IOException {
         // Given
-        Path dslPath = Paths.get(EXAMPLES_DIR, "05-financial-transactions", "dsl.json");
+        Path dslPath = Paths.get(EXAMPLES_DIR, "06-financial-transactions", "dsl.json");
         File dslFile = dslPath.toFile();
 
         // When
@@ -251,10 +300,10 @@ class ExamplesValidationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementationsTest
-    @DisplayName("06-educational-system should generate educational data")
+    @DisplayName("07-educational-system should generate educational data")
     void shouldValidateEducationalSystemStructure(boolean memoryOptimized) throws IOException {
         // Given
-        Path dslPath = Paths.get(EXAMPLES_DIR, "06-educational-system", "dsl.json");
+        Path dslPath = Paths.get(EXAMPLES_DIR, "07-educational-system", "dsl.json");
         File dslFile = dslPath.toFile();
 
         // When
@@ -305,10 +354,10 @@ class ExamplesValidationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementationsTest
-    @DisplayName("07-custom-generator should work with custom generators")
+    @DisplayName("08-custom-generator should work with custom generators")
     void shouldValidateCustomGeneratorStructure(boolean memoryOptimized) throws IOException {
         // Given
-        Path dslPath = Paths.get(EXAMPLES_DIR, "07-custom-generator", "dsl.json");
+        Path dslPath = Paths.get(EXAMPLES_DIR, "08-custom-generator", "dsl.json");
         File dslFile = dslPath.toFile();
         ObjectMapper mapper = new ObjectMapper();
 
@@ -378,10 +427,10 @@ class ExamplesValidationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementationsTest
-    @DisplayName("08-range-references should generate data with range references")
+    @DisplayName("09-range-references should generate data with range references")
     void shouldValidateRangeReferencesStructure(boolean memoryOptimized) throws IOException {
         // Given
-        Path dslPath = Paths.get(EXAMPLES_DIR, "08-range-references", "dsl.json");
+        Path dslPath = Paths.get(EXAMPLES_DIR, "09-range-references", "dsl.json");
         File dslFile = dslPath.toFile();
 
         // When
@@ -408,10 +457,10 @@ class ExamplesValidationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementationsTest
-    @DisplayName("09-conditional-references should generate data with conditional filtering")
+    @DisplayName("10-conditional-references should generate data with conditional filtering")
     void shouldValidateConditionalReferencesStructure(boolean memoryOptimized) throws IOException {
         // Given
-        Path dslPath = Paths.get(EXAMPLES_DIR, "09-conditional-references", "dsl.json");
+        Path dslPath = Paths.get(EXAMPLES_DIR, "10-conditional-references", "dsl.json");
         File dslFile = dslPath.toFile();
 
         // When
@@ -463,10 +512,10 @@ class ExamplesValidationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementationsTest
-    @DisplayName("10-runtime-computed-options should generate data with runtime-computed generator options")
+    @DisplayName("11-runtime-computed-options should generate data with runtime-computed generator options")
     void shouldValidateRuntimeComputedOptionsStructure(boolean memoryOptimized) throws IOException {
         // Given
-        Path dslPath = Paths.get(EXAMPLES_DIR, "10-runtime-computed-options", "dsl.json");
+        Path dslPath = Paths.get(EXAMPLES_DIR, "11-runtime-computed-options", "dsl.json");
         File dslFile = dslPath.toFile();
 
         // When
@@ -522,10 +571,10 @@ class ExamplesValidationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementationsTest
-    @DisplayName("11-sql-projections should generate SQL with projections and schema parsing")
+    @DisplayName("12-sql-projections should generate SQL with projections and schema parsing")
     void shouldValidateSqlProjectionsStructure(boolean memoryOptimized) throws IOException {
         // Given
-        Path dslPath = Paths.get(EXAMPLES_DIR, "11-sql-projections", "dsl.json");
+        Path dslPath = Paths.get(EXAMPLES_DIR, "12-sql-projections", "dsl.json");
         File dslFile = dslPath.toFile();
 
         // When
@@ -573,10 +622,10 @@ class ExamplesValidationTest extends ParameterizedGenerationTest {
     }
 
     @BothImplementationsTest
-    @DisplayName("12-shadow-bindings should generate data with shadow bindings excluded from output")
+    @DisplayName("13-shadow-bindings should generate data with shadow bindings excluded from output")
     void shouldValidateShadowBindingsStructure(boolean memoryOptimized) throws IOException {
         // Given
-        Path dslPath = Paths.get(EXAMPLES_DIR, "12-shadow-bindings", "dsl.json");
+        Path dslPath = Paths.get(EXAMPLES_DIR, "13-shadow-bindings", "dsl.json");
         File dslFile = dslPath.toFile();
 
         // When

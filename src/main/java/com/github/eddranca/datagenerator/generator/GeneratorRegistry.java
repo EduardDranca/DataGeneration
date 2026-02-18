@@ -77,6 +77,11 @@ public class GeneratorRegistry {
         return generators.get(name);
     }
 
+    public GeneratorOptionSpec getOptionSpec(String name) {
+        Generator generator = generators.get(name);
+        return generator != null ? generator.getOptionSpec() : null;
+    }
+
     public Set<String> getRegisteredGeneratorNames() {
         return generators.keySet();
     }

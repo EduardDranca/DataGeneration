@@ -10,7 +10,7 @@ This directory contains practical examples demonstrating various use cases of th
 | **[02-ecommerce-store](02-ecommerce-store/)**               | Online store data    | Entity relationships, nested objects      |
 | **[03-company-employees](03-company-employees/)**           | Corporate structure  | Arrays, weighted choices                  |
 | **[04-social-media](04-social-media/)**                     | Social platform      | Complex relationships, engagement metrics |
-| **[05-financial-transactions](05-financial-transactions/)** | Banking system | Financial data, high-volume transactions  |
+| **[05-financial-transactions](06-financial-transactions/)** | Banking system | Financial data, high-volume transactions  |
 | **[06-educational-system](06-educational-system/)**         | School management | Academic data, regex patterns, grading    |
 | **[07-custom-generator](07-custom-generator/)**             | Custom business logic | Custom generators, domain-specific rules  |
 | **[08-range-references](08-range-references/)**             | Range-based references | Subset selection, regional management     |

@@ -4,12 +4,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorContext;
+import com.github.eddranca.datagenerator.generator.GeneratorOptionSpec;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
 
 public class SequenceGenerator implements Generator {
     private final Map<JsonNode, Integer> counters = new IdentityHashMap<>();
+
+    @Override
+    public GeneratorOptionSpec getOptionSpec() {
+        return GeneratorOptionSpec.builder()
+            .optional("start", "increment")
+            .build();
+    }
 
     @Override
     public JsonNode generate(GeneratorContext context) {

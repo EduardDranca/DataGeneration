@@ -29,7 +29,7 @@ public class DslTreeBuilder {
     private final CollectionNodeBuilder collectionBuilder;
 
     public DslTreeBuilder(GeneratorRegistry generatorRegistry) {
-        this.context = new ValidationContext(generatorRegistry.getRegisteredGeneratorNames());
+        this.context = new ValidationContext(generatorRegistry);
         this.errors = new ArrayList<>();
         this.collectionBuilder = initCollectionBuilder();
     }

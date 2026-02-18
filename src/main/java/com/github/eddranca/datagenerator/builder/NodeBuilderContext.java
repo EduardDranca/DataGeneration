@@ -1,6 +1,7 @@
 package com.github.eddranca.datagenerator.builder;
 
 import com.github.eddranca.datagenerator.ValidationError;
+import com.github.eddranca.datagenerator.generator.GeneratorOptionSpec;
 import com.github.eddranca.datagenerator.validation.ValidationContext;
 
 import java.util.List;
@@ -38,5 +39,9 @@ class NodeBuilderContext {
 
     public void declarePick(String pick) {
         validationContext.declarePick(pick);
+    }
+
+    public GeneratorOptionSpec getGeneratorOptionSpec(String generatorName) {
+        return validationContext.getGeneratorOptionSpec(generatorName);
     }
 }

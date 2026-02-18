@@ -4,10 +4,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorContext;
+import com.github.eddranca.datagenerator.generator.GeneratorOptionSpec;
 
 import java.util.List;
 
 public class BooleanGenerator implements Generator {
+
+    @Override
+    public GeneratorOptionSpec getOptionSpec() {
+        return GeneratorOptionSpec.builder()
+            .optional("probability")
+            .build();
+    }
 
     @Override
     public JsonNode generate(GeneratorContext context) {

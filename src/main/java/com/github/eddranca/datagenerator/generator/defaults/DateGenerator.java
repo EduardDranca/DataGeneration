@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorContext;
+import com.github.eddranca.datagenerator.generator.GeneratorOptionSpec;
 import net.datafaker.Faker;
 
 import java.time.LocalDate;
@@ -16,6 +17,13 @@ import java.time.temporal.ChronoUnit;
  * optional formatting
  */
 public class DateGenerator implements Generator {
+
+    @Override
+    public GeneratorOptionSpec getOptionSpec() {
+        return GeneratorOptionSpec.builder()
+            .optional("from", "to", "format")
+            .build();
+    }
 
     @Override
     public JsonNode generate(GeneratorContext context) {

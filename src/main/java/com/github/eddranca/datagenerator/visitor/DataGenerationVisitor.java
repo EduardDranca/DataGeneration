@@ -38,6 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.github.eddranca.datagenerator.generator.defaults.ChoiceGenerator.WEIGHTS;
+
 /**
  * Visitor that generates actual data from the DSL node tree.
  * Maintains generation context and produces JSON output.
@@ -331,7 +333,7 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
             for (Double weight : node.getWeights()) {
                 weightsArray.add(weight);
             }
-            choiceOptions.set("weights", weightsArray);
+            choiceOptions.set(WEIGHTS, weightsArray);
         }
 
         // Use ChoiceGenerator to make the selection

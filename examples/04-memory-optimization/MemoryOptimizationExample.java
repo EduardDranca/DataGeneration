@@ -27,19 +27,19 @@ public class MemoryOptimizationExample {
                   "id": {"gen": "uuid"},
                   "name": {"gen": "name.firstName"},
                   "email": {"gen": "internet.emailAddress"},
-                  "bio": {"gen": "lorem", "options": {"length": 500}},
+                  "bio": {"gen": "lorem", "sentences": 3},
                   "address": {"gen": "address.fullAddress"},
                   "phone": {"gen": "phone.phoneNumber"},
                   "company": {"gen": "company.name"},
-                  "salary": {"gen": "number.numberBetween", "options": {"min": 30000, "max": 150000}}
+                  "salary": {"gen": "number", "min": 30000, "max": 150000}
                 }
               },
               "posts": {
                 "count": 5000,
                 "item": {
                   "id": {"gen": "uuid"},
-                  "title": {"gen": "lorem", "options": {"length": 50}},
-                  "content": {"gen": "lorem", "options": {"length": 1000}},
+                  "title": {"gen": "lorem", "words": 10},
+                  "content": {"gen": "lorem", "sentences": 5},
                   "authorId": {"ref": "users[*].id"},
                   "authorName": {"ref": "users[*].name"}
                 }
