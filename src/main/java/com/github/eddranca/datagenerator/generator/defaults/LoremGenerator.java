@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorContext;
+import com.github.eddranca.datagenerator.generator.GeneratorOptionSpec;
 import net.datafaker.Faker;
 
 import java.util.List;
@@ -16,6 +17,13 @@ public class LoremGenerator implements Generator {
     private static final String SENTENCES = "sentences";
     private static final String PARAGRAPH = "paragraph";
     private static final String PARAGRAPHS = "paragraphs";
+
+    @Override
+    public GeneratorOptionSpec getOptionSpec() {
+        return GeneratorOptionSpec.builder()
+            .optional("words", "sentences", "paragraphs")
+            .build();
+    }
 
     @Override
     public JsonNode generate(GeneratorContext context) {

@@ -1,5 +1,8 @@
 package com.github.eddranca.datagenerator.validation;
 
+import com.github.eddranca.datagenerator.generator.GeneratorOptionSpec;
+import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,12 +14,14 @@ public class ValidationContext {
     private final Set<String> declaredCollections;
     private final Set<String> declaredPicks;
     private final Set<String> registeredGenerators;
+    private final GeneratorRegistry generatorRegistry;
     private String currentCollection; // for context in error messages
 
-    public ValidationContext(Set<String> registeredGenerators) {
+    public ValidationContext(GeneratorRegistry generatorRegistry) {
         this.declaredCollections = new HashSet<>();
         this.declaredPicks = new HashSet<>();
-        this.registeredGenerators = new HashSet<>(registeredGenerators);
+        this.registeredGenerators = new HashSet<>(generatorRegistry.getRegisteredGeneratorNames());
+        this.generatorRegistry = generatorRegistry;
     }
 
     public void declareCollection(String name) {
@@ -50,5 +55,9 @@ public class ValidationContext {
 
     public boolean isGeneratorRegistered(String name) {
         return registeredGenerators.contains(name);
+    }
+
+    public GeneratorOptionSpec getGeneratorOptionSpec(String name) {
+        return generatorRegistry.getOptionSpec(name);
     }
 }

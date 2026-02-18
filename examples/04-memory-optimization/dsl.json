@@ -1,0 +1,25 @@
+{
+  "users": {
+    "count": 100,
+    "item": {
+      "id": {"gen": "uuid"},
+      "name": {"gen": "name.firstName"},
+      "email": {"gen": "internet.emailAddress"},
+      "bio": {"gen": "lorem", "sentences": 3},
+      "address": {"gen": "address.fullAddress"},
+      "phone": {"gen": "phone.phoneNumber"},
+      "company": {"gen": "company.name"},
+      "salary": {"gen": "number", "min": 30000, "max": 150000}
+    }
+  },
+  "posts": {
+    "count": 50,
+    "item": {
+      "id": {"gen": "uuid"},
+      "title": {"gen": "lorem", "words": 10},
+      "content": {"gen": "lorem", "sentences": 5},
+      "authorId": {"ref": "users[*].id"},
+      "authorName": {"ref": "users[*].name"}
+    }
+  }
+}

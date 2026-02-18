@@ -27,7 +27,7 @@ class BuilderMethodsTest extends ParameterizedGenerationTest {
                 "count": 3,
                 "item": {
                   "id": {"gen": "uuid"},
-                  "title": {"gen": "lorem", "options": {"length": 10}}
+                  "title": {"gen": "lorem", "words": 3}
                 }
               }
             }
@@ -54,8 +54,8 @@ class BuilderMethodsTest extends ParameterizedGenerationTest {
                 "count": 3,
                 "item": {
                   "id": {"gen": "uuid"},
-                  "name": {"gen": "lorem", "options": {"length": 10}},
-                  "price": {"gen": "number.numberBetween", "options": {"min": 10, "max": 100}}
+                  "name": {"gen": "lorem", "words": 3},
+                  "price": {"gen": "number", "min": 10, "max": 100}
                 }
               }
             }

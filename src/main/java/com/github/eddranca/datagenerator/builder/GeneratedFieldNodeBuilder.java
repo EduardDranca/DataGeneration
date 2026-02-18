@@ -1,6 +1,7 @@
 package com.github.eddranca.datagenerator.builder;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.eddranca.datagenerator.generator.GeneratorOptionSpec;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.FilterNode;
@@ -10,6 +11,9 @@ import com.github.eddranca.datagenerator.node.SpreadFieldNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.github.eddranca.datagenerator.builder.KeyWords.ELLIPSIS;
 import static com.github.eddranca.datagenerator.builder.KeyWords.FIELDS;
@@ -21,6 +25,9 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.OPTIONS;
  * Builder for generated field nodes (generators, choices, spreads).
  */
 class GeneratedFieldNodeBuilder {
+    private static final Set<String> GENERATED_FIELD_DSL_KEYS = Set.of(GENERATOR, FILTER);
+    private static final Set<String> CHOICE_FIELD_DSL_KEYS = Set.of(GENERATOR, OPTIONS, FILTER, "weights");
+
     private final NodeBuilderContext context;
     private final FieldBuilder fieldBuilder;
     private final ReferenceFieldNodeBuilder referenceBuilder;
@@ -53,6 +60,9 @@ class GeneratedFieldNodeBuilder {
             return null;
         }
 
+        // Validate generator options against the spec
+        validateGeneratorOptions(fieldName, generatorInfo.name, fieldDef, GENERATED_FIELD_DSL_KEYS);
+
         // Build filters if present
         List<FilterNode> filters = buildGeneratedFieldFilters(fieldName, fieldDef);
 
@@ -81,6 +91,38 @@ class GeneratedFieldNodeBuilder {
         return true;
     }
 
+    private void validateGeneratorOptions(String fieldName, String generatorName, JsonNode fieldDef, Set<String> dslKeys) {
+        GeneratorOptionSpec spec = context.getGeneratorOptionSpec(generatorName);
+        if (spec == null) {
+            return;
+        }
+
+        // Extract user-provided option keys (everything that's not a DSL keyword)
+        Set<String> userOptions = StreamSupport.stream(
+                ((Iterable<String>) () -> fieldDef.fieldNames()).spliterator(), false)
+            .filter(key -> !dslKeys.contains(key))
+            .collect(Collectors.toSet());
+
+        // Check for missing required options
+        for (String required : spec.getRequiredOptions()) {
+            if (!userOptions.contains(required)) {
+                addGeneratedFieldError(fieldName, "is missing required option '" + required
+                    + "' for generator '" + generatorName + "'");
+            }
+        }
+
+        // For strict generators, check for unknown options
+        if (spec.isStrict()) {
+            Set<String> knownOptions = spec.getAllKnownOptions();
+            for (String userOption : userOptions) {
+                if (!knownOptions.contains(userOption)) {
+                    addGeneratedFieldError(fieldName, "has unknown option '" + userOption
+                        + "' for generator '" + generatorName + "'");
+                }
+            }
+        }
+    }
+
     private List<FilterNode> buildGeneratedFieldFilters(String fieldName, JsonNode fieldDef) {
         List<FilterNode> filters = new ArrayList<>();
         if (fieldDef.has(FILTER)) {
@@ -103,6 +145,9 @@ class GeneratedFieldNodeBuilder {
         if (!validateChoiceFieldStructure(fieldName, fieldDef)) {
             return null;
         }
+
+        // Validate choice generator options against the spec
+        validateGeneratorOptions(fieldName, "choice", fieldDef, CHOICE_FIELD_DSL_KEYS);
 
         List<DslNode> options = buildChoiceOptions(fieldName, fieldDef);
         if (options.isEmpty()) {

@@ -100,4 +100,18 @@ public interface Generator {
     default boolean supportsFiltering() {
         return false;
     }
+
+    /**
+     * Returns the option specification for this generator, describing which options
+     * are required, which are optional, and whether unknown options should be rejected.
+     * <p>
+     * Default implementation returns a non-strict spec, meaning any options are accepted.
+     * Built-in generators override this to return strict specs that reject unknown options
+     * at DSL parse time.
+     *
+     * @return the option specification for this generator
+     */
+    default GeneratorOptionSpec getOptionSpec() {
+        return GeneratorOptionSpec.nonStrict();
+    }
 }

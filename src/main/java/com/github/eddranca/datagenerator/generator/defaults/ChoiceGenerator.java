@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.exception.FilteringException;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorContext;
+import com.github.eddranca.datagenerator.generator.GeneratorOptionSpec;
 import net.datafaker.service.RandomService;
 
 import java.util.ArrayList;
@@ -14,6 +15,14 @@ import java.util.List;
  * Supports both weighted and unweighted random selection with filtering.
  */
 public class ChoiceGenerator implements Generator {
+
+    @Override
+    public GeneratorOptionSpec getOptionSpec() {
+        return GeneratorOptionSpec.builder()
+            .required("options")
+            .optional("weights")
+            .build();
+    }
 
     @Override
     public JsonNode generate(GeneratorContext context) {
