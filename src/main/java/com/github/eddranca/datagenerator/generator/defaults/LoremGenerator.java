@@ -21,7 +21,7 @@ public class LoremGenerator implements Generator {
     @Override
     public GeneratorOptionSpec getOptionSpec() {
         return GeneratorOptionSpec.builder()
-            .optional("words", "sentences", "paragraphs")
+            .optional(WORD, WORDS, SENTENCE, SENTENCES, PARAGRAPH, PARAGRAPHS)
             .build();
     }
 
