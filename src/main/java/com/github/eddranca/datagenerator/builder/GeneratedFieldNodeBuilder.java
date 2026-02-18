@@ -100,7 +100,7 @@ class GeneratedFieldNodeBuilder {
 
         // Extract user-provided option keys (everything that's not a DSL keyword)
         Set<String> userOptions = StreamSupport.stream(
-                ((Iterable<String>) () -> fieldDef.fieldNames()).spliterator(), false)
+                ((Iterable<String>) fieldDef::fieldNames).spliterator(), false)
             .filter(key -> !dslKeys.contains(key))
             .collect(Collectors.toSet());
 
