@@ -15,8 +15,8 @@ import java.util.List;
  * Supports both weighted and unweighted random selection with filtering.
  */
 public class ChoiceGenerator implements Generator {
-    private static final String OPTIONS = "options";
-    private static final String WEIGHTS = "weights";
+    public static final String OPTIONS = "options";
+    public static final String WEIGHTS = "weights";
 
     @Override
     public GeneratorOptionSpec getOptionSpec() {

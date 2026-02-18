@@ -19,14 +19,15 @@ import static com.github.eddranca.datagenerator.builder.KeyWords.ELLIPSIS;
 import static com.github.eddranca.datagenerator.builder.KeyWords.FIELDS;
 import static com.github.eddranca.datagenerator.builder.KeyWords.FILTER;
 import static com.github.eddranca.datagenerator.builder.KeyWords.GENERATOR;
-import static com.github.eddranca.datagenerator.builder.KeyWords.OPTIONS;
+import static com.github.eddranca.datagenerator.generator.defaults.ChoiceGenerator.OPTIONS;
+import static com.github.eddranca.datagenerator.generator.defaults.ChoiceGenerator.WEIGHTS;
 
 /**
  * Builder for generated field nodes (generators, choices, spreads).
  */
 class GeneratedFieldNodeBuilder {
     private static final Set<String> GENERATED_FIELD_DSL_KEYS = Set.of(GENERATOR, FILTER);
-    private static final Set<String> CHOICE_FIELD_DSL_KEYS = Set.of(GENERATOR, OPTIONS, FILTER, "weights");
+    private static final Set<String> CHOICE_FIELD_DSL_KEYS = Set.of(GENERATOR, OPTIONS, FILTER, WEIGHTS);
 
     private final NodeBuilderContext context;
     private final FieldBuilder fieldBuilder;
@@ -157,7 +158,7 @@ class GeneratedFieldNodeBuilder {
 
         List<FilterNode> filters = buildChoiceFilters(fieldName, fieldDef);
 
-        if (fieldDef.has("weights")) {
+        if (fieldDef.has(WEIGHTS)) {
             List<Double> weights = buildChoiceWeights(fieldName, fieldDef, options.size());
             if (!weights.isEmpty()) {
                 return ChoiceFieldNode.withWeightsAndFilters(options, weights, filters);
@@ -211,7 +212,7 @@ class GeneratedFieldNodeBuilder {
     }
 
     private List<Double> buildChoiceWeights(String fieldName, JsonNode fieldDef, int optionsCount) {
-        JsonNode weightsNode = fieldDef.get("weights");
+        JsonNode weightsNode = fieldDef.get(WEIGHTS);
 
         if (!validateWeightsStructure(fieldName, weightsNode, optionsCount)) {
             // Return empty list to indicate no weights (uniform distribution)

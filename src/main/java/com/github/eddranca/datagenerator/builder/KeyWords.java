@@ -7,7 +7,6 @@ public class KeyWords {
     public static final String SEQUENTIAL = "sequential";
     public static final String FILTER = "filter";
     public static final String FIELDS = "fields";
-    public static final String OPTIONS = "options";
     public static final String COUNT = "count";
     public static final String ITEM = "item";
     public static final String PICK = "pick";
