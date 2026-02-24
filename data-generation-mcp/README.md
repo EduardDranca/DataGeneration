@@ -9,8 +9,8 @@ MCP (Model Context Protocol) server that enables LLMs to create DSL files and ge
 | `create_dsl_file` | Create a new empty DSL JSON file |
 | `read_dsl_file` | Read the current contents of a DSL file |
 | `add_collection` | Add a collection to an existing DSL file |
+| `update_collection` | Update an existing collection in a DSL file |
 | `remove_collection` | Remove a collection from a DSL file |
-| `save_dsl_file` | Save an in-memory DSL file to disk (in-memory mode only) |
 | `list_documentation` | List available documentation files |
 | `read_documentation` | Read a specific documentation file |
 | `validate_dsl` | Validate a DSL file without generating |
@@ -38,7 +38,6 @@ java -jar target/data-generation-mcp-0.1.0.jar [options]
 
 | Flag | Description |
 |------|-------------|
-| `--in-memory` | Run in memory mode (DSL files are managed in-memory; generated output always writes to filesystem) |
 | `--docs-path <path>` | Custom path to documentation directory (default: `docs-site/docs`) |
 
 ## MCP Configuration
@@ -65,23 +64,10 @@ Add to `.kiro/settings/mcp.json` or equivalent:
 }
 ```
 
-### In-Memory Mode
+## Path Requirements
 
-For environments where you want DSL file management to stay in-memory (generated output still writes to filesystem):
+All file paths must be absolute paths, not relative to the working directory. For example:
+- `/Users/username/project/test-data/dsl.json` (macOS/Linux)
+- `C:\Users\username\project\test-data\dsl.json` (Windows)
 
-```json
-{
-  "mcpServers": {
-    "data-generation": {
-      "command": "java",
-      "args": [
-        "-jar",
-        "/absolute/path/to/data-generation-mcp/target/data-generation-mcp-0.1.0.jar",
-        "--in-memory",
-        "--docs-path",
-        "/absolute/path/to/docs-site/docs"
-      ]
-    }
-  }
-}
-```
+Generated output (SQL INSERT statements, JSON data) is always written to the filesystem using the provided absolute paths.

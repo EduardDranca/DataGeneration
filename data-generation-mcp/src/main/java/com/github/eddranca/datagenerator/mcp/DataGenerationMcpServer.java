@@ -2,7 +2,6 @@ package com.github.eddranca.datagenerator.mcp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.mcp.storage.FileSystemStorage;
-import com.github.eddranca.datagenerator.mcp.storage.InMemoryStorage;
 import com.github.eddranca.datagenerator.mcp.storage.StorageMode;
 import com.github.eddranca.datagenerator.mcp.tools.DocumentationTools;
 import com.github.eddranca.datagenerator.mcp.tools.DslFileTools;
@@ -26,12 +25,10 @@ public class DataGenerationMcpServer {
     private static final String SERVER_VERSION = "0.1.0";
 
     public static void main(String[] args) {
-        boolean inMemory = false;
         String docsPath = null;
 
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
-                case "--in-memory" -> inMemory = true;
                 case "--docs-path" -> {
                     if (i + 1 < args.length) {
                         docsPath = args[++i];
@@ -42,7 +39,7 @@ public class DataGenerationMcpServer {
 
         ObjectMapper objectMapper = new ObjectMapper();
         McpJsonMapper jsonMapper = new JacksonMcpJsonMapper(objectMapper);
-        StorageMode storage = inMemory ? new InMemoryStorage() : new FileSystemStorage();
+        StorageMode storage = new FileSystemStorage();
 
         Path docsRoot = docsPath != null
             ? Path.of(docsPath)
@@ -57,9 +54,7 @@ public class DataGenerationMcpServer {
         tools.add(dslFileTools.readDslFile());
         tools.add(dslFileTools.addCollection());
         tools.add(dslFileTools.removeCollection());
-        if (storage.isInMemory()) {
-            tools.add(dslFileTools.saveDslFile());
-        }
+        tools.add(dslFileTools.updateCollection());
         tools.add(documentationTools.listDocumentation());
         tools.add(documentationTools.readDocumentation());
         tools.add(generationTools.validateDsl());

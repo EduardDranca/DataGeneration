@@ -33,19 +33,15 @@ public class DslFileTools {
                 "properties": {
                     "filePath": {
                         "type": "string",
-                        "description": "Full path for the DSL JSON file to create"
+                        "description": "Absolute path for the DSL JSON file to create"
                     }
                 },
                 "required": ["filePath"]
             }
             """;
 
-        String description = storage.isInMemory()
-            ? "Create a new empty DSL JSON file in memory for data generation. The file path is used as an identifier but no file is written to disk."
-            : "Create a new empty DSL JSON file for data generation";
-
         return SyncToolSpecification.builder()
-            .tool(tool("create_dsl_file", description, schema, jsonMapper))
+            .tool(tool("create_dsl_file", "Create a new empty DSL JSON file for data generation", schema, jsonMapper))
             .callHandler((exchange, request) -> handleCreateDslFile(request.arguments()))
             .build();
     }
@@ -57,19 +53,15 @@ public class DslFileTools {
                 "properties": {
                     "filePath": {
                         "type": "string",
-                        "description": "Full path to the DSL JSON file to read"
+                        "description": "Absolute path to the DSL JSON file to read"
                     }
                 },
                 "required": ["filePath"]
             }
             """;
 
-        String description = storage.isInMemory()
-            ? "Read the current contents of a DSL JSON file from memory. This is the only way to inspect the DSL since the file only exists in server memory."
-            : "Read the current contents of a DSL JSON file";
-
         return SyncToolSpecification.builder()
-            .tool(tool("read_dsl_file", description, schema, jsonMapper))
+            .tool(tool("read_dsl_file", "Read the current contents of a DSL JSON file", schema, jsonMapper))
             .callHandler((exchange, request) -> handleReadDslFile(request.arguments()))
             .build();
     }
@@ -81,7 +73,7 @@ public class DslFileTools {
                 "properties": {
                     "filePath": {
                         "type": "string",
-                        "description": "Full path to the DSL JSON file"
+                        "description": "Absolute path to the DSL JSON file"
                     },
                     "collectionName": {
                         "type": "string",
@@ -96,12 +88,8 @@ public class DslFileTools {
             }
             """;
 
-        String description = storage.isInMemory()
-            ? "Add a collection to an existing DSL JSON file in memory. The DSL file only exists in server memory."
-            : "Add a collection to an existing DSL JSON file";
-
         return SyncToolSpecification.builder()
-            .tool(tool("add_collection", description, schema, jsonMapper))
+            .tool(tool("add_collection", "Add a collection to an existing DSL JSON file", schema, jsonMapper))
             .callHandler((exchange, request) -> handleAddCollection(request.arguments()))
             .build();
     }
@@ -113,7 +101,7 @@ public class DslFileTools {
                 "properties": {
                     "filePath": {
                         "type": "string",
-                        "description": "Full path to the DSL JSON file"
+                        "description": "Absolute path to the DSL JSON file"
                     },
                     "collectionName": {
                         "type": "string",
@@ -124,37 +112,37 @@ public class DslFileTools {
             }
             """;
 
-        String description = storage.isInMemory()
-            ? "Remove a collection from a DSL JSON file in memory. The DSL file only exists in server memory."
-            : "Remove a collection from a DSL JSON file";
-
         return SyncToolSpecification.builder()
-            .tool(tool("remove_collection", description, schema, jsonMapper))
+            .tool(tool("remove_collection", "Remove a collection from a DSL JSON file", schema, jsonMapper))
             .callHandler((exchange, request) -> handleRemoveCollection(request.arguments()))
             .build();
     }
 
-    public SyncToolSpecification saveDslFile() {
+    public SyncToolSpecification updateCollection() {
         String schema = """
             {
                 "type": "object",
                 "properties": {
                     "filePath": {
                         "type": "string",
-                        "description": "The in-memory DSL file identifier to save"
+                        "description": "Absolute path to the DSL JSON file"
                     },
-                    "outputPath": {
+                    "collectionName": {
                         "type": "string",
-                        "description": "Full path where the DSL JSON file should be saved on disk"
+                        "description": "Name of the collection to update"
+                    },
+                    "collectionJson": {
+                        "type": "string",
+                        "description": "Updated JSON definition of the collection (the value object with count, item, etc.)"
                     }
                 },
-                "required": ["filePath", "outputPath"]
+                "required": ["filePath", "collectionName", "collectionJson"]
             }
             """;
 
         return SyncToolSpecification.builder()
-            .tool(tool("save_dsl_file", "Save an in-memory DSL JSON file to disk", schema, jsonMapper))
-            .callHandler((exchange, request) -> handleSaveDslFile(request.arguments()))
+            .tool(tool("update_collection", "Update an existing collection in a DSL JSON file", schema, jsonMapper))
+            .callHandler((exchange, request) -> handleUpdateCollection(request.arguments()))
             .build();
     }
 
@@ -169,8 +157,7 @@ public class DslFileTools {
                 .writeValueAsString(mapper.createObjectNode());
             storage.write(filePath, content);
 
-            String mode = storage.isInMemory() ? " (in-memory)" : "";
-            return textResult("Created DSL file: " + filePath + mode);
+            return textResult("Created DSL file: " + filePath);
         } catch (Exception e) {
             return errorResult("Failed to create DSL file: " + e.getMessage());
         }
@@ -258,33 +245,42 @@ public class DslFileTools {
         }
     }
 
-
-    private CallToolResult handleSaveDslFile(Map<String, Object> args) {
+    private CallToolResult handleUpdateCollection(Map<String, Object> args) {
         try {
             String filePath = (String) args.get("filePath");
-            String outputPath = (String) args.get("outputPath");
+            String collectionName = (String) args.get("collectionName");
+            String collectionJson = (String) args.get("collectionJson");
 
             if (filePath == null || filePath.isBlank()) {
                 return errorResult("filePath is required");
             }
-            if (outputPath == null || outputPath.isBlank()) {
-                return errorResult("outputPath is required");
+            if (collectionName == null || collectionName.isBlank()) {
+                return errorResult("collectionName is required");
             }
+            if (collectionJson == null || collectionJson.isBlank()) {
+                return errorResult("collectionJson is required");
+            }
+
             if (!storage.exists(filePath)) {
-                return errorResult("DSL file not found in memory: " + filePath);
+                return errorResult("DSL file not found: " + filePath);
             }
 
-            String content = storage.read(filePath);
-            Path path = Path.of(outputPath);
-            Path parent = path.getParent();
-            if (parent != null && !Files.exists(parent)) {
-                Files.createDirectories(parent);
-            }
-            Files.writeString(path, content);
+            String existing = storage.read(filePath);
+            ObjectNode root = (ObjectNode) mapper.readTree(existing);
 
-            return textResult("Saved DSL file to: " + outputPath);
+            if (!root.has(collectionName)) {
+                return errorResult("Collection '" + collectionName + "' not found in DSL file");
+            }
+
+            JsonNode collectionNode = mapper.readTree(collectionJson);
+            root.set(collectionName, collectionNode);
+
+            String updated = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
+            storage.write(filePath, updated);
+
+            return textResult("Updated collection '" + collectionName + "' in " + filePath);
         } catch (Exception e) {
-            return errorResult("Failed to save DSL file: " + e.getMessage());
+            return errorResult("Failed to update collection: " + e.getMessage());
         }
     }
 
