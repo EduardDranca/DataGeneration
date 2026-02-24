@@ -18,10 +18,26 @@ The DataGeneration MCP server enables LLMs to create DSL (Domain Specific Langua
 
 ### Step 1: Read Documentation First
 
-Always start by reading the documentation to understand available generators and DSL syntax:
+**CRITICAL: Do not hallucinate DSL syntax or generator options.**
 
-- Use `list_documentation` to see available documentation files
-- Use `read_documentation` to read specific documentation (e.g., "dsl-reference/overview.md", "generators/overview.md")
+Always start by understanding what generators and features you need, then read the relevant documentation:
+
+1. Use `list_documentation` to see available documentation files
+2. Use `read_documentation` to read about specific generators and features you plan to use:
+   - `generators/overview.md` - Overview of all available generators
+   - `generators/<generator-name>.md` - Specific generator documentation (e.g., `generators/number.md`, `generators/date.md`)
+   - `dsl-reference/overview.md` - DSL structure and syntax
+   - `dsl-reference/references.md` - Reference syntax for cross-collection references
+   - `dsl-reference/filtering.md` - Filtering options
+   - `dsl-reference/arrays.md` - Array/collection syntax
+
+**Common hallucination risks:**
+- Generator options that don't exist (e.g., `number.numberBetween`)
+- Incorrect reference syntax
+- Missing required fields in collection definitions
+- Invalid filter expressions
+
+Always verify generator options and DSL syntax in the documentation before creating DSL files.
 
 ### Step 2: Create a DSL File
 
