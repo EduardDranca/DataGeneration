@@ -1,3 +1,8 @@
+---
+name: data-generation-mcp
+description: Skill for using the DataGeneration MCP server to generate test data via declarative JSON DSL
+---
+
 # DataGeneration MCP Skill
 
 This skill provides guidance for using the DataGeneration MCP server to generate test data for projects.
