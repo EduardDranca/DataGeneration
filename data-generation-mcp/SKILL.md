@@ -3,11 +3,7 @@ name: data-generation-mcp
 description: Skill for using the DataGeneration MCP server to generate test data via declarative JSON DSL
 ---
 
-# DataGeneration MCP Skill
-
-This skill provides guidance for using the DataGeneration MCP server to generate test data for projects.
-
-## Overview
+# Overview
 
 The DataGeneration MCP server enables LLMs to create DSL (Domain Specific Language) files and generate test data using the DataGeneration library. The typical workflow is:
 
