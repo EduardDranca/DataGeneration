@@ -1,5 +1,5 @@
 ---
-name: data-generation-mcp
+name: data-generation
 description: Skill for using the DataGeneration MCP server to generate test data via declarative JSON DSL
 ---
 
