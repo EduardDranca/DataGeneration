@@ -47,4 +47,6 @@ public interface DslNodeVisitor<T> {
     T visitShadowBinding(ShadowBindingNode node);
 
     T visitShadowBindingField(ShadowBindingFieldNode node);
+
+    T visitExpression(ExpressionFieldNode node);
 }

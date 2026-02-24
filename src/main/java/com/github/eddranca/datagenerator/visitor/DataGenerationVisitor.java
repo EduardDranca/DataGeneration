@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorContext;
 import com.github.eddranca.datagenerator.generator.defaults.ChoiceGenerator;
+import com.github.eddranca.datagenerator.expression.ExpressionEvaluator;
+import com.github.eddranca.datagenerator.expression.ExpressionFunctionRegistry;
 import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.ArrayFieldReferenceNode;
 import com.github.eddranca.datagenerator.node.ChoiceFieldNode;
@@ -14,6 +16,7 @@ import com.github.eddranca.datagenerator.node.Condition;
 import com.github.eddranca.datagenerator.node.ConditionalReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
+import com.github.eddranca.datagenerator.node.ExpressionFieldNode;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
 import com.github.eddranca.datagenerator.node.GeneratorOptionNode;
@@ -46,12 +49,19 @@ import static com.github.eddranca.datagenerator.generator.defaults.ChoiceGenerat
  */
 public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
     private final AbstractGenerationContext<T> context;
+    private final ExpressionFunctionRegistry expressionFunctionRegistry;
     private ObjectNode currentItem; // Track current item for "this" references
     private String currentCollectionName; // Track current collection for lazy generation
     private Map<String, JsonNode> shadowBindings = new HashMap<>(); // Track shadow bindings for current item
 
     public DataGenerationVisitor(AbstractGenerationContext<T> context) {
+        this(context, new ExpressionFunctionRegistry());
+    }
+
+    public DataGenerationVisitor(AbstractGenerationContext<T> context,
+                                 ExpressionFunctionRegistry expressionFunctionRegistry) {
         this.context = context;
+        this.expressionFunctionRegistry = expressionFunctionRegistry;
     }
 
     /**
@@ -472,6 +482,57 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
 
         // Extract the field from the bound value
         return extractNestedField(boundValue, node.getFieldPath());
+    }
+
+    @Override
+    public JsonNode visitExpression(ExpressionFieldNode node) {
+        ExpressionEvaluator evaluator = new ExpressionEvaluator(
+            expressionFunctionRegistry,
+            this::resolveExpressionReference
+        );
+        return evaluator.evaluateToJsonNode(node.getExpressionTree());
+    }
+
+    /**
+     * Resolves a reference string from an expression by building a temporary reference node
+     * and visiting it through the existing reference resolution infrastructure.
+     */
+    private JsonNode resolveExpressionReference(String reference) {
+        // Handle shadow binding references ($binding.field)
+        if (reference.startsWith("$")) {
+            int dotIndex = reference.indexOf('.');
+            if (dotIndex == -1) {
+                throw new IllegalArgumentException("Shadow binding reference must include field path: " + reference);
+            }
+            String bindingName = reference.substring(0, dotIndex);
+            String fieldPath = reference.substring(dotIndex + 1);
+            JsonNode boundValue = shadowBindings.get(bindingName);
+            if (boundValue == null) {
+                throw new IllegalArgumentException("Shadow binding '" + bindingName + "' not found");
+            }
+            return extractNestedField(boundValue, fieldPath);
+        }
+
+        // Handle self references (this.field)
+        if (reference.startsWith("this.")) {
+            String fieldName = reference.substring(5);
+            if (currentItem == null) {
+                return context.getMapper().nullNode();
+            }
+            return extractNestedField(currentItem, fieldName);
+        }
+
+        // Handle collection references - delegate to existing reference resolution
+        if (reference.contains(".")) {
+            String baseName = reference.substring(0, reference.indexOf("."));
+            String fieldName = reference.substring(reference.indexOf(".") + 1);
+            PickReferenceNode pickRef = new PickReferenceNode(baseName, fieldName, new ArrayList<>(), false);
+            return pickRef.resolve(context, currentItem, null);
+        }
+
+        // Try as a simple collection reference
+        SimpleReferenceNode simpleRef = new SimpleReferenceNode(reference, null, new ArrayList<>(), false);
+        return simpleRef.resolve(context, currentItem, null);
     }
 
 

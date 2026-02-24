@@ -7,6 +7,7 @@ import com.github.eddranca.datagenerator.node.CollectionNode;
 import com.github.eddranca.datagenerator.node.ConditionalReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
+import com.github.eddranca.datagenerator.node.ExpressionFieldNode;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
 import com.github.eddranca.datagenerator.node.GeneratorOptionNode;
@@ -252,5 +253,12 @@ public class PathDependencyAnalyzer implements DslNodeVisitor<Void> {
         rootNode.accept(this);
 
         return getReferencedPaths();
+    }
+
+    @Override
+    public Void visitExpression(ExpressionFieldNode node) {
+        // Expression fields contain inline references that are resolved at runtime.
+        // TODO: Could analyze expression tree for cross-collection references if needed.
+        return null;
     }
 }

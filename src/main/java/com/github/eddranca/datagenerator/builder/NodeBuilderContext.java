@@ -1,6 +1,7 @@
 package com.github.eddranca.datagenerator.builder;
 
 import com.github.eddranca.datagenerator.ValidationError;
+import com.github.eddranca.datagenerator.expression.ExpressionFunctionRegistry;
 import com.github.eddranca.datagenerator.generator.GeneratorOptionSpec;
 import com.github.eddranca.datagenerator.validation.ValidationContext;
 
@@ -12,10 +13,13 @@ import java.util.List;
 class NodeBuilderContext {
     private final ValidationContext validationContext;
     private final List<ValidationError> errors;
+    private final ExpressionFunctionRegistry expressionFunctionRegistry;
 
-    public NodeBuilderContext(ValidationContext validationContext, List<ValidationError> errors) {
+    public NodeBuilderContext(ValidationContext validationContext, List<ValidationError> errors,
+                              ExpressionFunctionRegistry expressionFunctionRegistry) {
         this.validationContext = validationContext;
         this.errors = errors;
+        this.expressionFunctionRegistry = expressionFunctionRegistry;
     }
 
     public void addError(String message) {
@@ -43,5 +47,9 @@ class NodeBuilderContext {
 
     public GeneratorOptionSpec getGeneratorOptionSpec(String generatorName) {
         return validationContext.getGeneratorOptionSpec(generatorName);
+    }
+
+    public ExpressionFunctionRegistry getExpressionFunctionRegistry() {
+        return expressionFunctionRegistry;
     }
 }
