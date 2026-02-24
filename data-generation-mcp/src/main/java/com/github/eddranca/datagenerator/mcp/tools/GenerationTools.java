@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.DslDataGenerator;
 import com.github.eddranca.datagenerator.Generation;
-import com.github.eddranca.datagenerator.mcp.storage.StorageMode;
+import com.github.eddranca.datagenerator.mcp.storage.FileSystemStorage;
 import io.modelcontextprotocol.json.McpJsonMapper;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
@@ -18,11 +18,11 @@ import static com.github.eddranca.datagenerator.mcp.tools.ToolHelper.*;
 
 public class GenerationTools {
 
-    private final StorageMode storage;
+    private final FileSystemStorage storage;
     private final ObjectMapper mapper;
     private final McpJsonMapper jsonMapper;
 
-    public GenerationTools(StorageMode storage, ObjectMapper mapper, McpJsonMapper jsonMapper) {
+    public GenerationTools(FileSystemStorage storage, ObjectMapper mapper, McpJsonMapper jsonMapper) {
         this.storage = storage;
         this.mapper = mapper;
         this.jsonMapper = jsonMapper;

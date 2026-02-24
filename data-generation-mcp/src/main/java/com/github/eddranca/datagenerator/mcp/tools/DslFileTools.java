@@ -3,7 +3,9 @@ package com.github.eddranca.datagenerator.mcp.tools;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.eddranca.datagenerator.mcp.storage.StorageMode;
+import com.github.eddranca.datagenerator.DslDataGenerator;
+import com.github.eddranca.datagenerator.mcp.storage.FileSystemStorage;
+import com.github.eddranca.datagenerator.exception.DslValidationException;
 import io.modelcontextprotocol.json.McpJsonMapper;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
@@ -16,11 +18,11 @@ import static com.github.eddranca.datagenerator.mcp.tools.ToolHelper.*;
 
 public class DslFileTools {
 
-    private final StorageMode storage;
+    private final FileSystemStorage storage;
     private final ObjectMapper mapper;
     private final McpJsonMapper jsonMapper;
 
-    public DslFileTools(StorageMode storage, ObjectMapper mapper, McpJsonMapper jsonMapper) {
+    public DslFileTools(FileSystemStorage storage, ObjectMapper mapper, McpJsonMapper jsonMapper) {
         this.storage = storage;
         this.mapper = mapper;
         this.jsonMapper = jsonMapper;
@@ -207,7 +209,8 @@ public class DslFileTools {
             String updated = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
             storage.write(filePath, updated);
 
-            return textResult("Added collection '" + collectionName + "' to " + filePath);
+            String message = "Added collection '" + collectionName + "' to " + filePath;
+            return textResult(message + validateAfterMutation(updated));
         } catch (Exception e) {
             return errorResult("Failed to add collection: " + e.getMessage());
         }
@@ -239,7 +242,8 @@ public class DslFileTools {
             String updated = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
             storage.write(filePath, updated);
 
-            return textResult("Removed collection '" + collectionName + "' from " + filePath);
+            String message = "Removed collection '" + collectionName + "' from " + filePath;
+            return textResult(message + validateAfterMutation(updated));
         } catch (Exception e) {
             return errorResult("Failed to remove collection: " + e.getMessage());
         }
@@ -278,9 +282,26 @@ public class DslFileTools {
             String updated = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
             storage.write(filePath, updated);
 
-            return textResult("Updated collection '" + collectionName + "' in " + filePath);
+            String message = "Updated collection '" + collectionName + "' in " + filePath;
+            return textResult(message + validateAfterMutation(updated));
         } catch (Exception e) {
             return errorResult("Failed to update collection: " + e.getMessage());
+        }
+    }
+
+    private String validateAfterMutation(String dslContent) {
+        try {
+            DslDataGenerator.create().fromJsonString(dslContent).generate();
+            return "";
+        } catch (DslValidationException e) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("\n\nWARNING: The DSL file now has validation errors that should be addressed:");
+            for (var error : e.getValidationErrors()) {
+                sb.append("\n  - ").append(error.toString());
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return "\n\nWARNING: The DSL file now has a validation error: " + e.getMessage();
         }
     }
 

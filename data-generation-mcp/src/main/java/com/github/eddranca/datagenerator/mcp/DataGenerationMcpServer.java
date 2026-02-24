@@ -2,7 +2,6 @@ package com.github.eddranca.datagenerator.mcp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.mcp.storage.FileSystemStorage;
-import com.github.eddranca.datagenerator.mcp.storage.StorageMode;
 import com.github.eddranca.datagenerator.mcp.tools.DocumentationTools;
 import com.github.eddranca.datagenerator.mcp.tools.DslFileTools;
 import com.github.eddranca.datagenerator.mcp.tools.GenerationTools;
@@ -39,7 +38,7 @@ public class DataGenerationMcpServer {
 
         ObjectMapper objectMapper = new ObjectMapper();
         McpJsonMapper jsonMapper = new JacksonMcpJsonMapper(objectMapper);
-        StorageMode storage = new FileSystemStorage();
+        FileSystemStorage storage = new FileSystemStorage();
 
         Path docsRoot = docsPath != null
             ? Path.of(docsPath)
