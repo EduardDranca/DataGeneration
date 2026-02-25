@@ -22,6 +22,7 @@ Complete reference for the DataGeneration DSL syntax.
 - [Shadow Bindings](./shadow-bindings.md) - Bind and reuse referenced items for cross-entity constraints
 - [Arrays](./arrays.md) - Generate arrays of values
 - [Filtering](./filtering.md) - Exclude specific values
+- [Expressions](./expressions.md) - Computed string values with functions
 - [Static Values](./static-values.md) - Use literal values
 
 ## Key Features
