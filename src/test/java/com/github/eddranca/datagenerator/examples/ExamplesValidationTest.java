@@ -197,15 +197,16 @@ class ExamplesValidationTest extends ParameterizedGenerationTest {
         });
 
         // Validate posts reference users
-        assertThat(posts).allSatisfy(post -> {
-            assertThat(post.has("id")).isTrue();
-            assertThat(post.has("title")).isTrue();
-            assertThat(post.has("content")).isTrue();
-            assertThat(post.has("authorId")).isTrue();
-            assertThat(post.has("authorName")).isTrue();
-            assertThat(userIds).contains(post.get("authorId").asText());
-            assertThat(userNames).contains(post.get("authorName").asText());
-        });
+        assertThat(posts).hasSize(50)
+            .allSatisfy(post -> {
+                assertThat(post.has("id")).isTrue();
+                assertThat(post.has("title")).isTrue();
+                assertThat(post.has("content")).isTrue();
+                assertThat(post.has("authorId")).isTrue();
+                assertThat(post.has("authorName")).isTrue();
+                assertThat(userIds).contains(post.get("authorId").asText());
+                assertThat(userNames).contains(post.get("authorName").asText());
+            });
     }
 
     @BothImplementationsTest
