@@ -523,6 +523,26 @@ public class DataGenerationVisitor<T> implements DslNodeVisitor<JsonNode> {
         }
 
         // Handle collection references - delegate to existing reference resolution
+        // Detect bracket-based references: collection[*].field, collection[0].field, etc.
+        if (reference.contains("[")) {
+            if (reference.contains("[*].")) {
+                String collectionName = reference.substring(0, reference.indexOf("[*]."));
+                String fieldName = reference.substring(reference.indexOf("[*].") + 4);
+                ArrayFieldReferenceNode arrayRef = new ArrayFieldReferenceNode(collectionName, fieldName, new ArrayList<>(), false);
+                return arrayRef.resolve(context, currentItem, null);
+            }
+            // Indexed reference: collection[0].field
+            String collectionName = reference.substring(0, reference.indexOf("["));
+            String indexPart = reference.substring(reference.indexOf("[") + 1, reference.indexOf("]"));
+            String fieldPart = "";
+            if (reference.contains("].")) {
+                fieldPart = reference.substring(reference.indexOf("].") + 2);
+            }
+            IndexedReferenceNode indexedRef = new IndexedReferenceNode(collectionName, indexPart, fieldPart, new ArrayList<>(), false);
+            return indexedRef.resolve(context, currentItem, null);
+        }
+
+        // Dot notation: pick references or collection.field
         if (reference.contains(".")) {
             String baseName = reference.substring(0, reference.indexOf("."));
             String fieldName = reference.substring(reference.indexOf(".") + 1);

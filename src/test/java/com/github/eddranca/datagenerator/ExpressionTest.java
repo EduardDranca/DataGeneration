@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -336,6 +335,130 @@ class ExpressionTest extends ParameterizedGenerationTest {
             assertThatThrownBy(() -> DslDataGenerator.create().withSeed(1L)
                 .fromJsonString(dsl).generate())
                 .isInstanceOf(DslValidationException.class);
+        }
+    }
+
+    @Nested
+    class NullHandling extends ParameterizedGenerationTest {
+
+        @BothImplementationsTest
+        void testNullValueRendersAsNullString(boolean memoryOptimized) throws IOException {
+            String dsl = """
+                {
+                  "items": {
+                    "count": 3,
+                    "item": {
+                      "value": null,
+                      "label": {"expr": "prefix-${this.value}-suffix"}
+                    }
+                  }
+                }
+                """;
+            Generation gen = generateFromDsl(dsl, memoryOptimized);
+            JsonNode result = createLegacyJsonNode(gen);
+
+            for (JsonNode item : result.get("items")) {
+                assertThat(item.get("label").asText()).isEqualTo("prefix-null-suffix");
+            }
+        }
+    }
+
+    @Nested
+    class CollectionReferenceExpressions extends ParameterizedGenerationTest {
+
+        @BothImplementationsTest
+        void testArrayFieldReferenceInExpression(boolean memoryOptimized) throws IOException {
+            String dsl = """
+                {
+                  "users": {
+                    "count": 5,
+                    "item": {
+                      "id": {"gen": "uuid"},
+                      "name": {"gen": "name.firstName"}
+                    }
+                  },
+                  "greetings": {
+                    "count": 10,
+                    "item": {
+                      "message": {"expr": "Hello ${users[*].name}!"}
+                    }
+                  }
+                }
+                """;
+            Generation gen = generateFromDsl(dsl, memoryOptimized);
+            JsonNode result = createLegacyJsonNode(gen);
+
+            // Collect all user names for validation
+            java.util.Set<String> userNames = new java.util.HashSet<>();
+            for (JsonNode user : result.get("users")) {
+                userNames.add(user.get("name").asText());
+            }
+
+            for (JsonNode greeting : result.get("greetings")) {
+                String message = greeting.get("message").asText();
+                assertThat(message).startsWith("Hello ");
+                assertThat(message).endsWith("!");
+                String name = message.substring(6, message.length() - 1);
+                assertThat(userNames).contains(name);
+            }
+        }
+
+        @BothImplementationsTest
+        void testIndexedReferenceInExpression(boolean memoryOptimized) throws IOException {
+            String dsl = """
+                {
+                  "users": {
+                    "count": 5,
+                    "item": {
+                      "id": {"gen": "uuid"},
+                      "name": {"gen": "name.firstName"}
+                    }
+                  },
+                  "logs": {
+                    "count": 3,
+                    "item": {
+                      "message": {"expr": "First user: ${users[0].name}"}
+                    }
+                  }
+                }
+                """;
+            Generation gen = generateFromDsl(dsl, memoryOptimized);
+            JsonNode result = createLegacyJsonNode(gen);
+            String firstName = result.get("users").get(0).get("name").asText();
+
+            for (JsonNode log : result.get("logs")) {
+                assertThat(log.get("message").asText()).isEqualTo("First user: " + firstName);
+            }
+        }
+
+        @BothImplementationsTest
+        void testNestedPathInExpression(boolean memoryOptimized) throws IOException {
+            String dsl = """
+                {
+                  "users": {
+                    "count": 3,
+                    "item": {
+                      "id": {"gen": "uuid"},
+                      "profile": {
+                        "displayName": {"gen": "name.firstName"}
+                      }
+                    }
+                  },
+                  "messages": {
+                    "count": 3,
+                    "item": {
+                      "text": {"expr": "From ${users[0].profile.displayName}"}
+                    }
+                  }
+                }
+                """;
+            Generation gen = generateFromDsl(dsl, memoryOptimized);
+            JsonNode result = createLegacyJsonNode(gen);
+            String displayName = result.get("users").get(0).get("profile").get("displayName").asText();
+
+            for (JsonNode msg : result.get("messages")) {
+                assertThat(msg.get("text").asText()).isEqualTo("From " + displayName);
+            }
         }
     }
 }

@@ -49,8 +49,11 @@ public class ExpressionEvaluator {
 
     private String resolveReference(String reference) {
         JsonNode resolved = referenceResolver.apply(reference);
-        if (resolved == null || resolved.isNull() || resolved.isMissingNode()) {
+        if (resolved == null || resolved.isMissingNode()) {
             return "";
+        }
+        if (resolved.isNull()) {
+            return "null";
         }
         return resolved.isTextual() ? resolved.asText() : resolved.toString();
     }
