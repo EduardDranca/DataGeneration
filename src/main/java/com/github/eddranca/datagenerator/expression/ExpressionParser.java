@@ -9,7 +9,7 @@ import java.util.function.Consumer;
  * <p>
  * Syntax:
  * <ul>
- *   <li>{@code ${ref}} — reference placeholder (this.field, collection[*].field, $binding.field, etc.)</li>
+ *   <li>{@code ${ref}} — reference placeholder (this.field, collection[*].field, etc.)</li>
  *   <li>{@code functionName(...)} — function call wrapping an expression</li>
  *   <li>Everything else — literal text</li>
  *   <li>Function calls can nest: {@code uppercase(trim(${this.name}))}</li>
@@ -17,6 +17,7 @@ import java.util.function.Consumer;
  * </ul>
  */
 public class ExpressionParser {
+
     private final Consumer<String> errorHandler;
     private final ExpressionFunctionRegistry functionRegistry;
 
@@ -25,18 +26,11 @@ public class ExpressionParser {
         this.functionRegistry = functionRegistry;
     }
 
-    /**
-     * Parses an expression string into an AST node.
-     *
-     * @param expression the raw expression string
-     * @return the parsed expression tree, or null if parsing fails
-     */
     public ExpressionNode parse(String expression) {
         if (expression == null || expression.isEmpty()) {
             errorHandler.accept("Expression cannot be empty");
             return null;
         }
-
         try {
             return parseExpression(expression.trim());
         } catch (ExpressionParseException e) {
@@ -46,16 +40,13 @@ public class ExpressionParser {
     }
 
     private ExpressionNode parseExpression(String expr) {
-        // Check if the entire expression is a function call: functionName(...)
-        int parenIndex = findTopLevelOpenParen(expr);
+        int parenIndex = Scanner.findTopLevelOpenParen(expr);
         if (parenIndex > 0 && expr.charAt(expr.length() - 1) == ')') {
             String funcName = expr.substring(0, parenIndex).trim();
             if (isValidFunctionName(funcName)) {
                 return parseFunctionCall(funcName, expr.substring(parenIndex + 1, expr.length() - 1));
             }
         }
-
-        // Otherwise, parse as a template with ${} placeholders and literal text
         return parseTemplate(expr);
     }
 
@@ -63,51 +54,35 @@ public class ExpressionParser {
         if (!functionRegistry.has(funcName)) {
             throw new ExpressionParseException("Unknown expression function: '" + funcName + "'");
         }
-
-        // Split arguments: first arg is the main expression, rest are extra string args
-        List<String> rawArgs = splitFunctionArgs(argsContent);
+        List<String> rawArgs = Scanner.splitArgs(argsContent);
         if (rawArgs.isEmpty()) {
             throw new ExpressionParseException("Function '" + funcName + "' requires at least one argument");
         }
-
-        // First argument is parsed as an expression (can contain ${}, nested functions, etc.)
         ExpressionNode mainArg = parseExpression(rawArgs.get(0).trim());
-
-        // Remaining arguments are treated as literal string values
         List<String> extraArgs = new ArrayList<>();
         for (int i = 1; i < rawArgs.size(); i++) {
             extraArgs.add(rawArgs.get(i).trim());
         }
-
         return new FunctionCallExprNode(funcName, mainArg, extraArgs);
     }
 
     private ExpressionNode parseTemplate(String template) {
         List<ExpressionNode> parts = new ArrayList<>();
         int i = 0;
-
         while (i < template.length()) {
             int refStart = template.indexOf("${", i);
             if (refStart == -1) {
-                // Rest is literal
                 String literal = template.substring(i);
-                if (!literal.isEmpty()) {
-                    parts.add(new LiteralExprNode(literal));
-                }
+                if (!literal.isEmpty()) parts.add(new LiteralExprNode(literal));
                 break;
             }
-
-            // Add literal before the reference
             if (refStart > i) {
                 parts.add(new LiteralExprNode(template.substring(i, refStart)));
             }
-
-            // Find matching closing brace
-            int refEnd = findMatchingBrace(template, refStart + 2);
+            int refEnd = Scanner.findMatchingBrace(template, refStart + 2);
             if (refEnd == -1) {
                 throw new ExpressionParseException("Unclosed ${} in expression: " + template);
             }
-
             String reference = template.substring(refStart + 2, refEnd).trim();
             if (reference.isEmpty()) {
                 throw new ExpressionParseException("Empty ${} reference in expression");
@@ -115,97 +90,73 @@ public class ExpressionParser {
             parts.add(new ReferenceExprNode(reference));
             i = refEnd + 1;
         }
-
-        if (parts.isEmpty()) {
-            return new LiteralExprNode("");
-        }
-        if (parts.size() == 1) {
-            return parts.get(0);
-        }
+        if (parts.isEmpty()) return new LiteralExprNode("");
+        if (parts.size() == 1) return parts.get(0);
         return new ConcatExprNode(parts);
     }
 
-    /**
-     * Finds the index of the top-level opening parenthesis, skipping any that are
-     * inside ${} placeholders.
-     */
-    private int findTopLevelOpenParen(String expr) {
-        int depth = 0;
-        for (int i = 0; i < expr.length(); i++) {
-            char c = expr.charAt(i);
-            if (c == '$' && i + 1 < expr.length() && expr.charAt(i + 1) == '{') {
-                depth++;
-                i++; // skip '{'
-            } else if (depth > 0 && c == '}') {
-                depth--;
-            } else if (depth == 0 && c == '(') {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    /**
-     * Splits function arguments at top-level commas, respecting nested parentheses and ${}.
-     */
-    private List<String> splitFunctionArgs(String argsContent) {
-        List<String> args = new ArrayList<>();
-        int parenDepth = 0;
-        int braceDepth = 0;
-        int start = 0;
-
-        for (int i = 0; i < argsContent.length(); i++) {
-            char c = argsContent.charAt(i);
-            if (c == '$' && i + 1 < argsContent.length() && argsContent.charAt(i + 1) == '{') {
-                braceDepth++;
-                i++;
-            } else if (braceDepth > 0 && c == '}') {
-                braceDepth--;
-            } else if (c == '(') {
-                parenDepth++;
-            } else if (c == ')') {
-                parenDepth--;
-            } else if (c == ',' && parenDepth == 0 && braceDepth == 0) {
-                args.add(argsContent.substring(start, i));
-                start = i + 1;
-            }
-        }
-        // Add last argument
-        String last = argsContent.substring(start);
-        if (!last.trim().isEmpty()) {
-            args.add(last);
-        }
-        return args;
-    }
-
-    private int findMatchingBrace(String str, int fromIndex) {
-        int depth = 1;
-        for (int i = fromIndex; i < str.length(); i++) {
-            char c = str.charAt(i);
-            if (c == '{') {
-                depth++;
-            } else if (c == '}') {
-                depth--;
-                if (depth == 0) {
-                    return i;
-                }
-            }
-        }
-        return -1;
-    }
-
     private boolean isValidFunctionName(String name) {
-        if (name.isEmpty()) return false;
-        for (int i = 0; i < name.length(); i++) {
-            char c = name.charAt(i);
+        if (name.isEmpty() || !Character.isLetter(name.charAt(0))) return false;
+        for (char c : name.toCharArray()) {
             if (!Character.isLetterOrDigit(c) && c != '_') return false;
         }
-        return Character.isLetter(name.charAt(0));
+        return true;
+    }
+
+    /**
+     * Shared string-scanning utilities that track parenthesis and ${} depth.
+     * Centralises the depth-tracking logic used in multiple parse steps.
+     */
+    private static final class Scanner {
+
+        /** Returns the index of the first '(' not inside a ${} block, or -1. */
+        static int findTopLevelOpenParen(String expr) {
+            int braceDepth = 0;
+            for (int i = 0; i < expr.length(); i++) {
+                if (isDollarBrace(expr, i)) { braceDepth++; i++; }
+                else if (braceDepth > 0 && expr.charAt(i) == '}') braceDepth--;
+                else if (braceDepth == 0 && expr.charAt(i) == '(') return i;
+            }
+            return -1;
+        }
+
+        /** Splits on top-level commas, respecting nested '()' and '${}'.  */
+        static List<String> splitArgs(String content) {
+            List<String> args = new ArrayList<>();
+            int parenDepth = 0, braceDepth = 0, start = 0;
+            for (int i = 0; i < content.length(); i++) {
+                char c = content.charAt(i);
+                if (isDollarBrace(content, i)) { braceDepth++; i++; }
+                else if (braceDepth > 0 && c == '}') braceDepth--;
+                else if (c == '(') parenDepth++;
+                else if (c == ')') parenDepth--;
+                else if (c == ',' && parenDepth == 0 && braceDepth == 0) {
+                    args.add(content.substring(start, i));
+                    start = i + 1;
+                }
+            }
+            String last = content.substring(start);
+            if (!last.trim().isEmpty()) args.add(last);
+            return args;
+        }
+
+        /** Returns the index of the '}' that closes the '{' at fromIndex, or -1. */
+        static int findMatchingBrace(String str, int fromIndex) {
+            int depth = 1;
+            for (int i = fromIndex; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (c == '{') depth++;
+                else if (c == '}' && --depth == 0) return i;
+            }
+            return -1;
+        }
+
+        private static boolean isDollarBrace(String s, int i) {
+            return s.charAt(i) == '$' && i + 1 < s.length() && s.charAt(i + 1) == '{';
+        }
     }
 
     private static class ExpressionParseException extends RuntimeException {
-        ExpressionParseException(String message) {
-            super(message);
-        }
+        ExpressionParseException(String message) { super(message); }
     }
 }

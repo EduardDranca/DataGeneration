@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.util.FieldApplicationUtil;
 
-import java.util.LinkedHashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
