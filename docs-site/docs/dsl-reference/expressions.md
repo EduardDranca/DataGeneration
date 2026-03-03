@@ -38,10 +38,22 @@ Inside `${}` you can use any reference type:
 | Self reference | `${this.firstName}` |
 | Shadow binding | `${$user.firstName}` |
 | Pick reference | `${admin.name}` |
-| Collection reference | `${users[*].name}` |
+| Random collection ref | `${users[*].name}` |
+| Indexed collection ref | `${users[0].name}` |
 
 :::note
 Expressions resolve **references only**, not generators. If you need a generated value, assign it to a field first and reference it with `this.fieldName`.
+:::
+
+:::caution
+Conditional references (`collection[field=value].field`) are **not supported** inside `${}`. If you need to reference a conditionally-filtered item in an expression, bind it to a shadow binding first and reference the binding:
+
+```json
+{
+  "$activeProduct": {"ref": "products[status='active']"},
+  "label": {"expr": "Featured: ${$activeProduct.name}"}
+}
+```
 :::
 
 ## Built-in Functions
@@ -208,4 +220,5 @@ public interface ExpressionFunction {
 
 - `expr` cannot be combined with `gen`, `ref`, or `array` on the same field
 - Only references are supported inside `${}` — not inline generators
+- Conditional references (`collection[field=value].field`) are not supported inside `${}` — use a shadow binding instead
 - Expression results are always strings
