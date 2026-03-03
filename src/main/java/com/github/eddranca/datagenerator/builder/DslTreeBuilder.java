@@ -2,6 +2,7 @@ package com.github.eddranca.datagenerator.builder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.eddranca.datagenerator.ValidationError;
+import com.github.eddranca.datagenerator.expression.ExpressionFunctionRegistry;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
 import com.github.eddranca.datagenerator.node.CollectionNode;
 import com.github.eddranca.datagenerator.node.RootNode;
@@ -27,10 +28,16 @@ public class DslTreeBuilder {
     private final ValidationContext context;
     private final List<ValidationError> errors;
     private final CollectionNodeBuilder collectionBuilder;
+    private final ExpressionFunctionRegistry expressionFunctionRegistry;
 
     public DslTreeBuilder(GeneratorRegistry generatorRegistry) {
+        this(generatorRegistry, new ExpressionFunctionRegistry());
+    }
+
+    public DslTreeBuilder(GeneratorRegistry generatorRegistry, ExpressionFunctionRegistry expressionFunctionRegistry) {
         this.context = new ValidationContext(generatorRegistry);
         this.errors = new ArrayList<>();
+        this.expressionFunctionRegistry = expressionFunctionRegistry;
         this.collectionBuilder = initCollectionBuilder();
     }
 
@@ -97,7 +104,7 @@ public class DslTreeBuilder {
     }
 
     private CollectionNodeBuilder initCollectionBuilder() {
-        NodeBuilderContext builderContext = new NodeBuilderContext(context, errors);
+        NodeBuilderContext builderContext = new NodeBuilderContext(context, errors, expressionFunctionRegistry);
         return new CollectionNodeBuilder(builderContext, new FieldNodeBuilder(builderContext));
     }
 }

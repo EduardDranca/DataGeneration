@@ -138,6 +138,25 @@ Exclude specific values from references:
 }
 ```
 
+## Expressions
+
+**Expressions** build computed string values from references and functions:
+
+```json
+{
+  "users": {
+    "count": 5,
+    "item": {
+      "firstName": {"gen": "name.firstName"},
+      "lastName": {"gen": "name.lastName"},
+      "email": {"expr": "lowercase(${this.firstName}.${this.lastName}@example.com)"}
+    }
+  }
+}
+```
+
+Built-in functions: `lowercase`, `uppercase`, `trim`, `substring`. You can also register custom functions via the Java API.
+
 ## Generation Modes
 
 ### Eager Mode (Default)

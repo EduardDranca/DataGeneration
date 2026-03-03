@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.eddranca.datagenerator.builder.DslTreeBuilder;
 import com.github.eddranca.datagenerator.exception.DslValidationException;
+import com.github.eddranca.datagenerator.expression.ExpressionFunction;
+import com.github.eddranca.datagenerator.expression.ExpressionFunctionRegistry;
 import com.github.eddranca.datagenerator.generator.Generator;
 import com.github.eddranca.datagenerator.generator.GeneratorRegistry;
 import com.github.eddranca.datagenerator.node.RootNode;
@@ -48,6 +50,7 @@ public class DslDataGenerator {
     private final int maxFilteringRetries;
     private final FilteringBehavior filteringBehavior;
     private final boolean memoryOptimizationEnabled;
+    private final ExpressionFunctionRegistry expressionFunctionRegistry;
 
     private DslDataGenerator(Builder builder) {
         this.random = new Random(builder.seed);
@@ -55,8 +58,17 @@ public class DslDataGenerator {
         this.maxFilteringRetries = builder.maxFilteringRetries;
         this.filteringBehavior = builder.filteringBehavior;
         this.memoryOptimizationEnabled = builder.memoryOptimizationEnabled;
+        this.expressionFunctionRegistry = builder.expressionFunctionRegistry != null
+            ? builder.expressionFunctionRegistry : new ExpressionFunctionRegistry();
         this.generatorRegistry = builder.generatorRegistry != null ? builder.generatorRegistry
             : GeneratorRegistry.withDefaultGenerators(new Faker(random));
+
+        // Add custom expression functions if any
+        if (builder.customExpressionFunctions != null) {
+            for (Map.Entry<String, ExpressionFunction> entry : builder.customExpressionFunctions.entrySet()) {
+                this.expressionFunctionRegistry.register(entry.getKey(), entry.getValue());
+            }
+        }
 
         // Add custom generators if any
         if (builder.customGenerators != null) {
@@ -108,7 +120,7 @@ public class DslDataGenerator {
      */
     private Generation generateFromJsonNode(JsonNode root) {
         // Build and validate the DSL tree
-        DslTreeBuilder treeBuilder = new DslTreeBuilder(generatorRegistry);
+        DslTreeBuilder treeBuilder = new DslTreeBuilder(generatorRegistry, expressionFunctionRegistry);
         DslTreeBuildResult buildResult = treeBuilder.build(root);
 
         // Handle validation errors by throwing exception
@@ -138,7 +150,7 @@ public class DslDataGenerator {
             context = new EagerGenerationContext(generatorRegistry, random, maxFilteringRetries, filteringBehavior);
         }
 
-        DataGenerationVisitor<?> visitor = new DataGenerationVisitor<>(context);
+        DataGenerationVisitor<?> visitor = new DataGenerationVisitor<>(context, expressionFunctionRegistry);
 
         rootNode.accept(visitor);
         return getGeneration(context);
@@ -161,6 +173,8 @@ public class DslDataGenerator {
         private long seed = System.currentTimeMillis();
         private GeneratorRegistry generatorRegistry;
         private Map<String, Generator> customGenerators;
+        private Map<String, ExpressionFunction> customExpressionFunctions;
+        private ExpressionFunctionRegistry expressionFunctionRegistry;
         private int maxFilteringRetries = 100;
         private FilteringBehavior filteringBehavior = FilteringBehavior.RETURN_NULL;
         private boolean memoryOptimizationEnabled = false;
@@ -202,6 +216,28 @@ public class DslDataGenerator {
                 this.customGenerators = new HashMap<>();
             }
             this.customGenerators.put(name, generator);
+            return this;
+        }
+
+        /**
+         * Adds a custom expression function for use in {@code expr} fields.
+         * <p>
+         * Example:
+         * <pre>{@code
+         * .withExpressionFunction("slug", (value, args) ->
+         *     value.toLowerCase().replaceAll("\\s+", "-").replaceAll("[^a-z0-9-]", ""))
+         * }</pre>
+         * Then in DSL: {@code {"expr": "slug(${this.title})"}}
+         *
+         * @param name     the function name as used in expr strings
+         * @param function the function implementation
+         * @return this builder for method chaining
+         */
+        public Builder withExpressionFunction(String name, ExpressionFunction function) {
+            if (this.customExpressionFunctions == null) {
+                this.customExpressionFunctions = new HashMap<>();
+            }
+            this.customExpressionFunctions.put(name, function);
             return this;
         }
 

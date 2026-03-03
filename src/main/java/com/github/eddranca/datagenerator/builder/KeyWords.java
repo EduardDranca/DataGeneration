@@ -18,6 +18,7 @@ public class KeyWords {
     public static final String MAX_SIZE = "maxSize";
     public static final String THIS_PREFIX = "this.";
     public static final String MAP = "map";
+    public static final String EXPR = "expr";
 
     private KeyWords() {
         // Prevent instantiation

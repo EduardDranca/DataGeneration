@@ -8,6 +8,7 @@ import com.github.eddranca.datagenerator.node.CollectionNode;
 import com.github.eddranca.datagenerator.node.ConditionalReferenceNode;
 import com.github.eddranca.datagenerator.node.DslNode;
 import com.github.eddranca.datagenerator.node.DslNodeVisitor;
+import com.github.eddranca.datagenerator.node.ExpressionFieldNode;
 import com.github.eddranca.datagenerator.node.FilterNode;
 import com.github.eddranca.datagenerator.node.GeneratedFieldNode;
 import com.github.eddranca.datagenerator.node.GeneratorOptionNode;
@@ -264,6 +265,13 @@ public class ReferenceValidationVisitor implements DslNodeVisitor<Void> {
     public Void visitShadowBindingField(ShadowBindingFieldNode node) {
         // Shadow binding field references are validated at runtime
         // (we can't validate binding existence at build time since order matters)
+        return null;
+    }
+
+    @Override
+    public Void visitExpression(ExpressionFieldNode node) {
+        // Expression references are validated at runtime since they use the same
+        // reference resolution as other nodes (this.*, $binding.*, collection refs)
         return null;
     }
 

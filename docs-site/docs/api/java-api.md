@@ -17,6 +17,7 @@ DslDataGenerator.Builder builder = DslDataGenerator.create();
 - `.withSeed(long seed)` - Set seed for reproducible generation
 - `.withMemoryOptimization()` - Enable lazy generation mode
 - `.withCustomGenerator(String name, Generator generator)` - Add custom generator
+- `.withExpressionFunction(String name, ExpressionFunction function)` - Add custom expression function for `expr` fields
 - `.withFilteringBehavior(FilteringBehavior behavior)` - Configure filtering behavior
 - `.withMaxFilteringRetries(int maxRetries)` - Set max retries when filtering
 

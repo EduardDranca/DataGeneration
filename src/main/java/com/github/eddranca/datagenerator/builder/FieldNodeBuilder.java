@@ -2,8 +2,11 @@ package com.github.eddranca.datagenerator.builder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.eddranca.datagenerator.expression.ExpressionNode;
+import com.github.eddranca.datagenerator.expression.ExpressionParser;
 import com.github.eddranca.datagenerator.node.ArrayFieldNode;
 import com.github.eddranca.datagenerator.node.DslNode;
+import com.github.eddranca.datagenerator.node.ExpressionFieldNode;
 import com.github.eddranca.datagenerator.node.LiteralFieldNode;
 import com.github.eddranca.datagenerator.node.ObjectFieldNode;
 import com.github.eddranca.datagenerator.node.ShadowBindingNode;
@@ -13,6 +16,7 @@ import java.util.Map;
 
 import static com.github.eddranca.datagenerator.builder.KeyWords.ARRAY;
 import static com.github.eddranca.datagenerator.builder.KeyWords.COUNT;
+import static com.github.eddranca.datagenerator.builder.KeyWords.EXPR;
 import static com.github.eddranca.datagenerator.builder.KeyWords.GENERATOR;
 import static com.github.eddranca.datagenerator.builder.KeyWords.REF;
 
@@ -57,6 +61,10 @@ class FieldNodeBuilder implements FieldBuilder {
             return arrayBuilder.buildArrayField(fieldName, fieldDef);
         }
 
+        if (fieldDef.has(EXPR)) {
+            return buildExpressionField(fieldName, fieldDef);
+        }
+
         if (fieldDef.isObject()) {
             return buildObjectField(fieldDef);
         }
@@ -86,9 +94,10 @@ class FieldNodeBuilder implements FieldBuilder {
         if (fieldDef.has(GENERATOR)) keywordCount++;
         if (fieldDef.has(REF)) keywordCount++;
         if (fieldDef.has(ARRAY)) keywordCount++;
+        if (fieldDef.has(EXPR)) keywordCount++;
 
         if (keywordCount > 1) {
-            addFieldError(fieldName, "cannot have multiple keywords (gen, ref, array)");
+            addFieldError(fieldName, "cannot have multiple keywords (gen, ref, array, expr)");
         }
     }
 
@@ -146,6 +155,27 @@ class FieldNodeBuilder implements FieldBuilder {
         }
 
         return buildField("item", itemDef);
+    }
+
+    private DslNode buildExpressionField(String fieldName, JsonNode fieldDef) {
+        JsonNode exprNode = fieldDef.get(EXPR);
+        if (!exprNode.isTextual()) {
+            addFieldError(fieldName, "expr must be a string");
+            return null;
+        }
+
+        String rawExpression = exprNode.asText();
+        ExpressionParser parser = new ExpressionParser(
+            msg -> addFieldError(fieldName, "invalid expression: " + msg),
+            context.getExpressionFunctionRegistry()
+        );
+
+        ExpressionNode expressionTree = parser.parse(rawExpression);
+        if (expressionTree == null) {
+            return null;
+        }
+
+        return new ExpressionFieldNode(expressionTree, rawExpression);
     }
 
     private void addFieldError(String fieldName, String message) {
