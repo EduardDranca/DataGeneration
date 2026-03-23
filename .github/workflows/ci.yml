@@ -33,7 +33,7 @@ jobs:
       run: mvn clean verify
 
     - name: Generate test report
-      uses: dorny/test-reporter@v2
+      uses: dorny/test-reporter@v3
       with:
         name: Maven Tests (Java 17)
         path: target/surefire-reports/*.xml
